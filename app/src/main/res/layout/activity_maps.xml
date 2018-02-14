@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.google.albertasights.MapsActivity" >
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:id="@+id/rr"
+        >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:text="Select distance from your location:"
+            android:layout_marginLeft="10dp"
+            android:textSize="14dp"
+            android:layout_alignParentLeft="true"
+            android:layout_toLeftOf="@+id/txt"
+            android:id="@+id/savePlace" />
+
+        <Spinner
+            android:id="@+id/spinner"
+            android:layout_marginTop="2dp"
+            android:layout_width="wrap_content"
+            android:layout_below="@id/savePlace"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="10dp"
+            android:id="@+id/txt"
+            android:textSize="14dp"/>
+
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/txt"
+            android:layout_marginRight="10dp"
+            android:layout_alignParentRight="true"
+            android:onClick="showFilters"
+            android:id="@+id/imageB"
+
+            />
+
+        <ScrollView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_below="@id/spinner"
+            android:id="@+id/scrl"
+            android:padding="5dp"
+            >
+            <LinearLayout
+                android:id="@+id/filters"
+                android:layout_marginTop="5dp"
+                android:orientation="vertical"
+                android:background="@color/colorWhite"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+            </LinearLayout>
+
+        </ScrollView>
+
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@id/spinner"
+            android:layout_marginTop="10dp"
+            android:layout_toLeftOf="@id/scrl"
+            android:id="@+id/mapWrapper"
+
+            >
+            <fragment
+                android:id="@+id/map"
+                android:name="com.google.android.gms.maps.SupportMapFragment"
+
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                tools:context="com.example.olga.naviguide.MapsActivity" />
+
+        </RelativeLayout>
+
+
+
+    </RelativeLayout>
+
+</FrameLayout>
