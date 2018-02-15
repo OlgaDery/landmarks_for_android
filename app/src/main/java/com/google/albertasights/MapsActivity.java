@@ -97,6 +97,9 @@ public class MapsActivity extends FragmentActivity implements
     // The geographical location where the device is currently located. That is, the last-known
     // location retrieved by the Fused Location Provider.
     private boolean isDataRequestedFromDropDown = false;
+
+    //indicates that the activity is restarted rather than recreated and no cluster show needed
+    private boolean isRestarted = false;
     private Location mLastKnownLocation;
 
     // Keys for storing activity state.
@@ -188,6 +191,8 @@ public class MapsActivity extends FragmentActivity implements
                 //      Log.d(TAG, "size of selected: "+selectedFilters.size());
                 // showMarkers();
                 showClusters();
+                //TODO set map position amd zoom
+                updateLocationUI(mMap.getCameraPosition(), mMap.getCameraPosition().zoom);
 
                 //      Log.d(TAG, "exit onClick checkBox(View view) ");
             }
@@ -226,7 +231,7 @@ public class MapsActivity extends FragmentActivity implements
                     //TODO if sent from the drop down, update u and show clusters
                     if (isDataRequestedFromDropDown == true && mMap!=null) {
                         showClusters();
-                        updateLocationUI();
+                        updateLocationUI(mCameraPosition, currentZoom);
                         isDataRequestedFromDropDown=false;
                     }
 
@@ -298,7 +303,7 @@ public class MapsActivity extends FragmentActivity implements
             }
             super.onSaveInstanceState(outState);
         }
-        Log.d(TAG, "exit onSaveInstanceState");
+      //  Log.d(TAG, "exit onSaveInstanceState");
     }
 
     /**
@@ -335,11 +340,28 @@ public class MapsActivity extends FragmentActivity implements
     }
 
     @Override
+    protected void onPostResume() {
+    //    Log.d(TAG, "enter onPostResume()");
+        super.onPostResume();
+
+     //   Log.d(TAG, "exit onPostResume()");
+    }
+
+    @Override
+    protected void onRestart() {
+     //   Log.d(TAG, "enter onRestart()");
+        super.onRestart();
+        isRestarted = true;
+
+     //   Log.d(TAG, "exit onRestart()");
+    }
+
+    @Override
     protected void onResume() {
-        //    Log.d(TAG, "enter onResume()");
+      //  Log.d(TAG, "enter onResume()");
         registerReceiver();
         super.onResume();
-        //    Log.d(TAG, "exit onResume()");
+     //   Log.d(TAG, "exit onResume()");
 
     }
 
@@ -349,65 +371,62 @@ public class MapsActivity extends FragmentActivity implements
      */
     @Override
     public void onMapReady(GoogleMap map) {
-        //   Log.d(TAG, "enter onMapReady");
+      //  Log.d(TAG, "enter onMapReady");
+
         mMap = map;
         //setting the custom window adapter
-        mClusterManager = new ClusterManager<MyClusterItem>(this, mMap);
-        mMap.setOnCameraIdleListener(mClusterManager);
 
-        MyInfoWindowAdaptor adaptor = new MyInfoWindowAdaptor(getApplicationContext(), places,
-                orientation, deviceType);
-        mMap.setInfoWindowAdapter(adaptor);
-
-        mMap.setOnInfoWindowClickListener(this);
-
-        // this listener has to remove checkboxes from the filter layout
-        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-
-            @Override
-            public boolean onMarkerClick(Marker m) {
-                //      Log.d(TAG, "enter onMarkerClick(Marker m)");
-
-                if (m.getTitle()==null) {
-                    //          Log.d(TAG, "cluster clicked");
-                    return true;
-                } else {
-                    if (UiUtils.showFilters==true) {
-                        UiUtils.showFilters=!UiUtils.showFilters;
-                        mCameraPosition = mMap.getCameraPosition();
-                        currentZoom = mMap.getCameraPosition().zoom;
-                        updateLocationUI();
-                        mCameraPosition=null;
-                    }
-
-                    m.showInfoWindow();
-
-                    //        Log.d(TAG, "exit onMarkerClick(Marker m)");
-                    return true;
-                }
-
-            }
-        });
-
-        //    mMap.setOnCameraMoveStartedListener(this);
-        //   mMap.setOnCameraMoveListener(this);
-
-        if (places.size()==0) {
-
+        if (mClusterManager!= null) {
+      //      Log.i(TAG, "clusters: "+mClusterManager.getAlgorithm().getItems().size());
         } else {
-            //if not, that means that the activity is being recreated and the points already received from the server
-            if (selectPointsToShow == true) {
-                showClusters();
-            }
+       //     Log.i(TAG, "new cluster man is initializing");
+            mClusterManager = new ClusterManager<MyClusterItem>(this, mMap);
+            mMap.setOnCameraIdleListener(mClusterManager);
+
+            MyInfoWindowAdaptor adaptor = new MyInfoWindowAdaptor(getApplicationContext(), places,
+                    orientation, deviceType);
+            mMap.setInfoWindowAdapter(adaptor);
+
+            mMap.setOnInfoWindowClickListener(this);
+
+            // this listener has to remove checkboxes from the filter layout
+            mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+
+                @Override
+                public boolean onMarkerClick(Marker m) {
+                    //      Log.d(TAG, "enter onMarkerClick(Marker m)");
+
+                    if (m.getTitle()==null) {
+                        //          Log.d(TAG, "cluster clicked");
+                        return true;
+                    } else {
+                        if (UiUtils.showFilters==true) {
+                            UiUtils.showFilters=!UiUtils.showFilters;
+                            updateLocationUI(mMap.getCameraPosition(), mMap.getCameraPosition().zoom);
+                            mCameraPosition=null;
+                        }
+
+                        m.showInfoWindow();
+
+                        //        Log.d(TAG, "exit onMarkerClick(Marker m)");
+                        return true;
+                    }
+                }
+            });
         }
-        updateLocationUI();
+
+//the activity is likely to be recreated
+        if (places.size()>0 && isRestarted==false && selectPointsToShow == true) {
+            showClusters();
+        }
+        updateLocationUI(mCameraPosition, currentZoom);
 //        if (Place.selectedMarkerID != null) {
 //            showMarkers();
 //        }
         //TODO to show marker content maybe on Google map and then remove marker
 
-
-//        Log.d(TAG, "exit onMapReady");
+        isRestarted=false;
+     //   Log.d(TAG, "exit onMapReady");
     }
 
     private void registerReceiver() {
@@ -440,14 +459,14 @@ public class MapsActivity extends FragmentActivity implements
                 }
             }
         }
-        updateLocationUI();
+        updateLocationUI(mCameraPosition, currentZoom);
     }
 
 
     /**
      * Updates the map's UI settings based on whether the user has granted location permission.
      */
-    private void updateLocationUI() {
+    private void updateLocationUI(CameraPosition position, float zoom) {
 
         //      Log.d(TAG, "enter updateLocationUI");
         if (mMap == null) {
@@ -502,61 +521,13 @@ public class MapsActivity extends FragmentActivity implements
 
                     //move the camera according to selected or default distance
                     if (currentZoom==0.0f) {
-                        //it is not set
-                        if (Place.distance==1 && deviceType.equals("phone")) {
-                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLatLng,
-                                    18.0f));
-                            //           Log.i(TAG, "camera is 18");
-
-                        } else if (Place.distance==3 && deviceType.equals("phone")) {
-                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLatLng,
-                                    13.0f));
-                            //           Log.i(TAG, "camera is 13");
-
-                        } else if (Place.distance==5 && deviceType.equals("phone")) {
-                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLatLng,
-                                    12.0f));
-                            //          Log.i(TAG, "camera is 12");
-
-                        } else if (Place.distance==7 && deviceType.equals("phone")) {
-                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLatLng,
-                                    11.5f));
-                            //            Log.i(TAG, "camera is 11");
-
-                        } else if (Place.distance>=10 && deviceType.equals("phone")){
-                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLatLng,
-                                    11.0f));
-                            //            Log.i(TAG, "camera is 10");
-                        }
-
-                        else if (Place.distance==1 && deviceType.equals("tablet")) {
-                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLatLng,
-                                    16.0f));
-                        }
-
-                        else if (Place.distance==3 && deviceType.equals("tablet")) {
-                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLatLng,
-                                    14.5f));
-
-                        } else if (Place.distance==5 && deviceType.equals("tablet")) {
-                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLatLng,
-                                    13.0f));
-
-                        } else if (Place.distance==7 && deviceType.equals("tablet")) {
-                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLatLng,
-                                    12.5f));
-
-                        } else if (Place.distance==10 && deviceType.equals("tablet")) {
-                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLatLng,
-                                    12.0f));
-                        }
-                    } else {
                         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLatLng,
-                                currentZoom));
+                                   returnZoomLevel(Place.distance, deviceType)));
+                   } else {
+                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLatLng, currentZoom));
                     }
                     currentZoom = 0.0f;
                     mCameraPosition = null;
-
                 }
 
 
@@ -676,11 +647,58 @@ public class MapsActivity extends FragmentActivity implements
             //    Log.i(TAG, "showing clusters");
                 showClusters();
             }
-            updateLocationUI();
-
+            updateLocationUI(null, currentZoom);
         }
 
         //    Log.d(TAG, "exit onItemSelected(AdapterView<?> parent, View view, int position, long id)");
+    }
+
+    private float returnZoomLevel (int selectedDistance, String device) {
+        switch (selectedDistance) {
+            case 1:
+                if (device.equals("phone"))
+                return 16.0f;
+                else {
+                    return 16.0f;
+                }
+            case 3:
+                if (device.equals("phone"))
+                    return 13.0f;
+                else {
+                    return 14.5f;
+                }
+
+            case 5:
+                if (device.equals("phone"))
+                    return 12.0f;
+                else {
+                    return 13.0f;
+                }
+
+            case 7:
+                if (device.equals("phone"))
+                    return 11.5f;
+                else {
+                    return 12.5f;
+                }
+
+            case 10:
+                if (device.equals("phone"))
+                    return 11.0f;
+                else {
+                    return 12.0f;
+                }
+
+            case 15:
+                if (device.equals("phone"))
+                    return 0.0f;
+                else {
+                    return 0.0f;
+                }
+
+            default:
+                return 18.0f;
+        }
     }
 
     @Override
@@ -715,9 +733,7 @@ public class MapsActivity extends FragmentActivity implements
         //   Log.d(TAG, "show filt: "+ UiUtils.showFilters);
 
         //save the camera position and the zoom level
-        mCameraPosition = mMap.getCameraPosition();
-        currentZoom = mMap.getCameraPosition().zoom;
-        updateLocationUI();
+        updateLocationUI(mMap.getCameraPosition(), mMap.getCameraPosition().zoom);
         mCameraPosition=null;
 
         //    Log.d(TAG, "exit showFilters(View view)");
@@ -772,9 +788,9 @@ public class MapsActivity extends FragmentActivity implements
 
     @Override
     public void onInfoWindowClose(Marker marker) {
-        Log.d(TAG, "enter onInfoWindowClose(Marker marker)");
+      //  Log.d(TAG, "enter onInfoWindowClose(Marker marker)");
 
-        Log.d(TAG, "exit onInfoWindowClose(Marker marker)");
+     //   Log.d(TAG, "exit onInfoWindowClose(Marker marker)");
     }
 
 //    @Override

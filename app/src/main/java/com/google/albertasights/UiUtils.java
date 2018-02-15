@@ -1,7 +1,10 @@
 package com.google.albertasights;
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.support.v4.widget.CompoundButtonCompat;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
@@ -109,8 +112,18 @@ public class UiUtils {
         lst.addAll(receivedFilters);
         // adding checkboxes dynamically
         //    filter.removeAllViews();
+        ColorStateList colorStateList = new ColorStateList(
+                new int[][]{
+                        new int[]{-android.R.attr.state_checked}, // unchecked
+                        new int[]{android.R.attr.state_checked} , // checked
+                },
+                new int[]{
+                        Color.parseColor("#000000"),
+                        Color.parseColor("#40b6ff"),
+                }
+        );
 
-//TODO set the space between checkboxes
+//set the space between checkboxes
         for (int i = 0; i < receivedFilters.size(); i++) {
 
             CheckBox checkBox = new CheckBox(context);
@@ -127,9 +140,14 @@ public class UiUtils {
             }
             checkBox.setPadding(20,20,20,20);
             checkBox.setTag(lst.get(i));
+
+            //setting the color of text and the box of check box
+            checkBox.setTextColor(Color.BLACK);
+            CompoundButtonCompat.setButtonTintList(checkBox,colorStateList);
             checkBox.setOnClickListener(checkBoxListener);
             filter.addView(checkBox, i);
 
         }
     }
+
 }
