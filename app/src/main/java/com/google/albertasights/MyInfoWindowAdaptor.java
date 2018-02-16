@@ -55,6 +55,7 @@ public class MyInfoWindowAdaptor implements GoogleMap.InfoWindowAdapter {
         return null;
     }
 
+    //TODO TEST PHOTOS
     @Override
     public View getInfoContents(Marker marker) {
         //    Log.d(TAG, "enter getInfoContents(Marker marker)"+ marker.getId());

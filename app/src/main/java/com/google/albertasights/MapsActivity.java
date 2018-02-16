@@ -189,6 +189,12 @@ public class MapsActivity extends FragmentActivity implements
                 //      Log.d(TAG, "size of selected: "+selectedFilters.size());
                 // showMarkers();
                 showClusters();
+                //TODO check how uiUpdate call affect the clusters
+                mCameraPosition = mMap.getCameraPosition();
+                currentZoom = mMap.getCameraPosition().zoom;
+                updateLocationUI();
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mMap.getCameraPosition().target,
+                        mMap.getCameraPosition().zoom+0.01f));
 
                 //      Log.d(TAG, "exit onClick checkBox(View view) ");
             }
@@ -212,8 +218,6 @@ public class MapsActivity extends FragmentActivity implements
                 //On receive should be called very rarely, onle the current location is significantly changed. In our case, it is calling
                 //onle once
                 //      Log.d(TAG, "enter onReceive(Context context, Intent intent)");
-
-                //TODO put the data in the service to the intent and send to the MapActivity
 
                 if (intent.getSerializableExtra("PLACES")!=null) {
                     ArrayList<Place> placesLst = (ArrayList)intent.getSerializableExtra("PLACES");
@@ -405,9 +409,11 @@ public class MapsActivity extends FragmentActivity implements
             //if not, that means that the activity is being recreated and the points already received from the server
             if (selectPointsToShow == true && isRestarted==false) {
                 showClusters();
+            } else if (isRestarted==true) {
+                mCameraPosition = mMap.getCameraPosition();
+                currentZoom = mMap.getCameraPosition().zoom;
             }
         }
-        //TODO on restart the device loozing camera position, need to be solved!
         updateLocationUI();
 //        if (Place.selectedMarkerID != null) {
 //            showMarkers();
@@ -497,7 +503,7 @@ public class MapsActivity extends FragmentActivity implements
                 //          Log.i(TAG, "lng " + Double.toString(mLastKnownLocation.getLongitude()));
                 LatLng myLatLng;
 
-                //TODO reset the zoom level for tablets
+                //reset the zoom level for tablets
 
                 if(mLastKnownLocation !=null) {
                     //that means that the saved instance is recreated and the camera may be centred not on the device location
@@ -785,7 +791,5 @@ public class MapsActivity extends FragmentActivity implements
 
         Log.d(TAG, "exit onInfoWindowClose(Marker marker)");
     }
-
-    //TODO if onRestart - do not show new clusters
 
 }
