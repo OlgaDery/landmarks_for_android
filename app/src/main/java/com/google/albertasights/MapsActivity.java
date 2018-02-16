@@ -78,6 +78,7 @@ public class MapsActivity extends FragmentActivity implements
     private String orientation;
     private int orientationValue;
     private String deviceType;
+    private boolean isRestarted = false;
 
     // Declare a variable for the cluster manager.
     private ClusterManager<MyClusterItem> mClusterManager;
@@ -97,9 +98,6 @@ public class MapsActivity extends FragmentActivity implements
     // The geographical location where the device is currently located. That is, the last-known
     // location retrieved by the Fused Location Provider.
     private boolean isDataRequestedFromDropDown = false;
-
-    //indicates that the activity is restarted rather than recreated and no cluster show needed
-    private boolean isRestarted = false;
     private Location mLastKnownLocation;
 
     // Keys for storing activity state.
@@ -191,8 +189,6 @@ public class MapsActivity extends FragmentActivity implements
                 //      Log.d(TAG, "size of selected: "+selectedFilters.size());
                 // showMarkers();
                 showClusters();
-                //TODO set map position amd zoom
-                updateLocationUI(mMap.getCameraPosition(), mMap.getCameraPosition().zoom);
 
                 //      Log.d(TAG, "exit onClick checkBox(View view) ");
             }
@@ -231,7 +227,7 @@ public class MapsActivity extends FragmentActivity implements
                     //TODO if sent from the drop down, update u and show clusters
                     if (isDataRequestedFromDropDown == true && mMap!=null) {
                         showClusters();
-                        updateLocationUI(mCameraPosition, currentZoom);
+                        updateLocationUI();
                         isDataRequestedFromDropDown=false;
                     }
 
@@ -303,7 +299,7 @@ public class MapsActivity extends FragmentActivity implements
             }
             super.onSaveInstanceState(outState);
         }
-      //  Log.d(TAG, "exit onSaveInstanceState");
+        Log.d(TAG, "exit onSaveInstanceState");
     }
 
     /**
@@ -340,29 +336,18 @@ public class MapsActivity extends FragmentActivity implements
     }
 
     @Override
-    protected void onPostResume() {
-    //    Log.d(TAG, "enter onPostResume()");
-        super.onPostResume();
+    protected void onResume() {
+        //    Log.d(TAG, "enter onResume()");
+        registerReceiver();
+        super.onResume();
+        //    Log.d(TAG, "exit onResume()");
 
-     //   Log.d(TAG, "exit onPostResume()");
     }
 
     @Override
     protected void onRestart() {
-     //   Log.d(TAG, "enter onRestart()");
         super.onRestart();
         isRestarted = true;
-
-     //   Log.d(TAG, "exit onRestart()");
-    }
-
-    @Override
-    protected void onResume() {
-      //  Log.d(TAG, "enter onResume()");
-        registerReceiver();
-        super.onResume();
-     //   Log.d(TAG, "exit onResume()");
-
     }
 
     /**
@@ -371,15 +356,10 @@ public class MapsActivity extends FragmentActivity implements
      */
     @Override
     public void onMapReady(GoogleMap map) {
-      //  Log.d(TAG, "enter onMapReady");
-
+        //   Log.d(TAG, "enter onMapReady");
         mMap = map;
         //setting the custom window adapter
-
-        if (mClusterManager!= null) {
-      //      Log.i(TAG, "clusters: "+mClusterManager.getAlgorithm().getItems().size());
-        } else {
-       //     Log.i(TAG, "new cluster man is initializing");
+        if (isRestarted == false) {
             mClusterManager = new ClusterManager<MyClusterItem>(this, mMap);
             mMap.setOnCameraIdleListener(mClusterManager);
 
@@ -402,7 +382,9 @@ public class MapsActivity extends FragmentActivity implements
                     } else {
                         if (UiUtils.showFilters==true) {
                             UiUtils.showFilters=!UiUtils.showFilters;
-                            updateLocationUI(mMap.getCameraPosition(), mMap.getCameraPosition().zoom);
+                            mCameraPosition = mMap.getCameraPosition();
+                            currentZoom = mMap.getCameraPosition().zoom;
+                            updateLocationUI();
                             mCameraPosition=null;
                         }
 
@@ -411,22 +393,30 @@ public class MapsActivity extends FragmentActivity implements
                         //        Log.d(TAG, "exit onMarkerClick(Marker m)");
                         return true;
                     }
+
                 }
             });
         }
 
-//the activity is likely to be recreated
-        if (places.size()>0 && isRestarted==false && selectPointsToShow == true) {
-            showClusters();
+
+        if (places.size()==0) {
+
+        } else {
+            //if not, that means that the activity is being recreated and the points already received from the server
+            if (selectPointsToShow == true && isRestarted==false) {
+                showClusters();
+            }
         }
-        updateLocationUI(mCameraPosition, currentZoom);
+        //TODO on restart the device loozing camera position, need to be solved!
+        updateLocationUI();
 //        if (Place.selectedMarkerID != null) {
 //            showMarkers();
 //        }
         //TODO to show marker content maybe on Google map and then remove marker
 
+
         isRestarted=false;
-     //   Log.d(TAG, "exit onMapReady");
+//        Log.d(TAG, "exit onMapReady");
     }
 
     private void registerReceiver() {
@@ -459,14 +449,14 @@ public class MapsActivity extends FragmentActivity implements
                 }
             }
         }
-        updateLocationUI(mCameraPosition, currentZoom);
+        updateLocationUI();
     }
 
 
     /**
      * Updates the map's UI settings based on whether the user has granted location permission.
      */
-    private void updateLocationUI(CameraPosition position, float zoom) {
+    private void updateLocationUI() {
 
         //      Log.d(TAG, "enter updateLocationUI");
         if (mMap == null) {
@@ -521,13 +511,61 @@ public class MapsActivity extends FragmentActivity implements
 
                     //move the camera according to selected or default distance
                     if (currentZoom==0.0f) {
+                        //it is not set
+                        if (Place.distance==1 && deviceType.equals("phone")) {
+                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLatLng,
+                                    18.0f));
+                            //           Log.i(TAG, "camera is 18");
+
+                        } else if (Place.distance==3 && deviceType.equals("phone")) {
+                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLatLng,
+                                    13.0f));
+                            //           Log.i(TAG, "camera is 13");
+
+                        } else if (Place.distance==5 && deviceType.equals("phone")) {
+                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLatLng,
+                                    12.0f));
+                            //          Log.i(TAG, "camera is 12");
+
+                        } else if (Place.distance==7 && deviceType.equals("phone")) {
+                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLatLng,
+                                    11.5f));
+                            //            Log.i(TAG, "camera is 11");
+
+                        } else if (Place.distance>=10 && deviceType.equals("phone")){
+                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLatLng,
+                                    11.0f));
+                            //            Log.i(TAG, "camera is 10");
+                        }
+
+                        else if (Place.distance==1 && deviceType.equals("tablet")) {
+                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLatLng,
+                                    16.0f));
+                        }
+
+                        else if (Place.distance==3 && deviceType.equals("tablet")) {
+                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLatLng,
+                                    14.5f));
+
+                        } else if (Place.distance==5 && deviceType.equals("tablet")) {
+                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLatLng,
+                                    13.0f));
+
+                        } else if (Place.distance==7 && deviceType.equals("tablet")) {
+                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLatLng,
+                                    12.5f));
+
+                        } else if (Place.distance==10 && deviceType.equals("tablet")) {
+                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLatLng,
+                                    12.0f));
+                        }
+                    } else {
                         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLatLng,
-                                   returnZoomLevel(Place.distance, deviceType)));
-                   } else {
-                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLatLng, currentZoom));
+                                currentZoom));
                     }
                     currentZoom = 0.0f;
                     mCameraPosition = null;
+
                 }
 
 
@@ -644,61 +682,14 @@ public class MapsActivity extends FragmentActivity implements
         } else {
             if (mClusterManager.getMarkerCollection().getMarkers().size()==0
                     && mClusterManager.getClusterMarkerCollection().getMarkers().size()==0) {
-            //    Log.i(TAG, "showing clusters");
+                Log.i(TAG, "showing clusters");
                 showClusters();
             }
-            updateLocationUI(null, currentZoom);
+            updateLocationUI();
+
         }
 
         //    Log.d(TAG, "exit onItemSelected(AdapterView<?> parent, View view, int position, long id)");
-    }
-
-    private float returnZoomLevel (int selectedDistance, String device) {
-        switch (selectedDistance) {
-            case 1:
-                if (device.equals("phone"))
-                return 16.0f;
-                else {
-                    return 16.0f;
-                }
-            case 3:
-                if (device.equals("phone"))
-                    return 13.0f;
-                else {
-                    return 14.5f;
-                }
-
-            case 5:
-                if (device.equals("phone"))
-                    return 12.0f;
-                else {
-                    return 13.0f;
-                }
-
-            case 7:
-                if (device.equals("phone"))
-                    return 11.5f;
-                else {
-                    return 12.5f;
-                }
-
-            case 10:
-                if (device.equals("phone"))
-                    return 11.0f;
-                else {
-                    return 12.0f;
-                }
-
-            case 15:
-                if (device.equals("phone"))
-                    return 0.0f;
-                else {
-                    return 0.0f;
-                }
-
-            default:
-                return 18.0f;
-        }
     }
 
     @Override
@@ -733,7 +724,9 @@ public class MapsActivity extends FragmentActivity implements
         //   Log.d(TAG, "show filt: "+ UiUtils.showFilters);
 
         //save the camera position and the zoom level
-        updateLocationUI(mMap.getCameraPosition(), mMap.getCameraPosition().zoom);
+        mCameraPosition = mMap.getCameraPosition();
+        currentZoom = mMap.getCameraPosition().zoom;
+        updateLocationUI();
         mCameraPosition=null;
 
         //    Log.d(TAG, "exit showFilters(View view)");
@@ -767,9 +760,9 @@ public class MapsActivity extends FragmentActivity implements
         //    Log.d(TAG, "enter showClusters()");
         //    Log.i(TAG, "marker to show up: "+Place.selectedMarkerID);
         mClusterManager.clearItems();
-        markerIds.clear();
-        mClusterManager.getMarkerCollection().clear();
         mClusterManager.getClusterMarkerCollection().clear();
+        mClusterManager.getMarkerCollection().clear();
+        markerIds.clear();
         mClusterManager.cluster();
 
         //  int i = 0;
@@ -788,25 +781,11 @@ public class MapsActivity extends FragmentActivity implements
 
     @Override
     public void onInfoWindowClose(Marker marker) {
-      //  Log.d(TAG, "enter onInfoWindowClose(Marker marker)");
+        Log.d(TAG, "enter onInfoWindowClose(Marker marker)");
 
-     //   Log.d(TAG, "exit onInfoWindowClose(Marker marker)");
+        Log.d(TAG, "exit onInfoWindowClose(Marker marker)");
     }
 
-//    @Override
-//    public void onCameraMove() {
-//        Log.d(TAG, "enter onCameraMove()");
-//
-//        Log.d(TAG, "exit onCameraMove()");
-//
-//    }
-//
-//    @Override
-//    public void onCameraMoveStarted(int i) {
-//        Log.d(TAG, "enter onCameraMoveStarted()");
-//
-//        Log.d(TAG, "exit onCameraMoveStarted()");
-//
-//    }
+    //TODO if onRestart - do not show new clusters
 
 }
