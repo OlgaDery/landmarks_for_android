@@ -58,7 +58,7 @@ public class MyInfoWindowAdaptor implements GoogleMap.InfoWindowAdapter {
     //TODO TEST PHOTOS
     @Override
     public View getInfoContents(Marker marker) {
-        //    Log.d(TAG, "enter getInfoContents(Marker marker)"+ marker.getId());
+        Log.d(TAG, "enter getInfoContents(Marker marker)"+ marker.getId());
         //   String type = UiUtils.findScreenSize(context);
         View v;
 
@@ -80,7 +80,7 @@ public class MyInfoWindowAdaptor implements GoogleMap.InfoWindowAdapter {
             }
 
             //get screen size
-            WindowManager wm = (WindowManager)    context.getSystemService(Context.WINDOW_SERVICE);
+            WindowManager wm = (WindowManager)context.getSystemService(Context.WINDOW_SERVICE);
             Display display = wm.getDefaultDisplay();
             DisplayMetrics metrics = new DisplayMetrics();
             display.getMetrics(metrics);
@@ -151,17 +151,19 @@ public class MyInfoWindowAdaptor implements GoogleMap.InfoWindowAdapter {
                     // to get a link
                     if (!MapsActivity.markerIds.contains(marker.getTitle())) {
                         //      Log.i(TAG, "not first time opening");
-                        if (toLoad.equals("photo")) {
-                            Picasso.with(context)
-                                    .load(R.drawable.filter)
-                                    .into(photo);
-
-                        } else {
+                        if (p.getPhotoLink()!=null && p.getPhotoLink().length()>5)
+                        {
                             Picasso.with(context)
                                     .load(UiUtils.parseUrl(p.getPhotoLink()))
                                     .into(photo);
 
+                        } else
+                        {
+                            Picasso.with(context)
+                                    .load(R.drawable.filter)
+                                    .into(photo);
                         }
+
                         toLoad= null;
                         count = 0;
                     } else {
@@ -200,11 +202,11 @@ public class MyInfoWindowAdaptor implements GoogleMap.InfoWindowAdapter {
 
                 }
             }
-            //    Log.d(TAG, "exit getInfoContents(Marker marker)");
+        Log.d(TAG, "exit getInfoContents(Marker marker)");
 
             return v;
         } catch (Exception e) {
-     //       Log.e(TAG, e.getMessage());
+            Log.e(TAG, e.getMessage());
             toLoad=null;
             return null;
         }
@@ -237,7 +239,7 @@ public class MyInfoWindowAdaptor implements GoogleMap.InfoWindowAdapter {
 
         @Override
         public void onSuccess() {
-    //        Log.d(TAG, "enter onSuccess()");
+            Log.d(TAG, "enter onSuccess()");
             //    Log.i(TAG, "count: "+ count);
             MapsActivity.markerIds.remove(markerToRefresh.getTitle());
             if (count>2) {
@@ -246,21 +248,28 @@ public class MyInfoWindowAdaptor implements GoogleMap.InfoWindowAdapter {
             }
             markerToRefresh.showInfoWindow();
 
-    //        Log.d(TAG, "exit onSuccess()");
+            Log.d(TAG, "exit onSuccess()");
 
         }
 
         @Override
         public void onError() {
-     //       Log.d(TAG, "enter onError()");
+            Log.d(TAG, "enter onError()");
             toLoad = "photo";
+            //TODO replace with iterator
+            for (Place p: places) {
+                if (p.getName().equals(markerToRefresh.getTitle())) {
+                    p.setPhotoLink("no");
+                }
+            }
+
             if (count>2) {
                 count=0;
                 return;
             }
             markerToRefresh.showInfoWindow();
 
-      // Log.d(TAG, "exit onError()");
+            Log.d(TAG, "exit onError()");
 
         }
     }

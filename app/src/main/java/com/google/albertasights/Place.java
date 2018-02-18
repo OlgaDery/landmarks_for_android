@@ -42,12 +42,60 @@ public class Place implements Serializable {
         return category;
     }
 
+    public static String[] getPoi_main_cat() {
+        return poi_main_cat;
+    }
+
+    public static void setPoi_main_cat(String[] poi_main_cat) {
+        Place.poi_main_cat = poi_main_cat;
+    }
+
+    public static int getDistance() {
+        return distance;
+    }
+
+    public static void setDistance(int distance) {
+        Place.distance = distance;
+    }
+
+    public static String getSelectedMarkerID() {
+        return selectedMarkerID;
+    }
+
+    public static void setSelectedMarkerID(String selectedMarkerID) {
+        Place.selectedMarkerID = selectedMarkerID;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setDescript(String descript) {
+        this.descript = descript;
+    }
+
+    public void setLng(double lng) {
+        this.lng = lng;
+    }
+
+    public void setLat(double lat) {
+        this.lat = lat;
+    }
+
+    public void setPhotoLink(String photoLink) {
+        this.photoLink = photoLink;
+    }
+
     public void setCategory(String category) {
         this.category = category;
     }
 
     public String getDescript() {
         return descript;
+    }
+
+    public static int[] getDistances() {
+        return distances;
     }
 
     public double getLng() {

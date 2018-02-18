@@ -5,10 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.content.res.Configuration;
-import android.graphics.Color;
 import android.location.Location;
-import android.location.LocationListener;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -20,7 +17,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
-import android.widget.GridLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -40,16 +36,12 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.maps.android.clustering.ClusterItem;
 import com.google.maps.android.clustering.ClusterManager;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
-
-import static android.R.attr.galleryItemBackground;
-import static android.R.attr.value;
 
 public class MapsActivity extends FragmentActivity implements
         OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks,
@@ -60,10 +52,11 @@ public class MapsActivity extends FragmentActivity implements
     private static final String TAG = MapsActivity.class.getSimpleName();
     private GoogleMap mMap;
     private CameraPosition mCameraPosition;
+    private boolean animationStarted = false;
 
     // The entry point to Google Play services, used by the Places API and Fused Location Provider.
     private GoogleApiClient mGoogleApiClient;
-    private final LatLng mDefaultLocation = new LatLng(51.052645, -114.029200);
+    private final LatLng mDefaultCoord = new LatLng(51.0533674, -114.072997);
     private static final int DEFAULT_ZOOM = 15;
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private boolean mLocationPermissionGranted;
@@ -79,6 +72,7 @@ public class MapsActivity extends FragmentActivity implements
     private int orientationValue;
     private String deviceType;
     private boolean isRestarted = false;
+    private boolean useDevicelocation = true;
 
     // Declare a variable for the cluster manager.
     private ClusterManager<MyClusterItem> mClusterManager;
@@ -137,17 +131,17 @@ public class MapsActivity extends FragmentActivity implements
 
         // Retrieve the content view that renders the map.
         setContentView(R.layout.activity_maps);
-
-        if (places.size()==0) {
-            //      Log.i(TAG, "no data yet");
-            Intent intent = new Intent(this, MyIntentService.class);
-            intent.setAction("SUBMIT");
-            intent.putExtra(MyIntentService.URL, "http://albertasights.com/rest/v1/findClosePoints");
-            intent.putExtra(MyIntentService.LNG, String.valueOf(mDefaultLocation.longitude));
-            intent.putExtra(MyIntentService.LAT, String.valueOf(mDefaultLocation.latitude));
-            intent.putExtra(MyIntentService.DISTANCE, String.valueOf(20));
-            startService(intent);
-        }
+//
+//        if (places.size()==0) {
+//            //      Log.i(TAG, "no data yet");
+//            Intent intent = new Intent(this, MyIntentService.class);
+//            intent.setAction("SUBMIT");
+//            intent.putExtra(MyIntentService.URL, "http://albertasights.com/rest/v1/findClosePoints");
+//            intent.putExtra(MyIntentService.LNG, String.valueOf(mDefaultCoord.longitude));
+//            intent.putExtra(MyIntentService.LAT, String.valueOf(mDefaultCoord.latitude));
+//            intent.putExtra(MyIntentService.DISTANCE, String.valueOf(30));
+//            startService(intent);
+//        }
 
         //getting the type and the orientation of device
         orientation = UiUtils.getOrientation(getApplicationContext());
@@ -189,10 +183,11 @@ public class MapsActivity extends FragmentActivity implements
                 //      Log.d(TAG, "size of selected: "+selectedFilters.size());
                 // showMarkers();
                 showClusters();
-                //TODO check how uiUpdate call affect the clusters
+
                 mCameraPosition = mMap.getCameraPosition();
                 currentZoom = mMap.getCameraPosition().zoom;
                 updateLocationUI();
+                //TODO add some extra zoom in/out to stabilize clusters, later to add a boolean to control zoom in/out
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mMap.getCameraPosition().target,
                         mMap.getCameraPosition().zoom+0.01f));
 
@@ -362,8 +357,10 @@ public class MapsActivity extends FragmentActivity implements
     public void onMapReady(GoogleMap map) {
         //   Log.d(TAG, "enter onMapReady");
         mMap = map;
-        //setting the custom window adapter
+
         if (isRestarted == false) {
+            //that means that the activity is created the first time or recreated
+
             mClusterManager = new ClusterManager<MyClusterItem>(this, mMap);
             mMap.setOnCameraIdleListener(mClusterManager);
 
@@ -378,7 +375,7 @@ public class MapsActivity extends FragmentActivity implements
 
                 @Override
                 public boolean onMarkerClick(Marker m) {
-                    //      Log.d(TAG, "enter onMarkerClick(Marker m)");
+                          Log.d(TAG, "enter onMarkerClick(Marker m)");
 
                     if (m.getTitle()==null) {
                         //          Log.d(TAG, "cluster clicked");
@@ -394,7 +391,7 @@ public class MapsActivity extends FragmentActivity implements
 
                         m.showInfoWindow();
 
-                        //        Log.d(TAG, "exit onMarkerClick(Marker m)");
+                               Log.d(TAG, "exit onMarkerClick(Marker m)");
                         return true;
                     }
 
@@ -511,8 +508,14 @@ public class MapsActivity extends FragmentActivity implements
                         myLatLng =  new LatLng(mCameraPosition.target.latitude,
                                 mCameraPosition.target.longitude);
                     } else {
-                        myLatLng = new LatLng(mLastKnownLocation.getLatitude(),
-                                mLastKnownLocation.getLongitude());
+                        if (useDevicelocation == true) {
+                            //using device location
+                            myLatLng = new LatLng(mLastKnownLocation.getLatitude(),
+                                    mLastKnownLocation.getLongitude());
+                        } else {
+                            //TODO device is too far, using Calgary downtown
+                            myLatLng = mDefaultCoord;
+                        }
                     }
 
                     //move the camera according to selected or default distance
@@ -520,7 +523,7 @@ public class MapsActivity extends FragmentActivity implements
                         //it is not set
                         if (Place.distance==1 && deviceType.equals("phone")) {
                             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLatLng,
-                                    18.0f));
+                                    14.5f));
                             //           Log.i(TAG, "camera is 18");
 
                         } else if (Place.distance==3 && deviceType.equals("phone")) {
@@ -644,7 +647,7 @@ public class MapsActivity extends FragmentActivity implements
             ActivityCompat.requestPermissions(this,
                     new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
                     PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mDefaultLocation, DEFAULT_ZOOM));
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mDefaultCoord, DEFAULT_ZOOM));
             mMap.getUiSettings().setMyLocationButtonEnabled(false);
             //       Log.d(TAG, "no permissions granted");
             return;
@@ -665,33 +668,47 @@ public class MapsActivity extends FragmentActivity implements
                 //TODO make sure that the location is not null
                 return;
             }
-        }
+            //TODO count if the location of the device is more than 50 km from Calgary downtown, if so, offer to use the Calgary
+            //TODO downtown location instead of device to show the markers up
+            float[] results = new float[1];
+            Location.distanceBetween(mLastKnownLocation.getLatitude(), mLastKnownLocation.getLongitude(),
+                    mDefaultCoord.latitude, mDefaultCoord.longitude, results);
 
-//        if (Place.distance == Place.distances[position] && selectPointsToShow==false) {
-//            return;
-//        }
-        Place.distance = Place.distances[position];
-        //   Log.i(TAG, "distance set "+Place.distance);
-        selectPointsToShow = true;
-
-        if (places.size()==0) {
-            //TODO if data is still null, send the intent and after getting the response show clusters
-            isDataRequestedFromDropDown = true;
-            Intent intent = new Intent(this, MyIntentService.class);
-            intent.setAction("SUBMIT");
-            intent.putExtra(MyIntentService.URL, "http://albertasights.com/rest/v1/findClosePoints");
-            intent.putExtra(MyIntentService.LNG, String.valueOf(mDefaultLocation.longitude));
-            intent.putExtra(MyIntentService.LAT, String.valueOf(mDefaultLocation.latitude));
-            intent.putExtra(MyIntentService.DISTANCE, String.valueOf(20));
-            startService(intent);
-
-        } else {
-            if (mClusterManager.getMarkerCollection().getMarkers().size()==0
-                    && mClusterManager.getClusterMarkerCollection().getMarkers().size()==0) {
-                Log.i(TAG, "showing clusters");
-                showClusters();
+            Log.i(TAG, "distance between: "+results[0]);
+            if (results[0]>60000.0)
+            {
+                Toast.makeText(getApplicationContext(),
+                        "Looks like there is no place near you in our database. Setting Calgary downtown as a search point.",
+                        Toast.LENGTH_LONG).show();
+                useDevicelocation = false;
             }
-            updateLocationUI();
+
+            Place.distance = Place.distances[position];
+            //   Log.i(TAG, "distance set "+Place.distance);
+            selectPointsToShow = true;
+
+            if (places.size()==0) {
+                //TODO if data is still null, send the intent and after getting the response show clusters
+                isDataRequestedFromDropDown = true;
+                Intent intent = new Intent(this, MyIntentService.class);
+                intent.setAction("SUBMIT");
+                intent.putExtra(MyIntentService.URL, "http://albertasights.com/rest/v1/findClosePoints");
+                intent.putExtra(MyIntentService.LNG, String.valueOf(mDefaultCoord.longitude));
+                intent.putExtra(MyIntentService.LAT, String.valueOf(mDefaultCoord.latitude));
+                intent.putExtra(MyIntentService.DISTANCE, String.valueOf(30));
+                startService(intent);
+                //TODO start the animation for the period of data loading
+                animationStarted = true;
+
+            } else {
+                if (mClusterManager.getMarkerCollection().getMarkers().size()==0
+                        && mClusterManager.getClusterMarkerCollection().getMarkers().size()==0) {
+                    //  Log.i(TAG, "showing clusters");
+                    showClusters();
+                }
+                updateLocationUI();
+
+            }
 
         }
 
@@ -787,9 +804,9 @@ public class MapsActivity extends FragmentActivity implements
 
     @Override
     public void onInfoWindowClose(Marker marker) {
-        Log.d(TAG, "enter onInfoWindowClose(Marker marker)");
+      //  Log.d(TAG, "enter onInfoWindowClose(Marker marker)");
 
-        Log.d(TAG, "exit onInfoWindowClose(Marker marker)");
+      //  Log.d(TAG, "exit onInfoWindowClose(Marker marker)");
     }
 
 }
