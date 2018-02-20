@@ -13,6 +13,8 @@ import android.view.WindowManager;
 import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.Toast;
+
 import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 
@@ -148,6 +150,12 @@ public class UiUtils {
             filter.addView(checkBox, i);
 
         }
+    }
+
+    public static void showToast(Context context, String message) {
+        Toast.makeText(context,
+                message,
+                Toast.LENGTH_LONG).show();
     }
 
 }

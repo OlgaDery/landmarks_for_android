@@ -62,6 +62,10 @@ public class MapsActivity extends FragmentActivity implements
     private boolean mLocationPermissionGranted;
     private float currentZoom = 0.0f;
 
+    //This boolean is to indicate if we need to zoom in or zoom out the camera while using filters. Extra zoom is necessary because
+    //it helps to make the cluster more stable
+    private boolean zoomingOut = true;
+
     private TextView txt;
     private Spinner mySpinner;
     private LinearLayout filter;
@@ -188,8 +192,15 @@ public class MapsActivity extends FragmentActivity implements
                 currentZoom = mMap.getCameraPosition().zoom;
                 updateLocationUI();
                 //TODO add some extra zoom in/out to stabilize clusters, later to add a boolean to control zoom in/out
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mMap.getCameraPosition().target,
-                        mMap.getCameraPosition().zoom+0.01f));
+                if (zoomingOut==false) {
+                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mMap.getCameraPosition().target,
+                            mMap.getCameraPosition().zoom-0.01f));
+                } else {
+                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mMap.getCameraPosition().target,
+                            mMap.getCameraPosition().zoom+0.01f));
+                }
+                zoomingOut=!zoomingOut;
+
 
                 //      Log.d(TAG, "exit onClick checkBox(View view) ");
             }
@@ -231,10 +242,12 @@ public class MapsActivity extends FragmentActivity implements
                     }
 
                     //TODO show toast if the service failed
-                    Toast.makeText(getApplicationContext(),
-                            "got the data",
-                            Toast.LENGTH_LONG).show();
+                    UiUtils.showToast(getApplicationContext(),
+                            "got the data");
 
+                } else {
+                    UiUtils.showToast(getApplicationContext(),
+                            "server with the data may be unavailable, try again later");
                 }
                 //       Log.d(TAG, "exit onReceive(Context context, Intent intent)");
             }
@@ -298,7 +311,7 @@ public class MapsActivity extends FragmentActivity implements
             }
             super.onSaveInstanceState(outState);
         }
-        Log.d(TAG, "exit onSaveInstanceState");
+     //   Log.d(TAG, "exit onSaveInstanceState");
     }
 
     /**
@@ -375,7 +388,7 @@ public class MapsActivity extends FragmentActivity implements
 
                 @Override
                 public boolean onMarkerClick(Marker m) {
-                          Log.d(TAG, "enter onMarkerClick(Marker m)");
+                        //  Log.d(TAG, "enter onMarkerClick(Marker m)");
 
                     if (m.getTitle()==null) {
                         //          Log.d(TAG, "cluster clicked");
@@ -391,7 +404,7 @@ public class MapsActivity extends FragmentActivity implements
 
                         m.showInfoWindow();
 
-                               Log.d(TAG, "exit onMarkerClick(Marker m)");
+                            //   Log.d(TAG, "exit onMarkerClick(Marker m)");
                         return true;
                     }
 
@@ -463,9 +476,8 @@ public class MapsActivity extends FragmentActivity implements
 
         //      Log.d(TAG, "enter updateLocationUI");
         if (mMap == null) {
-            Toast.makeText(getApplicationContext(),
-                    "Map is currently unavailable",
-                    Toast.LENGTH_LONG).show();
+            UiUtils.showToast(getApplicationContext(),
+                    "Map is currently unavailable");
             return;
         }
 
@@ -662,10 +674,8 @@ public class MapsActivity extends FragmentActivity implements
                     .getLastLocation(mGoogleApiClient);
 
             if (mLastKnownLocation==null) {
-                Toast.makeText(getApplicationContext(),
-                        "You have to set the location, check the device settings",
-                        Toast.LENGTH_LONG).show();
-                //TODO make sure that the location is not null
+                UiUtils.showToast(getApplicationContext(),
+                        "You have to set the location, check the device settings");
                 return;
             }
             //TODO count if the location of the device is more than 50 km from Calgary downtown, if so, offer to use the Calgary
@@ -677,9 +687,8 @@ public class MapsActivity extends FragmentActivity implements
             Log.i(TAG, "distance between: "+results[0]);
             if (results[0]>60000.0)
             {
-                Toast.makeText(getApplicationContext(),
-                        "Looks like there is no place near you in our database. Setting Calgary downtown as a search point.",
-                        Toast.LENGTH_LONG).show();
+                UiUtils.showToast(getApplicationContext(), "Looks like there is no place near you in our database. " +
+                        "Setting Calgary downtown as a search point.");
                 useDevicelocation = false;
             }
 

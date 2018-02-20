@@ -55,10 +55,9 @@ public class MyInfoWindowAdaptor implements GoogleMap.InfoWindowAdapter {
         return null;
     }
 
-    //TODO TEST PHOTOS
     @Override
     public View getInfoContents(Marker marker) {
-        Log.d(TAG, "enter getInfoContents(Marker marker)"+ marker.getId());
+       // Log.d(TAG, "enter getInfoContents(Marker marker)"+ marker.getId());
         //   String type = UiUtils.findScreenSize(context);
         View v;
 
@@ -202,7 +201,7 @@ public class MyInfoWindowAdaptor implements GoogleMap.InfoWindowAdapter {
 
                 }
             }
-        Log.d(TAG, "exit getInfoContents(Marker marker)");
+    //    Log.d(TAG, "exit getInfoContents(Marker marker)");
 
             return v;
         } catch (Exception e) {
@@ -239,7 +238,7 @@ public class MyInfoWindowAdaptor implements GoogleMap.InfoWindowAdapter {
 
         @Override
         public void onSuccess() {
-            Log.d(TAG, "enter onSuccess()");
+        //    Log.d(TAG, "enter onSuccess()");
             //    Log.i(TAG, "count: "+ count);
             MapsActivity.markerIds.remove(markerToRefresh.getTitle());
             if (count>2) {
@@ -248,13 +247,13 @@ public class MyInfoWindowAdaptor implements GoogleMap.InfoWindowAdapter {
             }
             markerToRefresh.showInfoWindow();
 
-            Log.d(TAG, "exit onSuccess()");
+        //    Log.d(TAG, "exit onSuccess()");
 
         }
 
         @Override
         public void onError() {
-            Log.d(TAG, "enter onError()");
+         //   Log.d(TAG, "enter onError()");
             toLoad = "photo";
             //TODO replace with iterator
             for (Place p: places) {
@@ -269,7 +268,7 @@ public class MyInfoWindowAdaptor implements GoogleMap.InfoWindowAdapter {
             }
             markerToRefresh.showInfoWindow();
 
-            Log.d(TAG, "exit onError()");
+         //   Log.d(TAG, "exit onError()");
 
         }
     }
