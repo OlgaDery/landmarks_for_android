@@ -159,7 +159,7 @@ public class MyInfoWindowAdaptor implements GoogleMap.InfoWindowAdapter {
                         } else
                         {
                             Picasso.with(context)
-                                    .load(R.drawable.filter)
+                                    .load(R.drawable.no_ph)
                                     .into(photo);
                         }
 
@@ -221,7 +221,7 @@ public class MyInfoWindowAdaptor implements GoogleMap.InfoWindowAdapter {
 
         } else {
             Picasso.with(context)
-                    .load(R.drawable.filter)
+                    .load(R.drawable.no_ph)
                     .into(photo, new InfoWindowRefresher(marker));
             //    Log.i(TAG, "id removed: "+ MapsActivity.markerIds.remove(marker.getTitle())) ;
 

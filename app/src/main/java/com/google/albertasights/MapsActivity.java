@@ -20,9 +20,7 @@ import android.widget.CheckBox;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
-import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -67,9 +65,11 @@ public class MapsActivity extends FragmentActivity implements
     private boolean zoomingOut = true;
 
     private TextView txt;
-    private Spinner mySpinner;
+    private MySpinner mySpinner;//
     private LinearLayout filter;
     private RelativeLayout rr;
+    private RelativeLayout mapWrapper;
+    private RelativeLayout topWrapper;
     private ImageButton imgbutton;
     private TextView filterText;
     private String orientation;
@@ -155,8 +155,10 @@ public class MapsActivity extends FragmentActivity implements
         txt =(TextView) findViewById(R.id.savePlace);
         filterText = (TextView) findViewById(R.id.txt);
 
-        mySpinner = (Spinner) findViewById(R.id.spinner);
+                //(MySpinner) findViewById(R.id.spinner);
         rr = (RelativeLayout) findViewById(R.id.rr);
+        mapWrapper = (RelativeLayout) findViewById(R.id.mapWrapper);
+      //  topWrapper = (RelativeLayout) findViewById(R.id.wrapper_top);
         imgbutton = (ImageButton) findViewById(R.id.imageB);
         imgbutton.setImageResource(R.drawable.expand_more);
         imgbutton.getBackground().setAlpha(0);
@@ -166,6 +168,18 @@ public class MapsActivity extends FragmentActivity implements
         }
 
         filter = (LinearLayout) findViewById(R.id.filters);
+
+        //TODO set the position of the spinner
+        topWrapper = (RelativeLayout) findViewById(R.id.wrapperTop);
+        mySpinner = new MySpinner(this);
+        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams
+                (RelativeLayout.LayoutParams.WRAP_CONTENT,
+                        RelativeLayout.LayoutParams.WRAP_CONTENT);
+
+        lp.addRule(RelativeLayout.BELOW, txt.getId());
+        mySpinner.setLayoutParams(lp);
+        topWrapper.addView(mySpinner);
+
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
                 R.array.distance, android.R.layout.simple_spinner_item);
 // Specify the layout to use when the list of choices appears
@@ -173,6 +187,8 @@ public class MapsActivity extends FragmentActivity implements
 // Apply the adapter to the spinner
         mySpinner.setAdapter(adapter);
         mySpinner.setOnItemSelectedListener(this);
+        mySpinner.setOnItemSelectedEvenIfUnchangedListener(
+                this);
         //this listener starts when the user check the checkbox in
         checkBoxListener = new View.OnClickListener() {
 
@@ -640,7 +656,15 @@ public class MapsActivity extends FragmentActivity implements
 
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        //    Log.d(TAG, "enter onItemSelected(AdapterView<?> parent, View view, int position, long id)");
+     //   Log.d(TAG, "enter onItemSelected(AdapterView<?> parent, View view, int position, long id)");
+        //that means that selection has already been set inside MySpinner class, and second method call
+        //is not required
+
+        if (MySpinner.firstTimeSelected == true) {
+            MySpinner.firstTimeSelected=!MySpinner.firstTimeSelected;
+            return;
+        }
+
         if (mMap == null) {
             return;
         }
@@ -684,7 +708,7 @@ public class MapsActivity extends FragmentActivity implements
             Location.distanceBetween(mLastKnownLocation.getLatitude(), mLastKnownLocation.getLongitude(),
                     mDefaultCoord.latitude, mDefaultCoord.longitude, results);
 
-            Log.i(TAG, "distance between: "+results[0]);
+        //    Log.i(TAG, "distance between: "+results[0]);
             if (results[0]>60000.0)
             {
                 UiUtils.showToast(getApplicationContext(), "Looks like there is no place near you in our database. " +
@@ -720,8 +744,9 @@ public class MapsActivity extends FragmentActivity implements
             }
 
         }
+        MySpinner.firstTimeSelected=!MySpinner.firstTimeSelected;
 
-        //    Log.d(TAG, "exit onItemSelected(AdapterView<?> parent, View view, int position, long id)");
+   //     Log.d(TAG, "exit onItemSelected(AdapterView<?> parent, View view, int position, long id)");
     }
 
     @Override

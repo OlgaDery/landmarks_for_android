@@ -8,53 +8,56 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
         android:id="@+id/rr"
         >
 
-        <TextView
-            android:layout_width="wrap_content"
+        <RelativeLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:text="Select distance from your location:"
+            android:layout_marginTop="10dp"
             android:layout_marginLeft="10dp"
-            android:textSize="14dp"
-            android:layout_alignParentLeft="true"
-            android:layout_toLeftOf="@+id/txt"
-            android:id="@+id/savePlace" />
-
-        <Spinner
-            android:id="@+id/spinner"
-            android:layout_marginTop="2dp"
-            android:layout_width="wrap_content"
-            android:layout_below="@id/savePlace"
-            android:layout_height="wrap_content" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_marginRight="10dp"
+            android:id="@+id/wrapperTop"
             android:layout_alignParentTop="true"
-            android:layout_alignParentRight="true"
-            android:layout_marginRight="10dp"
-            android:id="@+id/txt"
-            android:textSize="14dp"/>
+            >
 
-        <ImageButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/txt"
-            android:layout_marginRight="10dp"
-            android:layout_alignParentRight="true"
-            android:onClick="showFilters"
-            android:id="@+id/imageB"
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:text="What`s around my location:"
+                android:layout_marginBottom="10dp"
+                android:textSize="14dp"
+                android:layout_alignParentLeft="true"
+                android:layout_toLeftOf="@+id/txt"
+                android:id="@+id/savePlace" />
 
-            />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentRight="true"
+                android:id="@+id/txt"
+                android:textSize="14dp"/>
+
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/txt"
+                android:layout_alignParentRight="true"
+                android:onClick="showFilters"
+                android:id="@+id/imageB"
+
+                />
+
+        </RelativeLayout>
+
 
         <ScrollView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
-            android:layout_below="@id/spinner"
+            android:layout_below="@id/wrapperTop"
             android:id="@+id/scrl"
             >
             <LinearLayout
@@ -73,8 +76,7 @@
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@id/spinner"
-            android:layout_marginTop="10dp"
+            android:layout_below="@id/wrapperTop"
             android:layout_toLeftOf="@id/scrl"
             android:id="@+id/mapWrapper"
 
