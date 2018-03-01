@@ -7,6 +7,7 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.net.Uri;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
@@ -37,6 +38,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.maps.android.clustering.ClusterManager;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
@@ -77,6 +79,7 @@ public class MapsActivity extends FragmentActivity implements
     private String deviceType;
     private boolean isRestarted = false;
     private boolean useDevicelocation = true;
+    private int posit=0;
 
     // Declare a variable for the cluster manager.
     private ClusterManager<MyClusterItem> mClusterManager;
@@ -107,6 +110,7 @@ public class MapsActivity extends FragmentActivity implements
     private static final String KEY_SELECTED_FILTERS = "selected_fltrs";
     private static final String KEY_SELECT_POINTS_TO_SHOW = "select_points_to_show";
     private static final String KEY_PLACES = "places";
+    private static final String SPINNER_POSIT = "spinner_posit";
     private View.OnClickListener checkBoxListener;
 
     private BroadcastReceiver receiver;
@@ -129,6 +133,7 @@ public class MapsActivity extends FragmentActivity implements
             ArrayList<String> ids = savedInstanceState.getStringArrayList(KEY_MARKER_IDS);
             currentZoom = savedInstanceState.getFloat(CURRENT_ZOOM);
             places = (HashSet)savedInstanceState.getSerializable(KEY_PLACES);
+            posit = savedInstanceState.getInt(SPINNER_POSIT);
             markerIds.addAll(ids);
 
         }
@@ -179,16 +184,13 @@ public class MapsActivity extends FragmentActivity implements
         lp.addRule(RelativeLayout.BELOW, txt.getId());
         mySpinner.setLayoutParams(lp);
         topWrapper.addView(mySpinner);
-
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
                 R.array.distance, android.R.layout.simple_spinner_item);
 // Specify the layout to use when the list of choices appears
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 // Apply the adapter to the spinner
         mySpinner.setAdapter(adapter);
-        mySpinner.setOnItemSelectedListener(this);
-        mySpinner.setOnItemSelectedEvenIfUnchangedListener(
-                this);
+
         //this listener starts when the user check the checkbox in
         checkBoxListener = new View.OnClickListener() {
 
@@ -278,8 +280,6 @@ public class MapsActivity extends FragmentActivity implements
                 UiUtils.configureFilters(getApplicationContext(), filter, deviceType,
                         receivedFilters, selectedFilters, checkBoxListener);
 
-                mySpinner.setSelection(Place.distance);
-
                 //this means that the activity is recreated and the points have been received from the server
                 if (selectPointsToShow==false) {
                     //       Log.d(TAG, "removing filter button");
@@ -306,6 +306,7 @@ public class MapsActivity extends FragmentActivity implements
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         //   Log.d(TAG, "enter onSaveInstanceState");
+
         if (mMap != null) {
             outState.putParcelable(KEY_CAMERA_POSITION, mMap.getCameraPosition());
             outState.putParcelable(KEY_LOCATION, mLastKnownLocation);
@@ -316,6 +317,7 @@ public class MapsActivity extends FragmentActivity implements
             outState.putStringArrayList(KEY_RECEIVED_FILTERS, receivedFilters);
             outState.putStringArrayList(KEY_SELECTED_FILTERS, selectedFilters);
             outState.putBoolean(KEY_SELECT_POINTS_TO_SHOW, selectPointsToShow);
+            outState.putInt(SPINNER_POSIT, posit);
             outState.putFloat(CURRENT_ZOOM, mMap.getCameraPosition().zoom);
 
             //TODO save info window
@@ -366,8 +368,8 @@ public class MapsActivity extends FragmentActivity implements
     @Override
     protected void onResume() {
         //    Log.d(TAG, "enter onResume()");
-        registerReceiver();
         super.onResume();
+        registerReceiver();
         //    Log.d(TAG, "exit onResume()");
 
     }
@@ -386,9 +388,14 @@ public class MapsActivity extends FragmentActivity implements
     public void onMapReady(GoogleMap map) {
         //   Log.d(TAG, "enter onMapReady");
         mMap = map;
+        //  mySpinner.setOnItemSelectedListener(this);
+        mySpinner.setSelection(posit);//Arrays.asList(Place.distances).indexOf(Place.distance)
+        mySpinner.setOnItemSelectedEvenIfUnchangedListener(
+                this);
 
         if (isRestarted == false) {
             //that means that the activity is created the first time or recreated
+            Log.d(TAG, "select points to show: "+selectPointsToShow);
 
             mClusterManager = new ClusterManager<MyClusterItem>(this, mMap);
             mMap.setOnCameraIdleListener(mClusterManager);
@@ -430,21 +437,22 @@ public class MapsActivity extends FragmentActivity implements
 
 
         if (places.size()==0) {
+            Log.d(TAG, "&&&&");
 
         } else {
             //if not, that means that the activity is being recreated and the points already received from the server
             if (selectPointsToShow == true && isRestarted==false) {
+                Log.d(TAG, "!!!");
                 showClusters();
             } else if (isRestarted==true) {
+                Log.d(TAG, "???");
                 mCameraPosition = mMap.getCameraPosition();
                 currentZoom = mMap.getCameraPosition().zoom;
             }
         }
         updateLocationUI();
-//        if (Place.selectedMarkerID != null) {
-//            showMarkers();
-//        }
-        //TODO to show marker content maybe on Google map and then remove marker
+
+//            //TODO to show marker content maybe on Google map and then remove marker
 
 
         isRestarted=false;
@@ -490,7 +498,7 @@ public class MapsActivity extends FragmentActivity implements
      */
     private void updateLocationUI() {
 
-        //      Log.d(TAG, "enter updateLocationUI");
+        //Log.d(TAG, "enter updateLocationUI");
         if (mMap == null) {
             UiUtils.showToast(getApplicationContext(),
                     "Map is currently unavailable");
@@ -656,19 +664,18 @@ public class MapsActivity extends FragmentActivity implements
 
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-     //   Log.d(TAG, "enter onItemSelected(AdapterView<?> parent, View view, int position, long id)");
+       Log.d(TAG, "enter onItemSelected(AdapterView<?> parent, View view, int position, long id)");
         //that means that selection has already been set inside MySpinner class, and second method call
         //is not required
 
-        if (MySpinner.firstTimeSelected == true) {
-            MySpinner.firstTimeSelected=!MySpinner.firstTimeSelected;
-            return;
-        }
+//        if (MySpinner.firstTimeSelected == true) {
+//            MySpinner.firstTimeSelected=!MySpinner.firstTimeSelected;
+//            return;
+//        }
 
         if (mMap == null) {
             return;
         }
-
             /*
          * Request location permission, so that we can get the location of the
          * device. The result of the permission request is handled by a callback,
@@ -717,6 +724,7 @@ public class MapsActivity extends FragmentActivity implements
             }
 
             Place.distance = Place.distances[position];
+            posit = position;
             //   Log.i(TAG, "distance set "+Place.distance);
             selectPointsToShow = true;
 
@@ -744,9 +752,9 @@ public class MapsActivity extends FragmentActivity implements
             }
 
         }
-        MySpinner.firstTimeSelected=!MySpinner.firstTimeSelected;
+     //   MySpinner.firstTimeSelected=!MySpinner.firstTimeSelected;
 
-   //     Log.d(TAG, "exit onItemSelected(AdapterView<?> parent, View view, int position, long id)");
+        Log.d(TAG, "exit onItemSelected(AdapterView<?> parent, View view, int position, long id)");
     }
 
     @Override
