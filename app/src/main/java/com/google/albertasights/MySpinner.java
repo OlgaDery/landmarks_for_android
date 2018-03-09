@@ -38,13 +38,13 @@ public class MySpinner extends android.support.v7.widget.AppCompatSpinner {
 
     @Override
     public void setSelection(int position) {
-        Log.i(TAG, "enter setSelection(int position)");
+   //     Log.i(TAG, "enter setSelection(int position)");
         super.setSelection(position);
-        Log.i(TAG, "posit: " + position);
+   //     Log.i(TAG, "posit: " + position);
         if (listener != null) {
             listener.onItemSelected(null, null, position, 0);
         }
-        Log.i(TAG, "exit setSelection(int position)");
+   //     Log.i(TAG, "exit setSelection(int position)");
     }
 
     public void setOnItemSelectedEvenIfUnchangedListener(

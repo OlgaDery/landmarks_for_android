@@ -2,6 +2,7 @@ package com.google.albertasights;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.android.clustering.ClusterItem;
+import com.google.maps.android.clustering.view.DefaultClusterRenderer;
 
 /**
  * Created by olga on 2/13/18.
@@ -14,6 +15,7 @@ public class MyClusterItem implements ClusterItem {
     private String mSnippet;
 
     public MyClusterItem(double lat, double lng) {
+
         mPosition = new LatLng(lat, lng);
     }
 

@@ -36,6 +36,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.maps.android.clustering.ClusterManager;
+import com.google.maps.android.clustering.view.DefaultClusterRenderer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -79,6 +80,7 @@ public class MapsActivity extends FragmentActivity implements
     private String deviceType;
     private boolean isRestarted = false;
     private boolean useDevicelocation = true;
+    private boolean saveInfoWindow = false;
     private int posit=0;
 
     // Declare a variable for the cluster manager.
@@ -111,6 +113,7 @@ public class MapsActivity extends FragmentActivity implements
     private static final String KEY_SELECT_POINTS_TO_SHOW = "select_points_to_show";
     private static final String KEY_PLACES = "places";
     private static final String SPINNER_POSIT = "spinner_posit";
+    private static final String SAVE_INFO_WINDOW = "save_i_w";
     private View.OnClickListener checkBoxListener;
 
     private BroadcastReceiver receiver;
@@ -134,6 +137,7 @@ public class MapsActivity extends FragmentActivity implements
             currentZoom = savedInstanceState.getFloat(CURRENT_ZOOM);
             places = (HashSet)savedInstanceState.getSerializable(KEY_PLACES);
             posit = savedInstanceState.getInt(SPINNER_POSIT);
+            saveInfoWindow = savedInstanceState.getBoolean(SAVE_INFO_WINDOW);
             markerIds.addAll(ids);
 
         }
@@ -202,8 +206,7 @@ public class MapsActivity extends FragmentActivity implements
                 } else {
                     selectedFilters.add(checked);
                 }
-                //      Log.d(TAG, "size of selected: "+selectedFilters.size());
-                // showMarkers();
+
                 showClusters();
 
                 mCameraPosition = mMap.getCameraPosition();
@@ -324,9 +327,11 @@ public class MapsActivity extends FragmentActivity implements
             for (Marker m: mClusterManager.getMarkerCollection().getMarkers()) {
                 if (m.isInfoWindowShown()==true) {
                     Place.selectedMarkerID = m.getTitle();
-                    //           Log.i(TAG, "saving open info window");
+                    saveInfoWindow = true;
+                    break;
                 }
             }
+            outState.putBoolean(SAVE_INFO_WINDOW, saveInfoWindow);
             super.onSaveInstanceState(outState);
         }
      //   Log.d(TAG, "exit onSaveInstanceState");
@@ -398,6 +403,7 @@ public class MapsActivity extends FragmentActivity implements
             Log.d(TAG, "select points to show: "+selectPointsToShow);
 
             mClusterManager = new ClusterManager<MyClusterItem>(this, mMap);
+            mClusterManager.setRenderer(new MyClassRenderer(this, mMap, mClusterManager));
             mMap.setOnCameraIdleListener(mClusterManager);
 
             MyInfoWindowAdaptor adaptor = new MyInfoWindowAdaptor(getApplicationContext(), places,
@@ -437,20 +443,20 @@ public class MapsActivity extends FragmentActivity implements
 
 
         if (places.size()==0) {
-            Log.d(TAG, "&&&&");
+           // Log.d(TAG, "&&&&");
 
         } else {
             //if not, that means that the activity is being recreated and the points already received from the server
             if (selectPointsToShow == true && isRestarted==false) {
-                Log.d(TAG, "!!!");
                 showClusters();
             } else if (isRestarted==true) {
-                Log.d(TAG, "???");
                 mCameraPosition = mMap.getCameraPosition();
                 currentZoom = mMap.getCameraPosition().zoom;
             }
         }
         updateLocationUI();
+
+
 
 //            //TODO to show marker content maybe on Google map and then remove marker
 
@@ -664,14 +670,7 @@ public class MapsActivity extends FragmentActivity implements
 
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-       Log.d(TAG, "enter onItemSelected(AdapterView<?> parent, View view, int position, long id)");
-        //that means that selection has already been set inside MySpinner class, and second method call
-        //is not required
-
-//        if (MySpinner.firstTimeSelected == true) {
-//            MySpinner.firstTimeSelected=!MySpinner.firstTimeSelected;
-//            return;
-//        }
+    //   Log.d(TAG, "enter onItemSelected(AdapterView<?> parent, View view, int position, long id)");
 
         if (mMap == null) {
             return;
@@ -752,9 +751,8 @@ public class MapsActivity extends FragmentActivity implements
             }
 
         }
-     //   MySpinner.firstTimeSelected=!MySpinner.firstTimeSelected;
 
-        Log.d(TAG, "exit onItemSelected(AdapterView<?> parent, View view, int position, long id)");
+  //      Log.d(TAG, "exit onItemSelected(AdapterView<?> parent, View view, int position, long id)");
     }
 
     @Override
@@ -797,30 +795,6 @@ public class MapsActivity extends FragmentActivity implements
         //    Log.d(TAG, "exit showFilters(View view)");
     }
 
-    private void showMarkers() {
-        //TODO add marker to cluster, handle showInfoWindow on activity recreation
-        //   Log.d(TAG, "enter showMarkers()");
-        Marker m = null;
-        for (Place p : places) {
-            if (p.getName().equals(Place.selectedMarkerID)) {
-                LatLng lnglat = new LatLng (p.getLng(), p.getLat());
-                m = mMap.addMarker(new MarkerOptions()
-                        .title(p.getName())
-                        .position(lnglat)
-                        .snippet(p.getCategory()));
-                break;
-
-            }
-        }
-        m.showInfoWindow();
-        Place.selectedMarkerID = null;
-        //           m.hideInfoWindow();
-//                    mClusterManager.getMarkerCollection().getMarkers().remove(m);
-
-        //   Log.d(TAG, "exit showMarkers()");
-
-    }
-
     private void showClusters () {
         //    Log.d(TAG, "enter showClusters()");
         //    Log.i(TAG, "marker to show up: "+Place.selectedMarkerID);
@@ -849,6 +823,30 @@ public class MapsActivity extends FragmentActivity implements
       //  Log.d(TAG, "enter onInfoWindowClose(Marker marker)");
 
       //  Log.d(TAG, "exit onInfoWindowClose(Marker marker)");
+    }
+
+    public class MyClassRenderer extends DefaultClusterRenderer <MyClusterItem>{
+
+
+        public MyClassRenderer(Context context, GoogleMap map, ClusterManager<MyClusterItem> clusterManager) {
+            super(context, map, clusterManager);
+        }
+
+        @Override
+        protected void onClusterItemRendered(MyClusterItem item, Marker marker) {
+            super.onClusterItemRendered(item, marker);
+            if (saveInfoWindow==true) {
+                if (Place.selectedMarkerID.equals(marker.getTitle())) {
+                //    Log.i(TAG, "got it!");
+                    marker.showInfoWindow();
+                    saveInfoWindow=false;
+                }
+            }
+
+        }
+
+
+
     }
 
 }

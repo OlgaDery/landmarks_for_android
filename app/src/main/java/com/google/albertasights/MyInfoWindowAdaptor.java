@@ -57,7 +57,7 @@ public class MyInfoWindowAdaptor implements GoogleMap.InfoWindowAdapter {
 
     @Override
     public View getInfoContents(Marker marker) {
-       // Log.d(TAG, "enter getInfoContents(Marker marker)"+ marker.getId());
+     //   Log.d(TAG, "enter getInfoContents(Marker marker)"+ marker.getId());
         //   String type = UiUtils.findScreenSize(context);
         View v;
 
@@ -110,7 +110,7 @@ public class MyInfoWindowAdaptor implements GoogleMap.InfoWindowAdapter {
             } else {
 
                 if (orientation.equals("Portrait")) {
-                    //big vertical
+                    //small vertical
                     RelativeLayout ll = (RelativeLayout) v.findViewById(R.id.base);
                     RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams
                             ((screen_width/100)*70, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -121,12 +121,12 @@ public class MyInfoWindowAdaptor implements GoogleMap.InfoWindowAdapter {
                     photo.getLayoutParams().width = (screen_width/100)*65-20;
 
                 } else {
-                    //big horizontal
+                    //small horizontal
                     RelativeLayout rl = (RelativeLayout)v.findViewById(R.id.base);
                     RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(screen_width/100*70,
-                            screen_height-80);
+                            screen_height-40);
                     rl.setLayoutParams(layoutParams);
-                    photo.getLayoutParams().height = 300;//(screen_height-80)-50;
+                    photo.getLayoutParams().height = 250;//(screen_height-80)-50;
                     photo.getLayoutParams().width = 300;//rl.getWidth()/20-30;
 
                 }
@@ -182,26 +182,13 @@ public class MyInfoWindowAdaptor implements GoogleMap.InfoWindowAdapter {
                             }
                         }
                         loadPicasso(UiUtils.parseUrl(p.getPhotoLink()), marker, photo);
-//                        try {
-//
-//                            MapsActivity.markerIds.remove(marker.getTitle());
-//                            Log.d(TAG, "picture loaded, id removed");
-//                            //toLoad is staying the same
-//                        } catch (Exception e1) {
-//                            toLoad = "photo";
-//                            Log.d(TAG, "link does not work");
-//
-//                        } finally {
-//                            marker.showInfoWindow();
-//                            Log.d(TAG, "another time opening window");
-//                        }
 
                         break;
                     }
 
                 }
             }
-    //    Log.d(TAG, "exit getInfoContents(Marker marker)");
+    //   Log.d(TAG, "exit getInfoContents(Marker marker)");
 
             return v;
         } catch (Exception e) {
