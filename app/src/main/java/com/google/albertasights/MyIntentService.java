@@ -8,9 +8,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -71,8 +73,8 @@ public class MyIntentService extends IntentService {
      * parameters.
      */
     private void postPointData(String url, String lng, String lat, String distance) {
-        // TODO: Handle action Foo
-        //    Log.d(TAG, "enter postPointData(String url) ");
+        // TODO: temporary replace
+     //   Log.d(TAG, "enter postPointData(String url) ");
         URL url1 = null;
         HashMap<String, String> params = new HashMap<String, String>();
         params.put("lng", lng);
@@ -85,34 +87,35 @@ public class MyIntentService extends IntentService {
         try {
             url1 = new URL(url);
         } catch (Exception e) {
-            Log.e(TAG, "something wron with url");
+          //  Log.e(TAG, "something wron with url");
         }
         HttpURLConnection connection = null;
         try {
             connection = (HttpURLConnection)url1.openConnection();
-            connection.setRequestMethod("POST");//("POST")
-            connection.setRequestProperty("authorization", "3.14");
+           // connection.setRequestMethod("GET");//("POST")
+            connection.setRequestProperty("X-Api-Key", "3.14");
             connection.setRequestProperty("Content-Type", "application/json");
-            connection.setDoInput(true);
-            connection.setDoOutput(true);
+          //  connection.setDoInput(true);
+          //  connection.setDoOutput(true);
             connection.connect();
+            InputStream in = new BufferedInputStream(connection.getInputStream());
 
-            OutputStream os = connection.getOutputStream();
-            BufferedWriter writer = new BufferedWriter(
-                    new OutputStreamWriter(os, "UTF-8"));
-            writer.write(getPostDataString(params));
-
-            writer.flush();
-            writer.close();
-            os.close();
+         //   OutputStream os = connection.getOutputStream();
+//            BufferedWriter writer = new BufferedWriter(
+//                    new OutputStreamWriter(in, "UTF-8"));
+//            writer.write(getPostDataString(params));
+//
+//            writer.flush();
+//            writer.close();
+//            os.close();
 
             if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                BufferedReader in = new BufferedReader(
+                BufferedReader reader = new BufferedReader(
                         new InputStreamReader(connection.getInputStream()));
                 String inputLine;
                 StringBuffer response = new StringBuffer();
 
-                while ((inputLine = in.readLine()) != null) {
+                while ((inputLine = reader.readLine()) != null) {
                     response.append(inputLine);
                 }
                 //   Log.i(TAG, response.toString());
@@ -128,7 +131,7 @@ public class MyIntentService extends IntentService {
 
 
             } else {
-                // Log.d(TAG, String.valueOf(connection.getResponseCode()));
+
                 Log.e(TAG, connection.getResponseMessage());
                 intent.putExtra("RESULT", "Error, server may be unavailable");
             }
@@ -144,6 +147,8 @@ public class MyIntentService extends IntentService {
         }
 
     }
+
+
 
     private String getPostDataString(HashMap<String, String> params)  {
 
@@ -167,34 +172,32 @@ public class MyIntentService extends IntentService {
         try{
             JSONArray mJsonArray = new JSONArray(data);
             for (int i = 0; i < mJsonArray.length(); i++) {
+
                 JSONObject mJsonObjectProperty = mJsonArray.getJSONObject(i);
+                String pendingStatus = mJsonObjectProperty.getString("pend_status");
+                if (pendingStatus.contains("PBL")) {
+                    String id = mJsonObjectProperty.getString("point_id");
+                    String name = mJsonObjectProperty.getString("name");
+                    // Log.i(TAG, "name: "+mJsonObjectProperty.getString("name"));
+                    String lat = mJsonObjectProperty.getString("lat");
+                    String lng = mJsonObjectProperty.getString("lng");
+                    String main_point_id = mJsonObjectProperty.getString("main_point_id");
+                    String descr = mJsonObjectProperty.getString("description");
+                    String categoryIndex = mJsonObjectProperty.getString("category");
+                    String extraCategoryIndex = mJsonObjectProperty.getString("extra_category");
+                //    Log.i(TAG, "cat: "+mJsonObjectProperty.getString("category"));
+                    String link = mJsonObjectProperty.getString("photolink");
+                    String webLink = mJsonObjectProperty.getString("weblink");
+                    Integer rating = Integer.valueOf(mJsonObjectProperty.getString("rating"));
+                    Place p = new Place(name, descr, link, Double.valueOf(lng), Double.valueOf(lat));
+                    //TODO!!!
+                    p.setCategory(categoryIndex);
+                    //   Place.places.add(p);
+                    places.add(p);
 
-                String name = mJsonObjectProperty.getString("poi_name");
-                String lat = mJsonObjectProperty.getString("poi_lat");
-                String lng = mJsonObjectProperty.getString("poi_lng");
-                String descr = mJsonObjectProperty.getString("descript");
-                String category = mJsonObjectProperty.getString("poi_main_cat_index");
-                String link = null;
-                JSONArray photos = mJsonObjectProperty.getJSONArray("photos_with_point");
-                for (int ii = 0; ii < photos.length(); ii++) {
-                    JSONObject photoProp = photos.getJSONObject(ii);
-                    //   Log.i(TAG, photoProp.toString());
-                    try {
-                        link = photoProp.getString("photo_id");
-                    }catch (Exception e) {
-                        //      Log.i(TAG, "no photos");
-                    }
-                    break;
                 }
-
-                //  String result = mJsonObject.getString("photos_with_point");
-                Place p = new Place(name, descr, link, Double.valueOf(lng), Double.valueOf(lat));
-                p.setCategory(Place.poi_main_cat[Integer.valueOf(category)]);
-                //   Place.places.add(p);
-                places.add(p);
-                // Log.i(TAG, p.getName());
+               // Log.i(TAG, "size: " + places.size());
             }
-            //    Log.i(TAG, "places size: "+Place.places.size());
 
             return places;
         } catch (Exception e) {

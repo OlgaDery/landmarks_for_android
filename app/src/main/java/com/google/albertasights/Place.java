@@ -5,26 +5,61 @@ import java.io.Serializable;
 /**
  * Created by olga on 2/13/18.
  */
+//  t.string "name"
+//          t.decimal "lat"
+//          t.decimal "lng"
+//          t.string "main_point_id"
+//          t.integer "district_id"
+//          t.integer "category_id"
+//          t.integer "extra_category_id"
+//          t.string "user_id"
+//          t.integer "rating"
+//          t.string "description"
+//          t.string "weblink"
+//          t.string "photolink"
+//          t.string "pend_status"
+//          t.datetime "created_at", null: false
+//          t.datetime "updated_at", null: false
 
 public class Place implements Serializable {
 
     public static final int [] distances = {1, 3, 5, 7, 10};
     public static String [] poi_main_cat = {
-            "archeological", "protected wild area", "sport", "crafts", "rest area",
-            "museum/exibition", "scientific site", "vis.art/urban",
-            "deposits", "pets and animals", "natural", "historical", "entertainment", "cult/religion", "farm"
+            "archeological", "wild area or preserve", "sport", "crafts", "museum/exibition",
+            "science/education", "urban area", "building/construction", "monument/installation",
+            "deposits", "pets and animals", "natural attraction", "historical site", "amusement",
+            "cult/religion", "farm/sanctuary", "other"
+    };
+
+    public static String [] poi_extra_cat = {
+            "famous person", "famous object or place", "historical event", "local stories/legends", "cristian legends", "paranormal or unexplaned facts", "healing properties",
+            "scientifically important", "good for kids", "memorial", "historical building", "n/a"
     };
 
     public static int distance=1;
     public static String selectedMarkerID;
 
+    private String id;
+
     private String name;
     private String descript;
+
+    private double lat;
     private double lng;
 
     private String category;
-    private double lat;
+    private Integer catIndex;
+
+    private String extraCategory;
+    private Integer extraCategoryIndex;
+
+    private Integer rating;
+
+    private String pendStatus;
+
+
     private String photoLink = "lnk";
+    private String webLink = "lnk";
 
     public Place(String name1, String descr1, String photoLink1, double lng1, double lat1) {
         this.descript= descr1;

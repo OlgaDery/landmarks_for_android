@@ -144,17 +144,6 @@ public class MapsActivity extends FragmentActivity implements
 
         // Retrieve the content view that renders the map.
         setContentView(R.layout.activity_maps);
-//
-//        if (places.size()==0) {
-//            //      Log.i(TAG, "no data yet");
-//            Intent intent = new Intent(this, MyIntentService.class);
-//            intent.setAction("SUBMIT");
-//            intent.putExtra(MyIntentService.URL, "http://albertasights.com/rest/v1/findClosePoints");
-//            intent.putExtra(MyIntentService.LNG, String.valueOf(mDefaultCoord.longitude));
-//            intent.putExtra(MyIntentService.LAT, String.valueOf(mDefaultCoord.latitude));
-//            intent.putExtra(MyIntentService.DISTANCE, String.valueOf(30));
-//            startService(intent);
-//        }
 
         //getting the type and the orientation of device
         orientation = UiUtils.getOrientation(getApplicationContext());
@@ -212,15 +201,16 @@ public class MapsActivity extends FragmentActivity implements
                 mCameraPosition = mMap.getCameraPosition();
                 currentZoom = mMap.getCameraPosition().zoom;
                 updateLocationUI();
-                //TODO add some extra zoom in/out to stabilize clusters, later to add a boolean to control zoom in/out
-                if (zoomingOut==false) {
-                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mMap.getCameraPosition().target,
-                            mMap.getCameraPosition().zoom-0.01f));
-                } else {
-                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mMap.getCameraPosition().target,
-                            mMap.getCameraPosition().zoom+0.01f));
-                }
-                zoomingOut=!zoomingOut;
+                // TODO add some extra zoom in/out to stabilize clusters, with a boolean to control zoom in/out
+                stabilizeVieWithZoom ();
+//                if (zoomingOut==false) {
+//                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mMap.getCameraPosition().target,
+//                            mMap.getCameraPosition().zoom-0.01f));
+//                } else {
+//                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mMap.getCameraPosition().target,
+//                            mMap.getCameraPosition().zoom+0.01f));
+//                }
+//                zoomingOut=!zoomingOut;
 
 
                 //      Log.d(TAG, "exit onClick checkBox(View view) ");
@@ -323,7 +313,7 @@ public class MapsActivity extends FragmentActivity implements
             outState.putInt(SPINNER_POSIT, posit);
             outState.putFloat(CURRENT_ZOOM, mMap.getCameraPosition().zoom);
 
-            //TODO save info window
+            // save info window
             for (Marker m: mClusterManager.getMarkerCollection().getMarkers()) {
                 if (m.isInfoWindowShown()==true) {
                     Place.selectedMarkerID = m.getTitle();
@@ -455,11 +445,6 @@ public class MapsActivity extends FragmentActivity implements
             }
         }
         updateLocationUI();
-
-
-
-//            //TODO to show marker content maybe on Google map and then remove marker
-
 
         isRestarted=false;
 //        Log.d(TAG, "exit onMapReady");
@@ -732,7 +717,7 @@ public class MapsActivity extends FragmentActivity implements
                 isDataRequestedFromDropDown = true;
                 Intent intent = new Intent(this, MyIntentService.class);
                 intent.setAction("SUBMIT");
-                intent.putExtra(MyIntentService.URL, "http://albertasights.com/rest/v1/findClosePoints");
+                intent.putExtra(MyIntentService.URL, "https://albertasights.herokuapp.com/api/v1/points_by_district?district=Calgary");
                 intent.putExtra(MyIntentService.LNG, String.valueOf(mDefaultCoord.longitude));
                 intent.putExtra(MyIntentService.LAT, String.valueOf(mDefaultCoord.latitude));
                 intent.putExtra(MyIntentService.DISTANCE, String.valueOf(30));
@@ -747,6 +732,7 @@ public class MapsActivity extends FragmentActivity implements
                     showClusters();
                 }
                 updateLocationUI();
+                stabilizeVieWithZoom ();
 
             }
 
@@ -825,6 +811,17 @@ public class MapsActivity extends FragmentActivity implements
       //  Log.d(TAG, "exit onInfoWindowClose(Marker marker)");
     }
 
+    private void stabilizeVieWithZoom () {
+        if (zoomingOut==false) {
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mMap.getCameraPosition().target,
+                    mMap.getCameraPosition().zoom-0.01f));
+        } else {
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mMap.getCameraPosition().target,
+                    mMap.getCameraPosition().zoom+0.01f));
+        }
+        zoomingOut=!zoomingOut;
+    }
+
     public class MyClassRenderer extends DefaultClusterRenderer <MyClusterItem>{
 
 
@@ -844,8 +841,6 @@ public class MapsActivity extends FragmentActivity implements
             }
 
         }
-
-
 
     }
 
