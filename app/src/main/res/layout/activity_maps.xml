@@ -52,7 +52,6 @@
 
         </RelativeLayout>
 
-
         <ScrollView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -81,6 +80,7 @@
             android:id="@+id/mapWrapper"
 
             >
+
             <fragment
                 android:id="@+id/map"
                 android:name="com.google.android.gms.maps.SupportMapFragment"
