@@ -36,7 +36,7 @@ public class Place implements Serializable {
             "scientifically important", "good for kids", "memorial", "historical building", "n/a"
     };
 
-    public static int distance=1;
+    public static int distance=10;
     public static String selectedMarkerID;
 
     private String id;
@@ -61,12 +61,15 @@ public class Place implements Serializable {
     private String photoLink = "lnk";
     private String webLink = "lnk";
 
-    public Place(String name1, String descr1, String photoLink1, double lng1, double lat1) {
+    public Place(String name1, String descr1, String photoLink1, double lng1, double lat1,
+                 String webLink, Integer rating) {
         this.descript= descr1;
         this.name= name1;
         this.photoLink= photoLink1;
         this.lat=lat1;
         this.lng = lng1;
+        this.webLink = webLink;
+        this.rating = rating;
     }
 
     public String getName() {
@@ -145,17 +148,61 @@ public class Place implements Serializable {
         return photoLink;
     }
 
-//    public static Set<Place> filterCategory (Set<String> categories) {
-//        Set<Place> toReturn = new HashSet<>();
-//        for (Place p : places) {
-//            if (categories.contains(p.getCategory())) {
-//                toReturn.add(p);
-//            }
-//
-//        }
-//        return toReturn;
-//
-//    }
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public Integer getCatIndex() {
+        return catIndex;
+    }
+
+    public void setCatIndex(Integer catIndex) {
+        this.catIndex = catIndex;
+    }
+
+    public String getExtraCategory() {
+        return extraCategory;
+    }
+
+    public void setExtraCategory(String extraCategory) {
+        this.extraCategory = extraCategory;
+    }
+
+    public Integer getExtraCategoryIndex() {
+        return extraCategoryIndex;
+    }
+
+    public void setExtraCategoryIndex(Integer extraCategoryIndex) {
+        this.extraCategoryIndex = extraCategoryIndex;
+    }
+
+    public Integer getRating() {
+        return rating;
+    }
+
+    public void setRating(Integer rating) {
+        this.rating = rating;
+    }
+
+    public String getPendStatus() {
+        return pendStatus;
+    }
+
+    public void setPendStatus(String pendStatus) {
+        this.pendStatus = pendStatus;
+    }
+
+    public String getWebLink() {
+        return webLink;
+    }
+
+    public void setWebLink(String webLink) {
+        this.webLink = webLink;
+    }
 
     @Override
     public boolean equals(Object o) {

@@ -183,15 +183,16 @@ public class MyIntentService extends IntentService {
                     String lng = mJsonObjectProperty.getString("lng");
                     String main_point_id = mJsonObjectProperty.getString("main_point_id");
                     String descr = mJsonObjectProperty.getString("description");
-                    String categoryIndex = mJsonObjectProperty.getString("category");
+                    String category = mJsonObjectProperty.getString("category");
                     String extraCategoryIndex = mJsonObjectProperty.getString("extra_category");
                 //    Log.i(TAG, "cat: "+mJsonObjectProperty.getString("category"));
                     String link = mJsonObjectProperty.getString("photolink");
                     String webLink = mJsonObjectProperty.getString("weblink");
                     Integer rating = Integer.valueOf(mJsonObjectProperty.getString("rating"));
-                    Place p = new Place(name, descr, link, Double.valueOf(lng), Double.valueOf(lat));
+                    Place p = new Place(name, descr, link, Double.valueOf(lng),
+                            Double.valueOf(lat), webLink, rating);
                     //TODO!!!
-                    p.setCategory(categoryIndex);
+                    p.setCategory(category);
                     //   Place.places.add(p);
                     places.add(p);
 

@@ -15,4 +15,5 @@
         <item>10 km</item>
 
     </string-array>
+    <string name="title_activity_point">PointActivity</string>
 </resources>

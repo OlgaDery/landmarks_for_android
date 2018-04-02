@@ -37,7 +37,7 @@
 
 
         <ImageView
-            android:layout_alignTop="@+id/name"
+            android:layout_below="@+id/name"
             android:layout_marginBottom="10dp"
             android:layout_marginLeft="10dp"
             android:layout_alignParentRight="true"
@@ -48,12 +48,8 @@
         <ImageButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/button"
-            android:layout_alignParentRight="true"
-            android:layout_marginRight="10dp"
-            android:layout_below="@+id/img"
-            android:id="@+id/directions"
-            android:elevation="5dp"
+            android:layout_below="@+id/descript"
+            android:id="@+id/more"
             android:onClick="getDirections"
 
             />

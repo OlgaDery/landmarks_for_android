@@ -26,7 +26,6 @@ import android.widget.TextView;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.places.Places;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -49,6 +48,12 @@ public class MapsActivity extends FragmentActivity implements
     // LocationListener, GoogleMap.OnCameraMoveListener, GoogleMap.OnCameraMoveStartedListener,
 
     private static final String TAG = MapsActivity.class.getSimpleName();
+    //TODO variables to store map position and zoom if the activity is restarted
+    private float zoomIfRestarted = 0.0f;
+    private double longIfRestarted = 0.0f;
+    private double latIfRestarted = 0.0f;
+    //
+
     private GoogleMap mMap;
     private CameraPosition mCameraPosition;
 
@@ -81,7 +86,6 @@ public class MapsActivity extends FragmentActivity implements
     private boolean isRestarted = false;
     private boolean useDevicelocation = true;
     private boolean saveInfoWindow = false;
-    private boolean apiNotCalled;
     private boolean animationStarted = false;
     private int posit=0;
 
@@ -116,7 +120,6 @@ public class MapsActivity extends FragmentActivity implements
     private static final String KEY_PLACES = "places";
     private static final String SPINNER_POSIT = "spinner_posit";
     private static final String SAVE_INFO_WINDOW = "save_i_w";
-    private static final String API_WAS_CALLED = "api_called";
     private static final String STARTED_ANIMATION = "animation";
     private View.OnClickListener checkBoxListener;
 
@@ -127,27 +130,24 @@ public class MapsActivity extends FragmentActivity implements
 
         //there may be two options: the activity created the first time whan the app just started, or it is recreated. The behaviour
         //will be different.
-        //      Log.d(TAG, "enter onCreate");
+        Log.d(TAG, "enter onCreate");
         super.onCreate(savedInstanceState);
 
         // Retrieve all the saved variable
         if (savedInstanceState != null) {
             mLastKnownLocation = savedInstanceState.getParcelable(KEY_LOCATION);
-            mCameraPosition = savedInstanceState.getParcelable(KEY_CAMERA_POSITION);
             receivedFilters = savedInstanceState.getStringArrayList(KEY_RECEIVED_FILTERS);
             selectedFilters = savedInstanceState.getStringArrayList(KEY_SELECTED_FILTERS);
             selectPointsToShow = savedInstanceState.getBoolean(KEY_SELECT_POINTS_TO_SHOW);
             ArrayList<String> ids = savedInstanceState.getStringArrayList(KEY_MARKER_IDS);
             currentZoom = savedInstanceState.getFloat(CURRENT_ZOOM);
+            mCameraPosition = savedInstanceState.getParcelable(KEY_CAMERA_POSITION);
             places = (HashSet)savedInstanceState.getSerializable(KEY_PLACES);
             posit = savedInstanceState.getInt(SPINNER_POSIT);
             saveInfoWindow = savedInstanceState.getBoolean(SAVE_INFO_WINDOW);
-            apiNotCalled = savedInstanceState.getBoolean(API_WAS_CALLED);
             animationStarted = savedInstanceState.getBoolean(STARTED_ANIMATION);
             markerIds.addAll(ids);
 
-        } else {
-            apiNotCalled = true;
         }
 
         // Retrieve the content view that renders the map.
@@ -187,10 +187,11 @@ public class MapsActivity extends FragmentActivity implements
                 R.array.distance, android.R.layout.simple_spinner_item);
 // Specify the layout to use when the list of choices appears
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
 // Apply the adapter to the spinner
         mySpinner.setAdapter(adapter);
 
-        //declaring the progress bar
+        //declaring the progress bar and set the visibility
         simpleProgressBar = new ProgressBar(this);
         RelativeLayout.LayoutParams lp1 = new RelativeLayout.LayoutParams
                 (RelativeLayout.LayoutParams.WRAP_CONTENT,
@@ -199,7 +200,11 @@ public class MapsActivity extends FragmentActivity implements
         lp1.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
         simpleProgressBar.setLayoutParams(lp1);
         topWrapper.addView(simpleProgressBar);
-        simpleProgressBar.setVisibility(View.INVISIBLE);
+        if (animationStarted) {
+            simpleProgressBar.setVisibility(View.VISIBLE);
+        } else {
+            simpleProgressBar.setVisibility(View.INVISIBLE);
+        }
 
         //this listener starts when the user check the checkbox in
         checkBoxListener = new View.OnClickListener() {
@@ -233,8 +238,6 @@ public class MapsActivity extends FragmentActivity implements
                         this /* OnConnectionFailedListener */)
                 .addConnectionCallbacks(this)
                 .addApi(LocationServices.API)
-                .addApi(Places.GEO_DATA_API)
-                .addApi(Places.PLACE_DETECTION_API)
                 .build();
         mGoogleApiClient.connect();
 
@@ -255,12 +258,13 @@ public class MapsActivity extends FragmentActivity implements
                     }
                     receivedFilters.addAll(filters);
                     //TODO if sent from the drop down, update u and show clusters
-                    if (isDataRequestedFromDropDown == true && mMap!=null) {
+                    if (mMap!=null) { //isDataRequestedFromDropDown == true &&
+                        Log.d(TAG, "received!");
                         showClusters();
                         updateLocationUI();
                         simpleProgressBar.setVisibility(View.INVISIBLE);
                         animationStarted = false;
-                        isDataRequestedFromDropDown=false;
+                       // isDataRequestedFromDropDown=false;
                     }
 
                     //TODO show toast if the service failed
@@ -285,13 +289,13 @@ public class MapsActivity extends FragmentActivity implements
                         receivedFilters, selectedFilters, checkBoxListener);
 
                 //this means that the activity is recreated and the points have been received from the server
-                if (selectPointsToShow==false) {
-                    //       Log.d(TAG, "removing filter button");
-
-                    imgbutton.setAlpha(0.0f);
-                    filterText.setText("");
-
-                }
+//                if (selectPointsToShow==false) {
+//                    //       Log.d(TAG, "removing filter button");
+//
+//                    imgbutton.setAlpha(0.0f);
+//                    filterText.setText("");
+//
+//                }
             }
 
         } else {
@@ -301,7 +305,7 @@ public class MapsActivity extends FragmentActivity implements
 
         }
 
-        //    Log.d(TAG, "exit onCreate");
+        Log.d(TAG, "exit onCreate");
     }
 
     /**
@@ -309,10 +313,12 @@ public class MapsActivity extends FragmentActivity implements
      */
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        //   Log.d(TAG, "enter onSaveInstanceState");
+          Log.d(TAG, "enter onSaveInstanceState");
 
         if (mMap != null) {
             outState.putParcelable(KEY_CAMERA_POSITION, mMap.getCameraPosition());
+            latIfRestarted = mMap.getCameraPosition().target.latitude;
+            longIfRestarted = mMap.getCameraPosition().target.longitude;
             outState.putParcelable(KEY_LOCATION, mLastKnownLocation);
             ArrayList <String> ids = new  ArrayList <String>(markerIds.size());
             ids.addAll(markerIds);
@@ -323,6 +329,7 @@ public class MapsActivity extends FragmentActivity implements
             outState.putBoolean(KEY_SELECT_POINTS_TO_SHOW, selectPointsToShow);
             outState.putInt(SPINNER_POSIT, posit);
             outState.putFloat(CURRENT_ZOOM, mMap.getCameraPosition().zoom);
+            zoomIfRestarted = mMap.getCameraPosition().zoom;
          //   outState.putBoolean(API_WAS_CALLED, apiNotCalled);
             outState.putBoolean(STARTED_ANIMATION, animationStarted);
 
@@ -335,9 +342,12 @@ public class MapsActivity extends FragmentActivity implements
                 }
             }
             outState.putBoolean(SAVE_INFO_WINDOW, saveInfoWindow);
+
+            Log.i(TAG, "long before restart: " + mMap.getCameraPosition().target.longitude);
+            Log.i(TAG, "zoom before restart: " + mMap.getCameraPosition().zoom);
             super.onSaveInstanceState(outState);
         }
-     //   Log.d(TAG, "exit onSaveInstanceState");
+       Log.d(TAG, "exit onSaveInstanceState");
     }
 
     /**
@@ -346,12 +356,12 @@ public class MapsActivity extends FragmentActivity implements
     @Override
     public void onConnected(Bundle connectionHint) {
         // Build the map.
-        //    Log.d(TAG, "enter onConnected");
+        Log.d(TAG, "enter onConnected");
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        //   Log.d(TAG, "exit onConnected");
+        Log.d(TAG, "exit onConnected");
     }
 
     /**
@@ -375,18 +385,43 @@ public class MapsActivity extends FragmentActivity implements
 
     @Override
     protected void onResume() {
-        //    Log.d(TAG, "enter onResume()");
+        Log.d(TAG, "enter onResume()");
         super.onResume();
         registerReceiver();
-        //    Log.d(TAG, "exit onResume()");
+        Log.d(TAG, "exit onResume()");
 
     }
 
     @Override
     protected void onRestart() {
+        Log.d(TAG, "enter onRestart()");
         super.onRestart();
+        //TODO access the data from bundle related to ZOOM and map position
         isRestarted = true;
+        Log.d(TAG, "exit onRestart()");
     }
+
+
+    @Override
+    protected void onStart() {
+        Log.d(TAG, "enter onStart()");
+        super.onStart();
+        Log.d(TAG, "exit onStart()");
+    }
+
+//    @Override
+//    public void onRestoreInstanceState(Bundle savedInstanceState) {
+//        // Always call the superclass so it can restore the view hierarchy
+//        Log.d(TAG, "enter onRestoreInstanceState(Bundle savedInstanceState)");
+//        super.onRestoreInstanceState(savedInstanceState);
+//
+//        // Restore state members from saved instance
+//       // currentZoom = savedInstanceState.getFloat(CURRENT_ZOOM);
+//       // mCameraPosition = savedInstanceState.getParcelable(KEY_CAMERA_POSITION);
+//        Log.d(TAG, "enter onRestoreInstanceState(Bundle savedInstanceState)");
+//    }
+
+
 
     /**
      * Manipulates the map when it's available.
@@ -394,9 +429,24 @@ public class MapsActivity extends FragmentActivity implements
      */
     @Override
     public void onMapReady(GoogleMap map) {
-        //   Log.d(TAG, "enter onMapReady");
+        Log.d(TAG, "enter onMapReady");
         mMap = map;
         //  mySpinner.setOnItemSelectedListener(this);
+        if (places.size()==0) {
+            //to send the intent to request the data from API
+            Intent intent = new Intent(this, MyIntentService.class);
+            intent.setAction("SUBMIT");
+            intent.putExtra(MyIntentService.URL, "https://albertasights.herokuapp.com/api/v1/points_by_district?district=Calgary");
+            intent.putExtra(MyIntentService.LNG, String.valueOf(mDefaultCoord.longitude));
+            intent.putExtra(MyIntentService.LAT, String.valueOf(mDefaultCoord.latitude));
+            intent.putExtra(MyIntentService.DISTANCE, String.valueOf(30));
+            startService(intent);
+            //TODO start the animation for the period of data loading
+            animationStarted = true;
+            simpleProgressBar.setVisibility(View.VISIBLE);
+
+        }
+
         mySpinner.setSelection(posit);//Arrays.asList(Place.distances).indexOf(Place.distance)
         mySpinner.setOnItemSelectedEvenIfUnchangedListener(
                 this);
@@ -445,22 +495,28 @@ public class MapsActivity extends FragmentActivity implements
         }
 
 
-        if (places.size()==0) {
-           // Log.d(TAG, "&&&&");
-
-        } else {
+        if (places.size()>0)  {
             //if not, that means that the activity is being recreated and the points already received from the server
-            if (selectPointsToShow == true && isRestarted==false) {
+            if (isRestarted==false) {
                 showClusters();
-            } else if (isRestarted==true) {
-                mCameraPosition = mMap.getCameraPosition();
-                currentZoom = mMap.getCameraPosition().zoom;
+                if (simpleProgressBar.getVisibility()==View.VISIBLE) {
+                    simpleProgressBar.setVisibility(View.INVISIBLE);
+                }
+            } else {
+                mCameraPosition = new CameraPosition.Builder()
+                        .target(new LatLng(latIfRestarted,
+                                longIfRestarted))
+                        .build();//mMap.getCameraPosition();
+                currentZoom = zoomIfRestarted;
+             //   Log.i(TAG, "long after restart: " + mCameraPosition.target.longitude);
+             //   Log.i(TAG, "zoom after restart: " + mCameraPosition.zoom);
             }
         }
         updateLocationUI();
+        stabilizeVieWithZoom ();
 
         isRestarted=false;
-//        Log.d(TAG, "exit onMapReady");
+        Log.d(TAG, "exit onMapReady");
     }
 
     private void registerReceiver() {
@@ -636,14 +692,13 @@ public class MapsActivity extends FragmentActivity implements
                     }
                 }
 
-                if (places.size()>0 && selectPointsToShow==true) {
+                if (places.size()>0) { //&& selectPointsToShow==true
                     // set full opacity
                     //       Log.i(TAG, "setting full opacity");
                     imgbutton.setAlpha(1.0f);
                     filterText.setText("Filter places:");
 
-                    //  resetDistance = true;
-                } else if (selectPointsToShow==false || places.size()==0) {
+                } else  { //if (selectPointsToShow==false || places.size()==0)
                     //       Log.i(TAG, "trying to remove filter elements again");
                     // set full transparancy
                     imgbutton.setAlpha(0.0f);
@@ -724,31 +779,22 @@ public class MapsActivity extends FragmentActivity implements
             posit = position;
             //   Log.i(TAG, "distance set "+Place.distance);
             selectPointsToShow = true;
+            updateLocationUI();
 
-            if (places.size()==0) {
-                //TODO if data is still null, send the intent and after getting the response show clusters
-                isDataRequestedFromDropDown = true;
-                Intent intent = new Intent(this, MyIntentService.class);
-                intent.setAction("SUBMIT");
-                intent.putExtra(MyIntentService.URL, "https://albertasights.herokuapp.com/api/v1/points_by_district?district=Calgary");
-                intent.putExtra(MyIntentService.LNG, String.valueOf(mDefaultCoord.longitude));
-                intent.putExtra(MyIntentService.LAT, String.valueOf(mDefaultCoord.latitude));
-                intent.putExtra(MyIntentService.DISTANCE, String.valueOf(30));
-                startService(intent);
-                //TODO start the animation for the period of data loading
-                animationStarted = true;
-                simpleProgressBar.setVisibility(View.VISIBLE);
-
-            } else {
-                if (mClusterManager.getMarkerCollection().getMarkers().size()==0
-                        && mClusterManager.getClusterMarkerCollection().getMarkers().size()==0) {
-                    //  Log.i(TAG, "showing clusters");
-                    showClusters();
-                }
-                updateLocationUI();
-                stabilizeVieWithZoom ();
-
-            }
+//            if (places.size()>0) {
+//                //TODO if data is still null, send the intent and after getting the response show clusters
+//                isDataRequestedFromDropDown = true;
+//
+//            } else {
+//                if (mClusterManager.getMarkerCollection().getMarkers().size()==0
+//                        && mClusterManager.getClusterMarkerCollection().getMarkers().size()==0) {
+//                    //  Log.i(TAG, "showing clusters");
+//                    showClusters();
+//                }
+//
+//                stabilizeVieWithZoom ();
+//
+//            }
 
         }
 
@@ -764,21 +810,29 @@ public class MapsActivity extends FragmentActivity implements
     public void onInfoWindowClick(Marker marker) {
         //   Log.d(TAG, "enter onInfoWindowClick(Marker marker)");
         //open google map and show the route to the selected location
-        String uri = String.format(Locale.ENGLISH, "http://maps.google.com/maps?daddr=%f,%f (%s)",
-                marker.getPosition().latitude, marker.getPosition().longitude, "Going there");
-        Intent mapIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
-        mapIntent.setPackage("com.google.android.apps.maps");
-        startActivity(mapIntent);
-        //    Log.d(TAG, "exit onInfoWindowClick(Marker marker)");
+//        String uri = String.format(Locale.ENGLISH, "http://maps.google.com/maps?daddr=%f,%f (%s)",
+//                marker.getPosition().latitude, marker.getPosition().longitude, "Going there");
+//        Intent mapIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
+//        mapIntent.setPackage("com.google.android.apps.maps");
+        //TODO
+        Intent i = new Intent(getApplicationContext(), PointActivity.class);
+        for (Place p : places) {
+            if (p.getName().equals(marker.getTitle())) {
+                i.putExtra("POINT", p);
+                break;
+            }
+        }
 
+        startActivity(i);
+        //    Log.d(TAG, "exit onInfoWindowClick(Marker marker)");
     }
 
     @Override
     protected void onPause () {
-        //    Log.d(TAG, "enter onPause ()");
+        Log.d(TAG, "enter onPause ()");
         super.onPause();
         this.unregisterReceiver(this.receiver);
-        //    Log.d(TAG, "exit onPause()");
+        Log.d(TAG, "exit onPause()");
     }
 
     public void showFilters(View view) {
@@ -813,7 +867,7 @@ public class MapsActivity extends FragmentActivity implements
                 markerIds.add(p.getName());
 
             }
-            apiNotCalled = false;
+
         } else {
             for (Place p : places) {
                 if (selectedFilters.contains(p.getCategory())) {
@@ -831,6 +885,20 @@ public class MapsActivity extends FragmentActivity implements
     }
 
     @Override
+    protected void onStop() {
+        Log.d(TAG, "enter onStop()");
+        super.onStop();
+        Log.d(TAG, "exit onStop()");
+    }
+
+    @Override
+    protected void onDestroy() {
+        Log.d(TAG, "enter onDestroy()");
+        super.onDestroy();
+        Log.d(TAG, "exit onDestroy()");
+    }
+
+    @Override
     public void onInfoWindowClose(Marker marker) {
       //  Log.d(TAG, "enter onInfoWindowClose(Marker marker)");
 
@@ -840,10 +908,10 @@ public class MapsActivity extends FragmentActivity implements
     private void stabilizeVieWithZoom () {
         if (zoomingOut==false) {
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mMap.getCameraPosition().target,
-                    mMap.getCameraPosition().zoom-0.01f));
+                    mMap.getCameraPosition().zoom-0.005f));
         } else {
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mMap.getCameraPosition().target,
-                    mMap.getCameraPosition().zoom+0.01f));
+                    mMap.getCameraPosition().zoom+0.005f));
         }
         zoomingOut=!zoomingOut;
     }

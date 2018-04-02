@@ -48,6 +48,11 @@
         <service
             android:name=".MyIntentService"
             android:exported="false" />
+
+        <activity
+            android:name=".PointActivity"
+            android:label="@string/title_activity_point"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>

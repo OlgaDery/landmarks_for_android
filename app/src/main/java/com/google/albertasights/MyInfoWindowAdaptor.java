@@ -3,6 +3,7 @@ package com.google.albertasights;
 import com.google.android.gms.maps.GoogleMap;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.support.v4.content.ContextCompat;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
@@ -71,8 +72,8 @@ public class MyInfoWindowAdaptor implements GoogleMap.InfoWindowAdapter {
             descr = (TextView) v.findViewById(R.id.descript);
             name = (TextView) v.findViewById(R.id.name);
             photo = (ImageView) v.findViewById(R.id.img);
-            ImageButton button = (ImageButton) v.findViewById(R.id.directions);
-            button.setImageResource(R.drawable.directions);
+            ImageButton button = (ImageButton) v.findViewById(R.id.more);
+            button.setImageResource(R.drawable.expand_more);
             if (deviceType.equals("tablet")) {
                 descr.setTextSize(context.getResources().getDimension(R.dimen.avg_textsize));
                 name.setTextSize(context.getResources().getDimension(R.dimen.big_textsize));
@@ -124,10 +125,10 @@ public class MyInfoWindowAdaptor implements GoogleMap.InfoWindowAdapter {
                     //small horizontal
                     RelativeLayout rl = (RelativeLayout)v.findViewById(R.id.base);
                     RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(screen_width/100*70,
-                            screen_height-40);
+                            ViewGroup.LayoutParams.WRAP_CONTENT);
                     rl.setLayoutParams(layoutParams);
                     photo.getLayoutParams().height = 250;//(screen_height-80)-50;
-                    photo.getLayoutParams().width = 300;//rl.getWidth()/20-30;
+                    photo.getLayoutParams().width = 330;//rl.getWidth()/20-30;
 
                 }
 
@@ -139,17 +140,16 @@ public class MyInfoWindowAdaptor implements GoogleMap.InfoWindowAdapter {
                     //TODO!!
                     Place.selectedMarkerID = p.getName();
                     String newDescr;
-                    if (p.getDescript().length() > 200) {
-                        newDescr = p.getDescript().substring(0, 201);
+                    if (p.getDescript().length() > 150) {
+                        newDescr = p.getDescript().substring(0, 150);
                     } else {
                         newDescr = p.getDescript();
                     }
-                    descr.setText(newDescr);
-
+                    descr.setText(newDescr + "...");
 
                     // to get a link
                     if (!MapsActivity.markerIds.contains(marker.getTitle())) {
-                        //      Log.i(TAG, "not first time opening");
+                             Log.i(TAG, "link: "+ p.getPhotoLink());
                         if (p.getPhotoLink()!=null && p.getPhotoLink().length()>5)
                         {
                             Picasso.with(context)
@@ -167,16 +167,16 @@ public class MyInfoWindowAdaptor implements GoogleMap.InfoWindowAdapter {
                         count = 0;
                     } else {
                         // not_first_time_showing_info_window = true;
-                        //     Log.i(TAG, "first time opening");
+                            Log.i(TAG, "first time opening");
                         count++;
                         if (toLoad==null) {
                             if (!UiUtils.parseUrl(p.getPhotoLink()).equals("no")) {
 
                                 toLoad = "url";
-                             //   Log.d(TAG, "setting toLoad eq url");
+                                Log.d(TAG, "setting toLoad eq url");
 
                             } else {
-                              //  Log.d(TAG, "setting toLoad eq photo");
+                              Log.d(TAG, "setting toLoad eq photo");
                                 toLoad = "photo";
 
                             }
@@ -225,7 +225,7 @@ public class MyInfoWindowAdaptor implements GoogleMap.InfoWindowAdapter {
 
         @Override
         public void onSuccess() {
-        //    Log.d(TAG, "enter onSuccess()");
+            Log.d(TAG, "enter onSuccess()");
             //    Log.i(TAG, "count: "+ count);
             MapsActivity.markerIds.remove(markerToRefresh.getTitle());
             if (count>2) {
@@ -234,20 +234,20 @@ public class MyInfoWindowAdaptor implements GoogleMap.InfoWindowAdapter {
             }
             markerToRefresh.showInfoWindow();
 
-        //    Log.d(TAG, "exit onSuccess()");
+            Log.d(TAG, "exit onSuccess()");
 
         }
 
         @Override
         public void onError() {
-         //   Log.d(TAG, "enter onError()");
+            Log.d(TAG, "enter onError()");
             toLoad = "photo";
-            //TODO replace with iterator
-            for (Place p: places) {
-                if (p.getName().equals(markerToRefresh.getTitle())) {
-                    p.setPhotoLink("no");
-                }
-            }
+//            //TODO replace with iterator
+//            for (Place p: places) {
+//                if (p.getName().equals(markerToRefresh.getTitle())) {
+//                    p.setPhotoLink("no");
+//                }
+//            }
 
             if (count>2) {
                 count=0;
@@ -255,7 +255,7 @@ public class MyInfoWindowAdaptor implements GoogleMap.InfoWindowAdapter {
             }
             markerToRefresh.showInfoWindow();
 
-         //   Log.d(TAG, "exit onError()");
+         Log.d(TAG, "exit onError()");
 
         }
     }
