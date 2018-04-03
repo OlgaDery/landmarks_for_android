@@ -50,6 +50,7 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/descript"
             android:id="@+id/more"
+            android:background="@color/colorWhite"
             android:onClick="getDirections"
 
             />

@@ -343,8 +343,6 @@ public class MapsActivity extends FragmentActivity implements
             }
             outState.putBoolean(SAVE_INFO_WINDOW, saveInfoWindow);
 
-            Log.i(TAG, "long before restart: " + mMap.getCameraPosition().target.longitude);
-            Log.i(TAG, "zoom before restart: " + mMap.getCameraPosition().zoom);
             super.onSaveInstanceState(outState);
         }
        Log.d(TAG, "exit onSaveInstanceState");
@@ -810,10 +808,6 @@ public class MapsActivity extends FragmentActivity implements
     public void onInfoWindowClick(Marker marker) {
         //   Log.d(TAG, "enter onInfoWindowClick(Marker marker)");
         //open google map and show the route to the selected location
-//        String uri = String.format(Locale.ENGLISH, "http://maps.google.com/maps?daddr=%f,%f (%s)",
-//                marker.getPosition().latitude, marker.getPosition().longitude, "Going there");
-//        Intent mapIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
-//        mapIntent.setPackage("com.google.android.apps.maps");
         //TODO
         Intent i = new Intent(getApplicationContext(), PointActivity.class);
         for (Place p : places) {

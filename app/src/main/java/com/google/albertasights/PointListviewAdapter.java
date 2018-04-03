@@ -1,15 +1,29 @@
 package com.google.albertasights;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.text.method.LinkMovementMethod;
 import android.text.util.Linkify;
+import android.util.DisplayMetrics;
+import android.util.Log;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.BaseAdapter;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.squareup.picasso.Picasso;
+
 import java.util.ArrayList;
+import java.util.Locale;
 
 /**
  * Created by olga on 4/1/18.
@@ -17,7 +31,8 @@ import java.util.ArrayList;
 
 public class PointListviewAdapter extends BaseAdapter {
   //  private ArrayList<String> content;
-    private String[] titles = {"Point name: ", "Description: ", "Web link: ", "Rating: "};
+  private static final String TAG = PointListviewAdapter.class.getSimpleName();
+    private String[] titles = {"Point name: ", "Description: ", "More info: ", "Rating: "};
     private Context context;
     private Place point;
 
@@ -44,6 +59,35 @@ public class PointListviewAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         convertView = LayoutInflater.from(context).inflate(R.layout.point_row, null);
+
+        WindowManager wm = (WindowManager)context.getSystemService(Context.WINDOW_SERVICE);
+        Display display = wm.getDefaultDisplay();
+        DisplayMetrics metrics = new DisplayMetrics();
+        display.getMetrics(metrics);
+        int screen_height = metrics.heightPixels;
+        int screen_width = metrics.widthPixels;
+        //      listItemsValue.clear();
+
+        //initializing the photo
+        ImageView photo = (ImageView) convertView.findViewById(R.id.img);
+
+        if (point.getPhotoLink()!=null && point.getPhotoLink().length()>5)
+        {
+            Picasso.with(context)
+                    .load(UiUtils.parseUrl(point.getPhotoLink()))
+                //    .resize(screen_width-20, 300)
+                //    .onlyScaleDown()
+                //    .centerCrop()
+                    .into(photo);
+
+        } else
+        {
+            photo.getLayoutParams().height = screen_height/3-60;
+            photo.getLayoutParams().width = screen_width/2-60;
+            Picasso.with(context)
+                    .load(R.drawable.no_ph)
+                    .into(photo);
+        }
         TextView name = (TextView) convertView.findViewById(R.id.name);
         name.setText(point.getName());
         TextView descript = (TextView) convertView.findViewById(R.id.descript);

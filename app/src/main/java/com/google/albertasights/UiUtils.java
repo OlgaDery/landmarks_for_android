@@ -92,7 +92,7 @@ public class UiUtils {
     }
 
     public static String getOrientation (Context context) {
-        String orientation = null;
+        String orientation;
         int orientationValue = context.getResources().getConfiguration().orientation;
 
         if (orientationValue == Configuration.ORIENTATION_PORTRAIT) {

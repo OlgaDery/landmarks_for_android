@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     tools:context="com.google.albertasights.PointActivity">
 
     <!--<android.support.design.widget.AppBarLayout-->
@@ -20,31 +20,44 @@
             <!--app:popupTheme="@style/AppTheme.PopupOverlay" />-->
 
     <!--</android.support.design.widget.AppBarLayout>-->
-    <ImageButton
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/close"
-        android:onClick="closeActivity"
-        android:layout_alignParentRight="true"
-        android:layout_marginRight="15dp"
-        android:layout_alignParentTop="true"
-        android:layout_marginBottom="15dp"
-        />
-
-    <ImageView
-        android:layout_marginTop="20dp"
-        android:layout_marginBottom="10dp"
-        android:layout_marginLeft="20dp"
-        android:layout_marginRight="20dp"
-        android:layout_alignParentLeft="true"
-        android:id="@+id/img"
-        android:layout_alignParentTop="true"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="200dp" />
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="15dp"
+        android:layout_marginTop="15dp"
+        android:layout_alignParentTop="true"
+        android:id="@+id/buttons"  >
+
+
+        <ImageButton
+            android:id="@+id/fab"
+            android:background="@drawable/button"
+            android:layout_alignParentRight="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginRight="80dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            />
+
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/like"
+            android:background="@drawable/button"
+            android:onClick="addToSelected"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginLeft="80dp" />
+
+
+    </RelativeLayout>
 
     <ListView
         android:id="@+id/listView1"
-        android:layout_below="@+id/img"
+        android:layout_marginTop="20dp"
+        android:layout_below="@id/buttons"
+        android:layout_marginBottom="20dp"
         android:layout_marginLeft="20dp"
         android:layout_marginRight="20dp"
         android:layout_width="match_parent"
@@ -52,15 +65,5 @@
         android:layout_alignParentLeft="true"
         >
     </ListView>
-
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_marginRight="15dp"
-        android:layout_alignParentBottom="true"
-        android:layout_marginBottom="15dp"
-      />
 
 </RelativeLayout>
