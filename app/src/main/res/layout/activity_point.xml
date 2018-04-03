@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:id="@+id/pointView"
     tools:context="com.google.albertasights.PointActivity">
 
     <!--<android.support.design.widget.AppBarLayout-->
@@ -25,6 +26,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="15dp"
         android:layout_marginTop="15dp"
+        android:layout_toLeftOf="@+id/banner"
         android:layout_alignParentTop="true"
         android:id="@+id/buttons"  >
 
@@ -53,11 +55,20 @@
 
     </RelativeLayout>
 
+    <ImageView
+        android:layout_width="150dp"
+        android:id="@+id/banner"
+        android:layout_alignParentRight="true"
+        android:layout_height="match_parent"
+        android:layout_alignParentTop="true"
+
+        />
+
     <ListView
         android:id="@+id/listView1"
-        android:layout_marginTop="20dp"
-        android:layout_below="@id/buttons"
+        android:layout_below="@+id/buttons"
         android:layout_marginBottom="20dp"
+        android:layout_toLeftOf="@id/banner"
         android:layout_marginLeft="20dp"
         android:layout_marginRight="20dp"
         android:layout_width="match_parent"

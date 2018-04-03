@@ -16,6 +16,7 @@ import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
@@ -29,6 +30,8 @@ public class PointActivity extends AppCompatActivity {
     private ListView listview;
     private static final String TAG = PointActivity.class.getSimpleName();
     private ImageButton closeButton;
+    private String orientation;
+    private String deviceType;
 
  //   ArrayList <String> listItemsValue = new ArrayList<>(4);
 
@@ -36,6 +39,10 @@ public class PointActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_point);
+
+        //getting the type and the orientation of device
+        orientation = UiUtils.getOrientation(getApplicationContext());
+        deviceType = UiUtils.findScreenSize(getApplicationContext());
 
         if (getIntent().getExtras()!= null) {
             Bundle extras = getIntent().getExtras();
@@ -49,18 +56,17 @@ public class PointActivity extends AppCompatActivity {
 
         //        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 //        setSupportActionBar(toolbar);
+        RelativeLayout allTheView = (RelativeLayout) findViewById(R.id.pointView);
+        ImageView banner = (ImageView) findViewById(R.id.banner);
+        if (orientation.equals("Portrait")) {
+            allTheView.removeView(banner);
+        } else {
+            Picasso.with(getApplicationContext())
+                    .load(R.raw.banner)
+                    .into(banner);
+        }
 
         //initializing the buttons
-      //  ImageButton closeButton = (ImageButton) findViewById(R.id.close);
-//        closeButton.setImageResource(R.drawable.close_trimmed);
-//        closeButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                Log.d(TAG, "onclick closeButton");
-//                Intent mapIntent = new Intent(getApplicationContext(), MapsActivity.class);
-//                startActivity(mapIntent);
-//            }
-//        });
 
         ImageButton fab = (ImageButton) findViewById(R.id.fab);
         fab.setImageResource(R.drawable.directions);
