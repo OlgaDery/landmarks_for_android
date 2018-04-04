@@ -2,6 +2,7 @@ package com.google.albertasights;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -18,6 +19,7 @@ import android.view.WindowManager;
 import android.widget.BaseAdapter;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
@@ -35,6 +37,8 @@ public class PointListviewAdapter extends BaseAdapter {
     private String[] titles = {"Point name: ", "Description: ", "More info: ", "Rating: "};
     private Context context;
     private Place point;
+    private String orientation;
+    private String deviceType;
 
     public PointListviewAdapter (Place p, Context context1) {
         this.context = context1;
@@ -66,28 +70,14 @@ public class PointListviewAdapter extends BaseAdapter {
         display.getMetrics(metrics);
         int screen_height = metrics.heightPixels;
         int screen_width = metrics.widthPixels;
+        orientation = UiUtils.getOrientation(context);
+        deviceType = UiUtils.findScreenSize(context);
         //      listItemsValue.clear();
 
         //initializing the photo
         ImageView photo = (ImageView) convertView.findViewById(R.id.img);
+        RelativeLayout listView = (RelativeLayout) convertView.findViewById(R.id.listV);
 
-        if (point.getPhotoLink()!=null && point.getPhotoLink().length()>5)
-        {
-            Picasso.with(context)
-                    .load(UiUtils.parseUrl(point.getPhotoLink()))
-                //    .resize(screen_width-20, 300)
-                //    .onlyScaleDown()
-                //    .centerCrop()
-                    .into(photo);
-
-        } else
-        {
-            photo.getLayoutParams().height = screen_height/3-60;
-            photo.getLayoutParams().width = screen_width/2-60;
-            Picasso.with(context)
-                    .load(R.drawable.no_ph)
-                    .into(photo);
-        }
         TextView name = (TextView) convertView.findViewById(R.id.name);
         name.setText(point.getName());
         TextView descript = (TextView) convertView.findViewById(R.id.descript);
@@ -98,6 +88,52 @@ public class PointListviewAdapter extends BaseAdapter {
         Linkify.addLinks(link, Linkify.ALL);
         TextView rating = (TextView) convertView.findViewById(R.id.rating);
         rating.setText(titles[3] + point.getRating());
+
+        if (deviceType.equals("tablet")) {
+            descript.setTextSize(context.getResources().getDimension(R.dimen.big_textsize));
+            name.setTextSize(context.getResources().getDimension(R.dimen.big_textsize));
+            link.setTextSize(context.getResources().getDimension(R.dimen.big_textsize));
+            rating.setTextSize(context.getResources().getDimension(R.dimen.big_textsize));
+
+
+        } else {
+
+        }
+
+        //setting the photo
+
+        if (point.getPhotoLink()!=null && point.getPhotoLink().length()>5)
+        {
+            if (orientation.equals("Portrait")) {
+                //big portrait screen
+                photo.getLayoutParams().height = screen_height/3;
+                //TODO set the width of the parental element
+                photo.getLayoutParams().width = screen_width-40;
+
+            } else {
+                //big landscape screen
+                photo.getLayoutParams().height = screen_height/3+50;
+                //TODO set the width of the parental element
+                photo.getLayoutParams().width = screen_width - 150-40;
+            }
+            Picasso.with(context)
+                    .load(UiUtils.parseUrl(point.getPhotoLink()))
+                    .resize(photo.getLayoutParams().width, photo.getLayoutParams().height)
+                    //    .onlyScaleDown()
+                    .centerCrop()
+                    .into(photo);
+
+        } else
+        {
+            photo.getLayoutParams().height = screen_height/3-60;
+            photo.getLayoutParams().width = screen_width/2-60;
+            Picasso.with(context)
+                    .load(R.drawable.no_ph)
+                    .into(photo);
+        }
+
+
+
 
         return convertView;
     }

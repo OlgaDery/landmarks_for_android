@@ -58,12 +58,29 @@ public class PointActivity extends AppCompatActivity {
 //        setSupportActionBar(toolbar);
         RelativeLayout allTheView = (RelativeLayout) findViewById(R.id.pointView);
         ImageView banner = (ImageView) findViewById(R.id.banner);
+        WindowManager wm = (WindowManager)getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
+        Display display = wm.getDefaultDisplay();
+        DisplayMetrics metrics = new DisplayMetrics();
+        display.getMetrics(metrics);
         if (orientation.equals("Portrait")) {
             allTheView.removeView(banner);
         } else {
-            Picasso.with(getApplicationContext())
-                    .load(R.raw.banner)
-                    .into(banner);
+            if (deviceType.equals("tablet")) {
+                Picasso.with(getApplicationContext())
+                        .load(R.raw.banner)
+                        .resize(300, metrics.heightPixels)
+                        //    .onlyScaleDown()
+                        .centerCrop()
+                        .into(banner);
+            } else {
+                Picasso.with(getApplicationContext())
+                        .load(R.raw.banner)
+                        .resize(300, metrics.heightPixels)
+                        //    .onlyScaleDown()
+                        .centerCrop()
+                        .into(banner);
+            }
+
         }
 
         //initializing the buttons
@@ -87,6 +104,7 @@ public class PointActivity extends AppCompatActivity {
         likeButton.setImageResource(R.drawable.like);
         listview = (ListView) findViewById(R.id.listView1);
 
+        //TODO provide dimensions, position and device type via constructor
         PointListviewAdapter adapter = new PointListviewAdapter(point, getApplicationContext());
         listview.setAdapter(adapter);
 

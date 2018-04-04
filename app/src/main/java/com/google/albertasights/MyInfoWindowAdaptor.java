@@ -119,7 +119,7 @@ public class MyInfoWindowAdaptor implements GoogleMap.InfoWindowAdapter {
                     //  ll.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
                     //  ll.getLayoutParams().width = 400;
                     photo.getLayoutParams().height = 300;//screen_height/2-20;
-                    photo.getLayoutParams().width = (screen_width/100)*65-20;
+                    photo.getLayoutParams().width = (screen_width/100)*70-20;
 
                 } else {
                     //small horizontal
@@ -154,6 +154,8 @@ public class MyInfoWindowAdaptor implements GoogleMap.InfoWindowAdapter {
                         {
                             Picasso.with(context)
                                     .load(UiUtils.parseUrl(p.getPhotoLink()))
+                                    .resize(photo.getLayoutParams().width, photo.getLayoutParams().height)
+                                    .centerCrop()
                                     .into(photo);
 
                         } else
@@ -203,6 +205,8 @@ public class MyInfoWindowAdaptor implements GoogleMap.InfoWindowAdapter {
         if (this.toLoad.equals("url")) {
             Picasso.with(context)
                     .load(url)
+                    .resize(photo.getLayoutParams().width, photo.getLayoutParams().height)
+                    .centerCrop()
                     .into(photo, new InfoWindowRefresher(marker));
             //   Log.i(TAG, "id removed: "+ )) ;
 
