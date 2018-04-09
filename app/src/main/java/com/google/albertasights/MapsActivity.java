@@ -12,6 +12,8 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -41,7 +43,7 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 
-public class MapsActivity extends FragmentActivity implements
+public class MapsActivity extends MenuActivity implements
         OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, AdapterView.OnItemSelectedListener,
         GoogleMap.OnInfoWindowClickListener, GoogleMap.OnInfoWindowCloseListener{
@@ -52,7 +54,6 @@ public class MapsActivity extends FragmentActivity implements
     private float zoomIfRestarted = 0.0f;
     private double longIfRestarted = 0.0f;
     private double latIfRestarted = 0.0f;
-    //
 
     private GoogleMap mMap;
     private CameraPosition mCameraPosition;
@@ -152,6 +153,8 @@ public class MapsActivity extends FragmentActivity implements
 
         // Retrieve the content view that renders the map.
         setContentView(R.layout.activity_maps);
+     //   Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+ //       setSupportActionBar(toolbar);
 
         //getting the type and the orientation of device
         orientation = UiUtils.getOrientation(getApplicationContext());

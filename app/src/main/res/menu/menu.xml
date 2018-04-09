@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:checkable="true"
+    android:checked="true">
+
+    <item android:id="@+id/opt_filters"
+        app:showAsAction="never"
+        android:title="filters"/>
+
+    <item android:id="@+id/all_points"
+        app:showAsAction="never"
+        android:title="all"/>
+
+</menu>

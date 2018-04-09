@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.ContextCompat;
 import android.text.method.LinkMovementMethod;
 import android.text.util.Linkify;
 import android.util.DisplayMetrics;
@@ -85,7 +86,27 @@ public class PointListviewAdapter extends BaseAdapter {
         TextView link = (TextView) convertView.findViewById(R.id.link);
         link.setText(titles[2] + point.getWebLink());
 
-        Linkify.addLinks(link, Linkify.ALL);
+     //   Linkify.addLinks(link, Linkify.ALL);
+        //TODO
+
+        View.OnClickListener listener = new View.OnClickListener() {
+
+            public void onClick(View v) {
+                Log.d(TAG, "enter onClick (View view) ");
+                try{
+                    Intent myWebLink = new Intent(android.content.Intent.ACTION_VIEW);
+                    myWebLink.setData(Uri.parse(point.getWebLink()));
+                    context.startActivity(myWebLink);
+                } catch (Exception e) {
+                    UiUtils.showToast(context, "Error, maybe no browsers have been installed");
+                }
+
+                Log.d(TAG, "exit onClick (View view) ");
+            }
+        };
+        link.setTextColor(ContextCompat.getColor(context, R.color.colorAccent));
+        link.setOnClickListener(listener);
+
         TextView rating = (TextView) convertView.findViewById(R.id.rating);
         rating.setText(titles[3] + point.getRating());
 

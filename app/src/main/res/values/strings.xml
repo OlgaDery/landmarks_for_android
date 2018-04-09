@@ -16,4 +16,5 @@
 
     </string-array>
     <string name="title_activity_point">PointActivity</string>
+    <string name="title_activity_menu">MenuActivity</string>
 </resources>
