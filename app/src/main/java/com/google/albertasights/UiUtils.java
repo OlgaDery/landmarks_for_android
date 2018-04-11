@@ -27,35 +27,6 @@ public class UiUtils {
 
     public static boolean showFilters = false;
 
-    public static void loadImage(String url, Context context, ImageView img) {
-        //   Log.d(TAG, "enter loadImage(String url, Context context)");
-
-        try {
-            String modifiedUrl ="";
-
-            if (url!=null && url.length()>5) {
-                modifiedUrl = url.replace("\\", "");
-                //   Log.i(TAG, "modified: "+modifiedUrl);
-
-            } else {
-                modifiedUrl = "https://www.ivestraining.com/Assume-Nothing.png";
-                //    Log.d(TAG, "no image link");
-            }
-            Picasso.with(context).load(modifiedUrl).into(img);
-            //  Glide.with(context).load(modifiedUrl).into(img);
-
-
-        } catch (Exception e) {
-            Log.e(TAG, e.getMessage());
-
-        } finally {
-
-            //     Log.d(TAG, "exit loadImage(String url, Context context)");
-        }
-
-
-    }
-
     public static String parseUrl (String url) {
         String modifiedUrl ="";
 
@@ -107,8 +78,8 @@ public class UiUtils {
     public static void configureFilters (Context context, LinearLayout filter, String deviceType,
                                          ArrayList<String> receivedFilters,
                                          ArrayList<String> selectedFilters,
-                                         View.OnClickListener checkBoxListener) {
-
+                                         View.OnClickListener checkBoxListener, String currentFilter) {
+        Log.d(TAG, "enter configureFilters");
 
         ArrayList<String> lst = new ArrayList<>(receivedFilters.size());
         lst.addAll(receivedFilters);
@@ -127,6 +98,7 @@ public class UiUtils {
 
 //set the space between checkboxes
         for (int i = 0; i < receivedFilters.size(); i++) {
+            Log.d(TAG, "!!!");
 
             CheckBox checkBox = new CheckBox(context);
 

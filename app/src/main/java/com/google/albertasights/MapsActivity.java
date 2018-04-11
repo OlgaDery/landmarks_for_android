@@ -1,29 +1,28 @@
 package com.google.albertasights;
 
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.location.Location;
-import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -37,16 +36,18 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.maps.android.clustering.ClusterManager;
 import com.google.maps.android.clustering.view.DefaultClusterRenderer;
+import com.google.maps.android.data.Point;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 public class MapsActivity extends MenuActivity implements
         OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener, AdapterView.OnItemSelectedListener,
-        GoogleMap.OnInfoWindowClickListener, GoogleMap.OnInfoWindowCloseListener{
+        GoogleApiClient.OnConnectionFailedListener,
+        GoogleMap.OnInfoWindowClickListener, GoogleMap.OnInfoWindowCloseListener{//AdapterView.OnItemSelectedListener,
     // LocationListener, GoogleMap.OnCameraMoveListener, GoogleMap.OnCameraMoveStartedListener,
 
     private static final String TAG = MapsActivity.class.getSimpleName();
@@ -61,7 +62,7 @@ public class MapsActivity extends MenuActivity implements
     // The entry point to Google Play services, used by the Places API and Fused Location Provider.
     private GoogleApiClient mGoogleApiClient;
     private final LatLng mDefaultCoord = new LatLng(51.0533674, -114.072997);
-    private static final int DEFAULT_ZOOM = 15;
+    private float default_zoom = 9.0f;
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private boolean mLocationPermissionGranted;
     private float currentZoom = 0.0f;
@@ -70,15 +71,21 @@ public class MapsActivity extends MenuActivity implements
     //it helps to make the cluster more stable
     private boolean zoomingOut = true;
 
-    private TextView txt;
-    private MySpinner mySpinner;//
+  //  private TextView txt;
+  //  private MySpinner mySpinner;//
     private LinearLayout filter;
     private RelativeLayout rr;
     private RelativeLayout mapWrapper;
-    private RelativeLayout topWrapper;
-    private ImageButton imgbutton;
-    private TextView filterText;
+    private LinearLayout topWrapper;
+
+    private ImageButton showFilterSection;
+    private ImageButton showFilters;
+    private ImageButton showLoved;
+    private ImageButton showAll;
+    private ImageButton clearAll;
+   // private TextView filterText;
     private ProgressBar simpleProgressBar;
+    private Map<String, Boolean> filters = new HashMap<>(1);
 
 
     private String orientation;
@@ -100,6 +107,10 @@ public class MapsActivity extends MenuActivity implements
     //filters received from APIs
     private ArrayList<String> receivedFilters = new ArrayList<>();
     //to store markerIDs to track the photo loading, if the photo of the marker has once been loaded, it`s Id should be removed
+   //TODO to store the name of current filter using for points
+    private String current_filter;
+
+    //TODO place them in ModelView???
     public static Set<String> markerIds = new HashSet<>();
     //all the markers is stored here and extracted to modify
     //   public Set<Marker> markers = new HashSet<>();
@@ -107,12 +118,10 @@ public class MapsActivity extends MenuActivity implements
     private boolean selectPointsToShow = false;
     // The geographical location where the device is currently located. That is, the last-known
     // location retrieved by the Fused Location Provider.
-    private boolean isDataRequestedFromDropDown = false;
-    private Location mLastKnownLocation;
+  //  private Location mLastKnownLocation;
 
     // Keys for storing activity state.
     private static final String KEY_CAMERA_POSITION = "camera_position";
-    private static final String KEY_LOCATION = "location";
     private static final String CURRENT_ZOOM = "zoom";
     private static final String KEY_MARKER_IDS = "marker_ids";
     private static final String KEY_RECEIVED_FILTERS = "received_fltrs";
@@ -122,9 +131,18 @@ public class MapsActivity extends MenuActivity implements
     private static final String SPINNER_POSIT = "spinner_posit";
     private static final String SAVE_INFO_WINDOW = "save_i_w";
     private static final String STARTED_ANIMATION = "animation";
+
+    //button tags
+    private static final String FILTERS = "filters";
+    private static final String LOVED = "loved";
+    private static final String ALL = "all";
+    private static final String CLEAR_MAP = "clear_map";
+
     private View.OnClickListener checkBoxListener;
+    private View.OnClickListener filterButtonsListener;
 
     private BroadcastReceiver receiver;
+    private MapViewModel viewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -136,7 +154,7 @@ public class MapsActivity extends MenuActivity implements
 
         // Retrieve all the saved variable
         if (savedInstanceState != null) {
-            mLastKnownLocation = savedInstanceState.getParcelable(KEY_LOCATION);
+       //     mLastKnownLocation = savedInstanceState.getParcelable(KEY_LOCATION);
             receivedFilters = savedInstanceState.getStringArrayList(KEY_RECEIVED_FILTERS);
             selectedFilters = savedInstanceState.getStringArrayList(KEY_SELECTED_FILTERS);
             selectPointsToShow = savedInstanceState.getBoolean(KEY_SELECT_POINTS_TO_SHOW);
@@ -161,38 +179,47 @@ public class MapsActivity extends MenuActivity implements
         deviceType = UiUtils.findScreenSize(getApplicationContext());
 
         //initializing the elements
-        txt =(TextView) findViewById(R.id.savePlace);
-        filterText = (TextView) findViewById(R.id.txt);
+     //   txt =(TextView) findViewById(R.id.savePlace);
+     //   filterText = (TextView) findViewById(R.id.txt);
         rr = (RelativeLayout) findViewById(R.id.rr);
         mapWrapper = (RelativeLayout) findViewById(R.id.mapWrapper);
       //  topWrapper = (RelativeLayout) findViewById(R.id.wrapper_top);
-        imgbutton = (ImageButton) findViewById(R.id.imageB);
-        imgbutton.setImageResource(R.drawable.expand_more);
-        imgbutton.getBackground().setAlpha(0);
-        if (deviceType.equals("tablet")) {
-            txt.setTextSize(getApplicationContext().getResources().getDimension(R.dimen.big_textsize));
-            filterText.setTextSize(getApplicationContext().getResources().getDimension(R.dimen.big_textsize));
-        }
+        showFilterSection = (ImageButton) findViewById(R.id.imageB);
+        showFilterSection.setImageResource(R.drawable.expand_more);
+        showFilterSection.getBackground().setAlpha(0);
+
+        showFilters = (ImageButton) findViewById(R.id.showFiltersOnly);
+        showFilters.setImageResource(R.drawable.filters);
+        showFilters.getBackground().setAlpha(0);
+        showFilters.setTag(FILTERS);
+
+        showLoved = (ImageButton) findViewById(R.id.showLoved);
+        showLoved.setImageResource(R.drawable.like);
+        showLoved.getBackground().setAlpha(0);
+        showLoved.setTag(LOVED);
+
+        showAll = (ImageButton) findViewById(R.id.showAll);
+        showAll.setImageResource(R.drawable.show_sorted);
+        showAll.getBackground().setAlpha(0);
+        showAll.setTag(ALL);
+
+        clearAll = (ImageButton) findViewById(R.id.clearMap);
+        clearAll.setImageResource(R.drawable.clear);
+        clearAll.getBackground().setAlpha(0);
+        clearAll.setTag(CLEAR_MAP);
+     //   if (deviceType.equals("tablet")) {
+           // txt.setTextSize(getApplicationContext().getResources().getDimension(R.dimen.big_textsize));
+        //    filterText.setTextSize(getApplicationContext().getResources().getDimension(R.dimen.big_textsize));
+     //   }
 
         filter = (LinearLayout) findViewById(R.id.filters);
 
         // set the position of the spinner
-        topWrapper = (RelativeLayout) findViewById(R.id.wrapperTop);
-        mySpinner = new MySpinner(this);
+        topWrapper = (LinearLayout) findViewById(R.id.wrapperTop);
+    //    mySpinner = new MySpinner(this);
         RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams
                 (RelativeLayout.LayoutParams.WRAP_CONTENT,
                         RelativeLayout.LayoutParams.WRAP_CONTENT);
-
-        lp.addRule(RelativeLayout.BELOW, txt.getId());
-        mySpinner.setLayoutParams(lp);
-        topWrapper.addView(mySpinner);
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
-                R.array.distance, android.R.layout.simple_spinner_item);
-// Specify the layout to use when the list of choices appears
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-
-// Apply the adapter to the spinner
-        mySpinner.setAdapter(adapter);
 
         //declaring the progress bar and set the visibility
         simpleProgressBar = new ProgressBar(this);
@@ -223,16 +250,88 @@ public class MapsActivity extends MenuActivity implements
 
                 showClusters();
 
-                mCameraPosition = mMap.getCameraPosition();
-                currentZoom = mMap.getCameraPosition().zoom;
-                updateLocationUI();
-                // TODO add some extra zoom in/out to stabilize clusters, with a boolean to control zoom in/out
+//                mCameraPosition = mMap.getCameraPosition();
+//                currentZoom = mMap.getCameraPosition().zoom;
+//                updateLocationUI();
+                // add some extra zoom in/out to stabilize clusters, with a boolean to control zoom in/out
                 stabilizeVieWithZoom ();
 
 
                 //      Log.d(TAG, "exit onClick checkBox(View view) ");
             }
         };
+
+        //TODO declare listeners for imagebuttons
+        //TODO set the listener for all the functional buttons. It has to change the filters map depending on the selected button.
+        //TODO If the "clear" button is selected, than the map should be empty. viewModel.updateFilterMap(filters) is called. Also the
+        //TODO clusters have to be reload and the lists of filters (for checkbox setting) as well
+        filterButtonsListener = new View.OnClickListener() {
+
+            public void onClick(View v) {
+                Log.d(TAG, "enter onClick imageButtons(View view) ");
+                String button =((ImageButton) v).getTag().toString();
+                if (filters.containsKey(button)) {
+                    return;
+                }
+              //  current_filter = button;
+                if (button.equals(FILTERS)) {
+                    filters.clear();
+                    filters.put(FILTERS, UiUtils.showFilters);
+
+                } else if (button.equals(LOVED)) {
+                    filters.clear();
+                    filters.put(LOVED, UiUtils.showFilters);
+
+                } else if (button.equals(ALL)) {
+                    filters.clear();
+                    filters.put(ALL, UiUtils.showFilters);
+
+                } else {
+                    //clear all
+                    filters.clear();
+                    filters.put(CLEAR_MAP, UiUtils.showFilters);
+                }
+                viewModel.updateFilterMap(filters);
+
+            //    mCameraPosition = mMap.getCameraPosition();
+            //    currentZoom = mMap.getCameraPosition().zoom;
+            //    updateLocationUI();
+                // add some extra zoom in/out to stabilize clusters, with a boolean to control zoom in/out
+            //    stabilizeVieWithZoom ();
+                Log.d(TAG, "exit onClick imageButtons(View view) ");
+            }
+        };
+
+        showLoved.setOnClickListener(filterButtonsListener);
+        showAll.setOnClickListener(filterButtonsListener);
+        showFilters.setOnClickListener(filterButtonsListener);
+        clearAll.setOnClickListener(filterButtonsListener);
+
+        View.OnClickListener showMoreButtonsListener = new View.OnClickListener() {
+            public void onClick(View view) {
+                //   Log.d(TAG, "enter showFilters(View view)");
+              //  UiUtils.showFilters=!UiUtils.showFilters;
+
+                //TODO visible
+                showFilters.setAlpha(1.0f);
+                showLoved.setAlpha(1.0f);
+                showAll.setAlpha(1.0f);
+                clearAll.setAlpha(1.0f);
+
+                if (filters.isEmpty()) {
+                    filters.put(FILTERS, !UiUtils.showFilters);
+                //    current_filter = FILTERS;
+                } else {
+                    filters.clear();
+                    filters.put(current_filter, !UiUtils.showFilters);
+                }
+                viewModel.updateFilterMap(filters);
+
+                //    Log.d(TAG, "exit showFilters(View view)");
+            }
+        };
+
+        showFilterSection.setOnClickListener(showMoreButtonsListener);
 
         // Build the Play services client for use by the Fused Location Provider and the Places API.
         // Use the addApi() method to request the Google Places API and the Fused Location Provider.
@@ -255,22 +354,17 @@ public class MapsActivity extends MenuActivity implements
                     ArrayList<Place> placesLst = (ArrayList)intent.getSerializableExtra("PLACES");
                     //         Log.i(TAG, "places: "+ placesLst.size());
                     places.addAll(placesLst);
-                    HashSet<String> filters = new HashSet<String> ();
-                    for (Place p: places) {
-                        filters.add(p.getCategory());
-                    }
-                    receivedFilters.addAll(filters);
-                    //TODO if sent from the drop down, update u and show clusters
+
                     if (mMap!=null) { //isDataRequestedFromDropDown == true &&
                         Log.d(TAG, "received!");
                         showClusters();
-                        updateLocationUI();
+                        updateLocationUI(filters);
                         simpleProgressBar.setVisibility(View.INVISIBLE);
                         animationStarted = false;
                        // isDataRequestedFromDropDown=false;
                     }
 
-                    //TODO show toast if the service failed
+                    // show toast if the service failed
                     UiUtils.showToast(getApplicationContext(),
                             "got the data");
 
@@ -284,29 +378,34 @@ public class MapsActivity extends MenuActivity implements
 
         if (places.size()>0) {
 
-            if (UiUtils.showFilters==true) {
-                //the distance was selected before activity was destroyed, the UI contained the filters and the filter button.
-                //We are recreating the filters with check boxes
-
-                UiUtils.configureFilters(getApplicationContext(), filter, deviceType,
-                        receivedFilters, selectedFilters, checkBoxListener);
-
-                //this means that the activity is recreated and the points have been received from the server
-//                if (selectPointsToShow==false) {
-//                    //       Log.d(TAG, "removing filter button");
+//            if (UiUtils.showFilters==true) {
+//                //the distance was selected before activity was destroyed, the UI contained the filters and the filter button.
+//                //We are recreating the filters with check boxes
 //
-//                    imgbutton.setAlpha(0.0f);
-//                    filterText.setText("");
-//
-//                }
-            }
+//                UiUtils.configureFilters(getApplicationContext(), filter, deviceType,
+//                        receivedFilters, selectedFilters, checkBoxListener);
+//            }
 
         } else {
             //      Log.d(TAG, "removing filter button - 2");
-            imgbutton.setAlpha(0.0f);
-            filterText.setText("");
+            showFilterSection.setAlpha(0.0f);
+            showLoved.setAlpha(0.0f);
+            showAll.setAlpha(0.0f);
+            showFilters.setAlpha(0.0f);
+            clearAll.setAlpha(0.0f);
+         //   filterText.setText("");
 
         }
+        //TODO if not instantiated
+        viewModel = ViewModelProviders.of(this).get(MapViewModel.class);
+        final Observer<Map<String, Boolean>> filtersObserver = new Observer<Map<String, Boolean>>() {
+            @Override
+            public void onChanged(@Nullable final Map<String, Boolean> newFilter) {
+                // Update the UI, in this case, a TextView.
+                updateLocationUI(newFilter);
+            }
+        };
+        viewModel.filtersToApply.observe(this, filtersObserver);
 
         Log.d(TAG, "exit onCreate");
     }
@@ -322,7 +421,7 @@ public class MapsActivity extends MenuActivity implements
             outState.putParcelable(KEY_CAMERA_POSITION, mMap.getCameraPosition());
             latIfRestarted = mMap.getCameraPosition().target.latitude;
             longIfRestarted = mMap.getCameraPosition().target.longitude;
-            outState.putParcelable(KEY_LOCATION, mLastKnownLocation);
+     //       outState.putParcelable(KEY_LOCATION, mLastKnownLocation);
             ArrayList <String> ids = new  ArrayList <String>(markerIds.size());
             ids.addAll(markerIds);
             outState.putStringArrayList(KEY_MARKER_IDS, ids);
@@ -397,7 +496,6 @@ public class MapsActivity extends MenuActivity implements
     protected void onRestart() {
         Log.d(TAG, "enter onRestart()");
         super.onRestart();
-        //TODO access the data from bundle related to ZOOM and map position
         isRestarted = true;
         Log.d(TAG, "exit onRestart()");
     }
@@ -410,20 +508,6 @@ public class MapsActivity extends MenuActivity implements
         Log.d(TAG, "exit onStart()");
     }
 
-//    @Override
-//    public void onRestoreInstanceState(Bundle savedInstanceState) {
-//        // Always call the superclass so it can restore the view hierarchy
-//        Log.d(TAG, "enter onRestoreInstanceState(Bundle savedInstanceState)");
-//        super.onRestoreInstanceState(savedInstanceState);
-//
-//        // Restore state members from saved instance
-//       // currentZoom = savedInstanceState.getFloat(CURRENT_ZOOM);
-//       // mCameraPosition = savedInstanceState.getParcelable(KEY_CAMERA_POSITION);
-//        Log.d(TAG, "enter onRestoreInstanceState(Bundle savedInstanceState)");
-//    }
-
-
-
     /**
      * Manipulates the map when it's available.
      * This callback is triggered when the map is ready to be used.
@@ -432,7 +516,39 @@ public class MapsActivity extends MenuActivity implements
     public void onMapReady(GoogleMap map) {
         Log.d(TAG, "enter onMapReady");
         mMap = map;
-        //  mySpinner.setOnItemSelectedListener(this);
+                /*
+         * Request location permission, so that we can get the location of the
+         * device. The result of the permission request is handled by a callback,
+         * onRequestPermissionsResult.
+         */
+
+        if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
+                android.Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+
+            mLocationPermissionGranted = true;
+        } else {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                    PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+        }
+
+        if (mLocationPermissionGranted) {
+
+            mMap.setMyLocationEnabled(true);
+            mMap.getUiSettings().setMyLocationButtonEnabled(true);
+
+
+
+            //  Log.i(TAG, "non-clustered markers: "+mClusterManager.getMarkerCollection().getMarkers().size());
+
+        } else {
+            mMap.setMyLocationEnabled(false);
+            //   Log.d(TAG, "smth wrong with permissions");
+            //TODO show the toast that permiss not granted
+            mMap.getUiSettings().setMyLocationButtonEnabled(false);
+        }
+
         if (places.size()==0) {
             //to send the intent to request the data from API
             Intent intent = new Intent(this, MyIntentService.class);
@@ -442,15 +558,15 @@ public class MapsActivity extends MenuActivity implements
             intent.putExtra(MyIntentService.LAT, String.valueOf(mDefaultCoord.latitude));
             intent.putExtra(MyIntentService.DISTANCE, String.valueOf(30));
             startService(intent);
-            //TODO start the animation for the period of data loading
+            // start the animation for the period of data loading
             animationStarted = true;
             simpleProgressBar.setVisibility(View.VISIBLE);
 
         }
 
-        mySpinner.setSelection(posit);//Arrays.asList(Place.distances).indexOf(Place.distance)
-        mySpinner.setOnItemSelectedEvenIfUnchangedListener(
-                this);
+    //    mySpinner.setSelection(posit);//Arrays.asList(Place.distances).indexOf(Place.distance)
+    //    mySpinner.setOnItemSelectedEvenIfUnchangedListener(
+    //            this);
 
         if (isRestarted == false) {
             //that means that the activity is created the first time or recreated
@@ -477,12 +593,19 @@ public class MapsActivity extends MenuActivity implements
                         //          Log.d(TAG, "cluster clicked");
                         return true;
                     } else {
+
                         if (UiUtils.showFilters==true) {
-                            UiUtils.showFilters=!UiUtils.showFilters;
-                            mCameraPosition = mMap.getCameraPosition();
-                            currentZoom = mMap.getCameraPosition().zoom;
-                            updateLocationUI();
-                            mCameraPosition=null;
+                          //  UiUtils.showFilters=!UiUtils.showFilters;
+                            //TODO update filters in ViewModel
+                            filters.clear();
+                            filters.put(current_filter, false);
+                            viewModel.updateFilterMap(filters);
+
+                            //
+                        //    mCameraPosition = mMap.getCameraPosition();
+                        //    currentZoom = mMap.getCameraPosition().zoom;
+                        //    updateLocationUI();
+                        //    mCameraPosition=null;
                         }
 
                         m.showInfoWindow();
@@ -499,6 +622,19 @@ public class MapsActivity extends MenuActivity implements
         if (places.size()>0)  {
             //if not, that means that the activity is being recreated and the points already received from the server
             if (isRestarted==false) {
+                LatLng myLatLng;
+                if (mCameraPosition!= null) {
+                    myLatLng =  new LatLng(mCameraPosition.target.latitude,
+                            mCameraPosition.target.longitude);
+                } else {
+
+                    myLatLng = mDefaultCoord;
+                    currentZoom = default_zoom;
+                }
+
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLatLng,
+                        currentZoom));
+
                 showClusters();
                 if (simpleProgressBar.getVisibility()==View.VISIBLE) {
                     simpleProgressBar.setVisibility(View.INVISIBLE);
@@ -512,8 +648,13 @@ public class MapsActivity extends MenuActivity implements
              //   Log.i(TAG, "long after restart: " + mCameraPosition.target.longitude);
              //   Log.i(TAG, "zoom after restart: " + mCameraPosition.zoom);
             }
+        } else {
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mDefaultCoord,
+                    default_zoom));
         }
-        updateLocationUI();
+
+        //TODO in the activity has been recreation or reset the ViewModel data has to be used
+        updateLocationUI(filters);
         stabilizeVieWithZoom ();
 
         isRestarted=false;
@@ -550,262 +691,102 @@ public class MapsActivity extends MenuActivity implements
                 }
             }
         }
-        updateLocationUI();
+     //   updateLocationUI();
     }
 
 
     /**
      * Updates the map's UI settings based on whether the user has granted location permission.
      */
-    private void updateLocationUI() {
 
-        //Log.d(TAG, "enter updateLocationUI");
+    //TODO add observer to follow the changes in the filter map, depending on it`s state add or remove the functional buttons
+    //TODO and filter bar. Modify the lists of received and selected filters (may be the list of loved points or list of all
+    //TODO points names). Call the updateLocationUI()
+
+    private void updateLocationUI(Map <String, Boolean> newFilter) {
+
+        Log.d(TAG, "enter updateLocationUI");
+
         if (mMap == null) {
             UiUtils.showToast(getApplicationContext(),
                     "Map is currently unavailable");
             return;
         }
 
-        /*
-         * Request location permission, so that we can get the location of the
-         * device. The result of the permission request is handled by a callback,
-         * onRequestPermissionsResult.
-         */
+//TODO set visibility for buttons
+        if (places.size()>0) { //&& selectPointsToShow==true
+            // set full opacity
+            //       Log.i(TAG, "setting full opacity");
+            showFilterSection.setAlpha(1.0f);
+            //   filterText.setText("Select:");
 
-        if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
-                android.Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED) {
-
-            mLocationPermissionGranted = true;
-        } else {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
-                    PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
         }
+//        else  { //if (selectPointsToShow==false || places.size()==0)
+//            //       Log.i(TAG, "trying to remove filter elements again");
+//            // set full transparancy
+//            //    filterText.setText("");
+//
+//        }
 
-        if (mLocationPermissionGranted) {
+        //TODO logic to process filters (add/remove element with filters, change the list of filters, change the buttons color)
+       if (!newFilter.isEmpty()) {
+           ArrayList<String> temp = new ArrayList<String>(0);
+           temp.addAll(newFilter.keySet());
+           Log.d(TAG, "current filter: " + newFilter.get(temp.get(0)));
+           Log.d(TAG, "show sidebar: " + temp.get(0));
+           if (!newFilter.containsKey(current_filter)) {
+               receivedFilters.clear();
+               selectedFilters.clear();
+               if (newFilter.containsKey(FILTERS)) {
+                   for (Place p : places) {
+                       if (!receivedFilters.contains(p.getCategory()))
+                       receivedFilters.add(p.getCategory());
+                   }
 
-            //TODO request the data here
-            mMap.setMyLocationEnabled(true);
-            mMap.getUiSettings().setMyLocationButtonEnabled(true);
+               } else if (newFilter.containsKey(LOVED)) {
+                   //  receivedFilters
 
-            try {
+               } else if (newFilter.containsKey(ALL)) {
+                   for (Place p : places) {
+                       receivedFilters.add(p.getName());
+                   }
 
-                mLastKnownLocation = LocationServices.FusedLocationApi
-                        .getLastLocation(mGoogleApiClient);
-                //          Log.i(TAG, "lat " + Double.toString(mLastKnownLocation.getLatitude()));
-                //          Log.i(TAG, "lng " + Double.toString(mLastKnownLocation.getLongitude()));
-                LatLng myLatLng;
+               } else if (newFilter.containsKey(CLEAR_MAP)) {
+                   //TODO set all buttons of the same color, remove filter view
+                   //            showFilterSection.setAlpha(0.0f);
+                   receivedFilters.clear();
+                   selectedFilters.clear();
+                   newFilter.clear();
+                   showAll.setAlpha(0.0f);
+                   showFilters.setAlpha(0.0f);
+                   showLoved.setAlpha(0.0f);
+                   clearAll.setAlpha(0.0f);
+                   filter.removeAllViews();
+                   return;
+               }
+           }
 
-                //reset the zoom level for tablets
+           //   showFilters.setColorFilter(new PorterDuffColorFilter(Color.BLUE, PorterDuff.Mode.SRC_IN));
 
-                if(mLastKnownLocation !=null) {
-                    //that means that the saved instance is recreated and the camera may be centred not on the device location
-                    if (mCameraPosition!= null) {
-                        myLatLng =  new LatLng(mCameraPosition.target.latitude,
-                                mCameraPosition.target.longitude);
-                    } else {
-                        if (useDevicelocation == true) {
-                            //using device location
-                            myLatLng = new LatLng(mLastKnownLocation.getLatitude(),
-                                    mLastKnownLocation.getLongitude());
-                        } else {
-                            //TODO device is too far, using Calgary downtown
-                            myLatLng = mDefaultCoord;
-                        }
-                    }
+           //set the filter element on screen
 
-                    //move the camera according to selected or default distance
-                    if (currentZoom==0.0f) {
-                        //it is not set
-                        if (Place.distance==1 && deviceType.equals("phone")) {
-                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLatLng,
-                                    14.5f));
-                            //           Log.i(TAG, "camera is 18");
+           if (!newFilter.containsValue(UiUtils.showFilters) && UiUtils.showFilters==false) {
+               //show
+               filter.removeAllViews();
+               UiUtils.configureFilters(getApplicationContext(), filter, deviceType,
+                       receivedFilters, selectedFilters, checkBoxListener, current_filter);
 
-                        } else if (Place.distance==3 && deviceType.equals("phone")) {
-                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLatLng,
-                                    13.0f));
-                            //           Log.i(TAG, "camera is 13");
+           } else if (!newFilter.containsValue(UiUtils.showFilters) && UiUtils.showFilters==true) {
+               filter.removeAllViews();
+           }
 
-                        } else if (Place.distance==5 && deviceType.equals("phone")) {
-                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLatLng,
-                                    12.0f));
-                            //          Log.i(TAG, "camera is 12");
+           current_filter = temp.get(0);
+           UiUtils.showFilters = newFilter.get(current_filter);
 
-                        } else if (Place.distance==7 && deviceType.equals("phone")) {
-                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLatLng,
-                                    11.5f));
-                            //            Log.i(TAG, "camera is 11");
+       }
 
-                        } else if (Place.distance>=10 && deviceType.equals("phone")){
-                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLatLng,
-                                    11.0f));
-                            //            Log.i(TAG, "camera is 10");
-                        }
-
-                        else if (Place.distance==1 && deviceType.equals("tablet")) {
-                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLatLng,
-                                    16.0f));
-                        }
-
-                        else if (Place.distance==3 && deviceType.equals("tablet")) {
-                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLatLng,
-                                    14.5f));
-
-                        } else if (Place.distance==5 && deviceType.equals("tablet")) {
-                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLatLng,
-                                    13.0f));
-
-                        } else if (Place.distance==7 && deviceType.equals("tablet")) {
-                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLatLng,
-                                    12.5f));
-
-                        } else if (Place.distance==10 && deviceType.equals("tablet")) {
-                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLatLng,
-                                    12.0f));
-                        }
-                    } else {
-                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLatLng,
-                                currentZoom));
-                    }
-                    currentZoom = 0.0f;
-                    mCameraPosition = null;
-
-                }
-
-
-                //    Log.i(TAG, "show filter in UI_update: "+UiUtils.showFilters);
-                if (!UiUtils.showFilters) {
-                    //        Log.d(TAG, "show filters false");
-                    filter.removeAllViews();
-
-
-                } else {
-                    //       Log.d(TAG, "need to show filters");
-                    filter.removeAllViews();
-                    try {
-                        UiUtils.configureFilters(getApplicationContext(), filter, deviceType,
-                                receivedFilters, selectedFilters, checkBoxListener);
-
-                    } catch (Exception e) {
-                        //           Log.i(TAG, "filter layer already added");
-                    }
-                }
-
-                if (places.size()>0) { //&& selectPointsToShow==true
-                    // set full opacity
-                    //       Log.i(TAG, "setting full opacity");
-                    imgbutton.setAlpha(1.0f);
-                    filterText.setText("Filter places:");
-
-                } else  { //if (selectPointsToShow==false || places.size()==0)
-                    //       Log.i(TAG, "trying to remove filter elements again");
-                    // set full transparancy
-                    imgbutton.setAlpha(0.0f);
-                    filterText.setText("");
-
-                }
-            } catch (Exception e) {
-                Log.e(TAG, e.toString());
-            }
-
-            //  Log.i(TAG, "non-clustered markers: "+mClusterManager.getMarkerCollection().getMarkers().size());
-
-        } else {
-            mMap.setMyLocationEnabled(false);
-            //   Log.d(TAG, "smth wrong with permissions");
-            //TODO show the toast that permiss not granted
-            mMap.getUiSettings().setMyLocationButtonEnabled(false);
-            mLastKnownLocation = null;
-        }
     }
 
-
-    @Override
-    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-    //   Log.d(TAG, "enter onItemSelected(AdapterView<?> parent, View view, int position, long id)");
-
-        if (mMap == null) {
-            return;
-        }
-            /*
-         * Request location permission, so that we can get the location of the
-         * device. The result of the permission request is handled by a callback,
-         * onRequestPermissionsResult.
-         */
-        if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
-                android.Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED) {
-            //       Log.d(TAG, "permissions granted");
-            mLocationPermissionGranted = true;
-        } else {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
-                    PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mDefaultCoord, DEFAULT_ZOOM));
-            mMap.getUiSettings().setMyLocationButtonEnabled(false);
-            //       Log.d(TAG, "no permissions granted");
-            return;
-        }
-        /*
-         * Get the best and most recent location of the device, which may be null in rare
-         * cases when a location is not available.
-         */
-        if (mLocationPermissionGranted) {
-
-            mLastKnownLocation = LocationServices.FusedLocationApi
-                    .getLastLocation(mGoogleApiClient);
-
-            if (mLastKnownLocation==null) {
-                UiUtils.showToast(getApplicationContext(),
-                        "You have to set the location, check the device settings");
-                return;
-            }
-            //TODO count if the location of the device is more than 50 km from Calgary downtown, if so, offer to use the Calgary
-            //TODO downtown location instead of device to show the markers up
-            float[] results = new float[1];
-            Location.distanceBetween(mLastKnownLocation.getLatitude(), mLastKnownLocation.getLongitude(),
-                    mDefaultCoord.latitude, mDefaultCoord.longitude, results);
-
-        //    Log.i(TAG, "distance between: "+results[0]);
-            if (results[0]>60000.0)
-            {
-                UiUtils.showToast(getApplicationContext(), "Looks like there is no place near you in our database. " +
-                        "Setting Calgary downtown as a search point.");
-                useDevicelocation = false;
-            }
-
-            Place.distance = Place.distances[position];
-            posit = position;
-            //   Log.i(TAG, "distance set "+Place.distance);
-            selectPointsToShow = true;
-            updateLocationUI();
-
-//            if (places.size()>0) {
-//                //TODO if data is still null, send the intent and after getting the response show clusters
-//                isDataRequestedFromDropDown = true;
-//
-//            } else {
-//                if (mClusterManager.getMarkerCollection().getMarkers().size()==0
-//                        && mClusterManager.getClusterMarkerCollection().getMarkers().size()==0) {
-//                    //  Log.i(TAG, "showing clusters");
-//                    showClusters();
-//                }
-//
-//                stabilizeVieWithZoom ();
-//
-//            }
-
-        }
-
-  //      Log.d(TAG, "exit onItemSelected(AdapterView<?> parent, View view, int position, long id)");
-    }
-
-    @Override
-    public void onNothingSelected(AdapterView<?> parent) {
-
-    }
 
     @Override
     public void onInfoWindowClick(Marker marker) {
@@ -832,19 +813,6 @@ public class MapsActivity extends MenuActivity implements
         Log.d(TAG, "exit onPause()");
     }
 
-    public void showFilters(View view) {
-        //   Log.d(TAG, "enter showFilters(View view)");
-        UiUtils.showFilters=!UiUtils.showFilters;
-        //   Log.d(TAG, "show filt: "+ UiUtils.showFilters);
-
-        //save the camera position and the zoom level
-        mCameraPosition = mMap.getCameraPosition();
-        currentZoom = mMap.getCameraPosition().zoom;
-        updateLocationUI();
-        mCameraPosition=null;
-
-        //    Log.d(TAG, "exit showFilters(View view)");
-    }
 
     private void showClusters () {
         //    Log.d(TAG, "enter showClusters()");

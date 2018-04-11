@@ -12,9 +12,10 @@
         android:id="@+id/rr"
         >
 
-        <RelativeLayout
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:orientation="horizontal"
             android:layout_marginTop="10dp"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
@@ -22,48 +23,68 @@
             android:layout_alignParentTop="true"
             >
 
-            <TextView
+            <ImageButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentTop="true"
-                android:text="What`s around my location:"
-                android:layout_marginBottom="10dp"
-                android:textSize="14dp"
-                android:layout_alignParentLeft="true"
-                android:layout_toLeftOf="@+id/txt"
-                android:id="@+id/savePlace" />
+                android:id="@+id/imageB"
+                android:layout_marginTop="5dp"
+                />
 
-            <TextView
-                android:layout_width="wrap_content"
+            <Space
+                android:layout_weight="1"
                 android:layout_height="wrap_content"
-                android:layout_alignParentTop="true"
-                android:layout_alignParentRight="true"
-                android:id="@+id/txt"
-                android:textSize="14dp"/>
+                android:layout_width="wrap_content"/>
 
             <ImageButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/txt"
-                android:layout_alignParentRight="true"
-                android:onClick="showFilters"
-                android:id="@+id/imageB"
+                android:id="@+id/showFiltersOnly"
 
                 />
+            <Space
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"/>
 
-        </RelativeLayout>
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/showLoved"
+                />
+            <Space
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"/>
+
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/showAll"
+                />
+            <Space
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"/>
+
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/clearMap"
+                />
+
+        </LinearLayout>
 
         <ScrollView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
+            android:layout_alignParentLeft="true"
             android:layout_below="@id/wrapperTop"
             android:id="@+id/scrl"
             >
+
             <LinearLayout
                 android:id="@+id/filters"
                 android:textColor="#ff000000"
-                android:layout_marginTop="5dp"
                 android:orientation="vertical"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content">
@@ -72,12 +93,11 @@
 
         </ScrollView>
 
-
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_below="@id/wrapperTop"
-            android:layout_toLeftOf="@id/scrl"
+            android:layout_toRightOf="@id/scrl"
             android:id="@+id/mapWrapper"
 
             >
