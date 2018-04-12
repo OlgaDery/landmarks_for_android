@@ -292,8 +292,8 @@ public class MapsActivity extends MenuActivity implements
                     filters.clear();
                     filters.put(CLEAR_MAP, showFiltersSidebar);
                 }
-                viewModel.updateFilterMap(filters);
                 filtersModified = true;
+                viewModel.updateFilterMap(filters);
 
                 Log.d(TAG, "exit onClick imageButtons(View view) ");
             }
@@ -696,12 +696,11 @@ public class MapsActivity extends MenuActivity implements
     private void updateLocationUI(Map <String, Boolean> newFilter) {
 
         Log.d(TAG, "enter updateLocationUI");
-
-        if (mMap == null) {
-            UiUtils.showToast(getApplicationContext(),
-                    "Map is currently unavailable");
-            return;
-        }
+//        if (mMap == null) {
+//            UiUtils.showToast(getApplicationContext(),
+//                    "Map is currently unavailable");
+//            return;
+//        }
 
 //TODO set visibility for buttons
         if (places.size()>0) { //&& selectPointsToShow==true
@@ -723,8 +722,9 @@ public class MapsActivity extends MenuActivity implements
            Log.d(TAG, "show sidebar: " + newFilter.get(temp.get(0)));
 
            if (filtersModified==true) {
+
+               //new filter set and the sidebar is open, new checkboxes have to get loaded
                if (newFilter.containsKey(FILTERS)) {
-                   Log.d(TAG, "yes");
                    for (Place p : places) {
                        if (!receivedFilters.contains(p.getCategory()))
                        receivedFilters.add(p.getCategory());
@@ -753,20 +753,46 @@ public class MapsActivity extends MenuActivity implements
                    filtersModified = false;
                    return;
                }
-           }
 
-           if (newFilter.get(temp.get(0)) == true) {
-               filter.removeAllViews();
+               if (newFilter.get(temp.get(0))==true) {
+                   UiUtils.configureFilters(getApplicationContext(), filter, deviceType,
+                           receivedFilters, selectedFilters, checkBoxListener, current_filter);
+                   Log.d(TAG, "1");
+               } else {
+                   filter.removeAllViews();
+                   Log.d(TAG, "2");
+               }
+
+           } else if (filtersModified==false && newFilter.get(temp.get(0))==true) {
+
+               Log.d(TAG, "3");
+               if (newFilter.containsKey(FILTERS)) {
+                   for (Place p : places) {
+                       if (!receivedFilters.contains(p.getCategory()))
+                           receivedFilters.add(p.getCategory());
+                   }
+
+               } else if (newFilter.containsKey(LOVED)) {
+                   //  receivedFilters
+
+               } else if (newFilter.containsKey(ALL)) {
+                   for (Place p : places) {
+                       receivedFilters.add(p.getName());
+                   }
+               }
                UiUtils.configureFilters(getApplicationContext(), filter, deviceType,
                        receivedFilters, selectedFilters, checkBoxListener, current_filter);
-           } else {
+
+           } else if (filtersModified==false && newFilter.get(temp.get(0))==false) {
                filter.removeAllViews();
+               Log.d(TAG, "4");
            }
+
 
            //resetting the values of class variables for later usage
            current_filter = temp.get(0);
            showFiltersSidebar = newFilter.get(current_filter);
-           if (filtersModified==true) {
+           if (current_filter!=null) {
                UiUtils.modifyButtons(buttons, current_filter);
            }
            filterSidebarModified = false;
