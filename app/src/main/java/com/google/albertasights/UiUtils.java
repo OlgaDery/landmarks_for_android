@@ -3,6 +3,8 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
 import android.support.v4.widget.CompoundButtonCompat;
 import android.util.DisplayMetrics;
@@ -10,13 +12,16 @@ import android.util.Log;
 import android.view.Display;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
+import java.util.Set;
 
 /**
  * Created by olga on 2/13/18.
@@ -25,7 +30,7 @@ import java.util.ArrayList;
 public class UiUtils {
     private static final String TAG = MapsActivity.class.getSimpleName();
 
-    public static boolean showFilters = false;
+  //  public static boolean showFilters = false;
 
     public static String parseUrl (String url) {
         String modifiedUrl ="";
@@ -80,6 +85,7 @@ public class UiUtils {
                                          ArrayList<String> selectedFilters,
                                          View.OnClickListener checkBoxListener, String currentFilter) {
         Log.d(TAG, "enter configureFilters");
+        Log.d(TAG, "received filters: "+receivedFilters.size());
 
         ArrayList<String> lst = new ArrayList<>(receivedFilters.size());
         lst.addAll(receivedFilters);
@@ -99,7 +105,6 @@ public class UiUtils {
 //set the space between checkboxes
         for (int i = 0; i < receivedFilters.size(); i++) {
             Log.d(TAG, "!!!");
-
             CheckBox checkBox = new CheckBox(context);
 
             // set the text size depending on the device type
@@ -128,6 +133,17 @@ public class UiUtils {
         Toast.makeText(context,
                 message,
                 Toast.LENGTH_LONG).show();
+    }
+
+    public static void modifyButtons (Set<ImageButton> buttons, String activeButtonTag) {
+        Log.d(TAG, "enter modifyButtons (Set<ImageButton> buttons, String activeButtonTag)");
+        for (ImageButton b : buttons) {
+            if (b.getTag().equals(activeButtonTag)) {
+                b.setColorFilter(new PorterDuffColorFilter(Color.BLUE, PorterDuff.Mode.SRC_IN));
+            } else {
+                b.setColorFilter(new PorterDuffColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN));
+            }
+        }
     }
 
 }

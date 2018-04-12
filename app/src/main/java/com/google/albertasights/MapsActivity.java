@@ -36,7 +36,6 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.maps.android.clustering.ClusterManager;
 import com.google.maps.android.clustering.view.DefaultClusterRenderer;
-import com.google.maps.android.data.Point;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -85,16 +84,17 @@ public class MapsActivity extends MenuActivity implements
     private ImageButton clearAll;
    // private TextView filterText;
     private ProgressBar simpleProgressBar;
-    private Map<String, Boolean> filters = new HashMap<>(1);
+    private Map<String, Boolean> filters = new HashMap<String, Boolean>(1);
 
 
     private String orientation;
-    private int orientationValue;
     private String deviceType;
     private boolean isRestarted = false;
-    private boolean useDevicelocation = true;
     private boolean saveInfoWindow = false;
     private boolean animationStarted = false;
+    private boolean filterSidebarModified = false;
+    private boolean filtersModified = false;
+    private boolean showFiltersSidebar = false;
     private int posit=0;
 
     // Declare a variable for the cluster manager.
@@ -140,6 +140,7 @@ public class MapsActivity extends MenuActivity implements
 
     private View.OnClickListener checkBoxListener;
     private View.OnClickListener filterButtonsListener;
+    private Set <ImageButton> buttons = new HashSet<>();
 
     private BroadcastReceiver receiver;
     private MapViewModel viewModel;
@@ -270,34 +271,30 @@ public class MapsActivity extends MenuActivity implements
             public void onClick(View v) {
                 Log.d(TAG, "enter onClick imageButtons(View view) ");
                 String button =((ImageButton) v).getTag().toString();
-                if (filters.containsKey(button)) {
+                if (current_filter.equals(button)) {
                     return;
                 }
               //  current_filter = button;
                 if (button.equals(FILTERS)) {
                     filters.clear();
-                    filters.put(FILTERS, UiUtils.showFilters);
+                    filters.put(FILTERS, showFiltersSidebar);
 
                 } else if (button.equals(LOVED)) {
                     filters.clear();
-                    filters.put(LOVED, UiUtils.showFilters);
+                    filters.put(LOVED, showFiltersSidebar);
 
                 } else if (button.equals(ALL)) {
                     filters.clear();
-                    filters.put(ALL, UiUtils.showFilters);
+                    filters.put(ALL, showFiltersSidebar);
 
                 } else {
                     //clear all
                     filters.clear();
-                    filters.put(CLEAR_MAP, UiUtils.showFilters);
+                    filters.put(CLEAR_MAP, showFiltersSidebar);
                 }
                 viewModel.updateFilterMap(filters);
+                filtersModified = true;
 
-            //    mCameraPosition = mMap.getCameraPosition();
-            //    currentZoom = mMap.getCameraPosition().zoom;
-            //    updateLocationUI();
-                // add some extra zoom in/out to stabilize clusters, with a boolean to control zoom in/out
-            //    stabilizeVieWithZoom ();
                 Log.d(TAG, "exit onClick imageButtons(View view) ");
             }
         };
@@ -306,6 +303,9 @@ public class MapsActivity extends MenuActivity implements
         showAll.setOnClickListener(filterButtonsListener);
         showFilters.setOnClickListener(filterButtonsListener);
         clearAll.setOnClickListener(filterButtonsListener);
+        buttons.add(showAll);
+        buttons.add(showFilters);
+        buttons.add(showLoved);
 
         View.OnClickListener showMoreButtonsListener = new View.OnClickListener() {
             public void onClick(View view) {
@@ -317,13 +317,15 @@ public class MapsActivity extends MenuActivity implements
                 showLoved.setAlpha(1.0f);
                 showAll.setAlpha(1.0f);
                 clearAll.setAlpha(1.0f);
+                filterSidebarModified = true;
 
                 if (filters.isEmpty()) {
-                    filters.put(FILTERS, !UiUtils.showFilters);
+                    filters.put(FILTERS, !showFiltersSidebar);
+                    filtersModified = true;
                 //    current_filter = FILTERS;
                 } else {
                     filters.clear();
-                    filters.put(current_filter, !UiUtils.showFilters);
+                    filters.put(current_filter, !showFiltersSidebar);
                 }
                 viewModel.updateFilterMap(filters);
 
@@ -376,24 +378,12 @@ public class MapsActivity extends MenuActivity implements
             }
         };
 
-        if (places.size()>0) {
-
-//            if (UiUtils.showFilters==true) {
-//                //the distance was selected before activity was destroyed, the UI contained the filters and the filter button.
-//                //We are recreating the filters with check boxes
-//
-//                UiUtils.configureFilters(getApplicationContext(), filter, deviceType,
-//                        receivedFilters, selectedFilters, checkBoxListener);
-//            }
-
-        } else {
-            //      Log.d(TAG, "removing filter button - 2");
+        if (places.size()==0) {
             showFilterSection.setAlpha(0.0f);
             showLoved.setAlpha(0.0f);
             showAll.setAlpha(0.0f);
             showFilters.setAlpha(0.0f);
             clearAll.setAlpha(0.0f);
-         //   filterText.setText("");
 
         }
         //TODO if not instantiated
@@ -406,6 +396,7 @@ public class MapsActivity extends MenuActivity implements
             }
         };
         viewModel.filtersToApply.observe(this, filtersObserver);
+        Log.d(TAG, "tracking filters size:" + filters.size());
 
         Log.d(TAG, "exit onCreate");
     }
@@ -594,18 +585,12 @@ public class MapsActivity extends MenuActivity implements
                         return true;
                     } else {
 
-                        if (UiUtils.showFilters==true) {
+                        if (showFiltersSidebar==true) {
                           //  UiUtils.showFilters=!UiUtils.showFilters;
                             //TODO update filters in ViewModel
                             filters.clear();
-                            filters.put(current_filter, false);
+                            filters.put(current_filter, !showFiltersSidebar);
                             viewModel.updateFilterMap(filters);
-
-                            //
-                        //    mCameraPosition = mMap.getCameraPosition();
-                        //    currentZoom = mMap.getCameraPosition().zoom;
-                        //    updateLocationUI();
-                        //    mCameraPosition=null;
                         }
 
                         m.showInfoWindow();
@@ -652,8 +637,13 @@ public class MapsActivity extends MenuActivity implements
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mDefaultCoord,
                     default_zoom));
         }
+        Log.d(TAG, "tracking filters size:" + filters.size());
 
         //TODO in the activity has been recreation or reset the ViewModel data has to be used
+        if (viewModel.filtersToApply.getValue()!=null) {
+            filters = viewModel.filtersToApply.getValue();
+        }
+
         updateLocationUI(filters);
         stabilizeVieWithZoom ();
 
@@ -721,23 +711,20 @@ public class MapsActivity extends MenuActivity implements
             //   filterText.setText("Select:");
 
         }
-//        else  { //if (selectPointsToShow==false || places.size()==0)
-//            //       Log.i(TAG, "trying to remove filter elements again");
-//            // set full transparancy
-//            //    filterText.setText("");
-//
-//        }
 
         //TODO logic to process filters (add/remove element with filters, change the list of filters, change the buttons color)
        if (!newFilter.isEmpty()) {
            ArrayList<String> temp = new ArrayList<String>(0);
            temp.addAll(newFilter.keySet());
-           Log.d(TAG, "current filter: " + newFilter.get(temp.get(0)));
-           Log.d(TAG, "show sidebar: " + temp.get(0));
-           if (!newFilter.containsKey(current_filter)) {
-               receivedFilters.clear();
-               selectedFilters.clear();
+
+           Log.d(TAG, "current filter: " + temp.get(0));
+           Log.d(TAG, "sidebar modified: "+filterSidebarModified);
+           Log.d(TAG, "active filters modified: "+filtersModified);
+           Log.d(TAG, "show sidebar: " + newFilter.get(temp.get(0)));
+
+           if (filtersModified==true) {
                if (newFilter.containsKey(FILTERS)) {
+                   Log.d(TAG, "yes");
                    for (Place p : places) {
                        if (!receivedFilters.contains(p.getCategory()))
                        receivedFilters.add(p.getCategory());
@@ -762,26 +749,30 @@ public class MapsActivity extends MenuActivity implements
                    showLoved.setAlpha(0.0f);
                    clearAll.setAlpha(0.0f);
                    filter.removeAllViews();
+                   filterSidebarModified = false;
+                   filtersModified = false;
                    return;
                }
            }
 
-           //   showFilters.setColorFilter(new PorterDuffColorFilter(Color.BLUE, PorterDuff.Mode.SRC_IN));
-
-           //set the filter element on screen
-
-           if (!newFilter.containsValue(UiUtils.showFilters) && UiUtils.showFilters==false) {
-               //show
+           if (newFilter.get(temp.get(0)) == true) {
                filter.removeAllViews();
                UiUtils.configureFilters(getApplicationContext(), filter, deviceType,
                        receivedFilters, selectedFilters, checkBoxListener, current_filter);
-
-           } else if (!newFilter.containsValue(UiUtils.showFilters) && UiUtils.showFilters==true) {
+           } else {
                filter.removeAllViews();
            }
 
+           //resetting the values of class variables for later usage
            current_filter = temp.get(0);
-           UiUtils.showFilters = newFilter.get(current_filter);
+           showFiltersSidebar = newFilter.get(current_filter);
+           if (filtersModified==true) {
+               UiUtils.modifyButtons(buttons, current_filter);
+           }
+           filterSidebarModified = false;
+           filtersModified = false;
+           receivedFilters.clear();
+           selectedFilters.clear();
 
        }
 

@@ -13,11 +13,10 @@ import java.util.Map;
 
 public class MapViewModel extends ViewModel {
     private static final String TAG = MapViewModel.class.getSimpleName();
-    public final MutableLiveData<Map<String, Boolean>> filtersToApply;
+    public final MutableLiveData<Map<String, Boolean>> filtersToApply = new MutableLiveData<Map<String, Boolean>>();
 
     public MapViewModel() {
         Log.d(TAG, "enter MapViewModel()");
-        filtersToApply = new MutableLiveData<Map<String, Boolean>>();
         Log.d(TAG, "exit MapViewModel()");
     }
 
