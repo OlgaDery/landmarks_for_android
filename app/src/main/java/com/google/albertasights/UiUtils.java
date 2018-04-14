@@ -7,20 +7,26 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
 import android.support.v4.widget.CompoundButtonCompat;
+import android.text.Layout;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -29,6 +35,7 @@ import java.util.Set;
 
 public class UiUtils {
     private static final String TAG = MapsActivity.class.getSimpleName();
+    public static Set <String> selectedPointsIds = new HashSet<>();
 
   //  public static boolean showFilters = false;
 
@@ -87,6 +94,42 @@ public class UiUtils {
         Log.d(TAG, "enter configureFilters");
         Log.d(TAG, "received filters: "+receivedFilters.size());
 
+        filter.removeAllViews();
+        WindowManager wm = (WindowManager)context.getSystemService(Context.WINDOW_SERVICE);
+        Display display = wm.getDefaultDisplay();
+        DisplayMetrics metrics = new DisplayMetrics();
+        display.getMetrics(metrics);
+        int screen_width = metrics.widthPixels;
+        int elementWight = 0;
+
+        TextView text = new TextView(context);
+        text.setPadding(20,20,20,20);
+        switch (currentFilter) {
+            case MapsActivity.FILTERS:
+                text.setText("Categories:");
+                filter.addView(text, 0);
+                elementWight = screen_width - 300;
+                break;
+            case MapsActivity.ALL:
+                text.setText("All points:");
+                filter.addView(text, 0);
+                elementWight = screen_width - 200;
+                break;
+            case MapsActivity.LOVED:
+                text.setText("Selected points:");
+                filter.addView(text, 0);
+                elementWight = screen_width - 200;
+                break;
+        }
+        filter.setLayoutParams(new FrameLayout.LayoutParams(elementWight, FrameLayout.LayoutParams.WRAP_CONTENT));
+
+        if (currentFilter.equals(MapsActivity.LOVED)&& receivedFilters.size()==0) {
+            TextView text1 = new TextView(context);
+            text.setText("You have not selected any points yet");
+            filter.addView(text1);
+            return;
+        }
+
         ArrayList<String> lst = new ArrayList<>(receivedFilters.size());
         lst.addAll(receivedFilters);
         // adding checkboxes dynamically
@@ -104,7 +147,7 @@ public class UiUtils {
 
 //set the space between checkboxes
         for (int i = 0; i < receivedFilters.size(); i++) {
-            Log.d(TAG, "!!!");
+         //   Log.d(TAG, "!!!");
             CheckBox checkBox = new CheckBox(context);
 
             // set the text size depending on the device type
@@ -124,9 +167,9 @@ public class UiUtils {
             checkBox.setTextColor(Color.BLACK);
             CompoundButtonCompat.setButtonTintList(checkBox,colorStateList);
             checkBox.setOnClickListener(checkBoxListener);
-            filter.addView(checkBox, i);
-
+            filter.addView(checkBox, i+1);
         }
+
     }
 
     public static void showToast(Context context, String message) {

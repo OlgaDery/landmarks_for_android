@@ -153,9 +153,6 @@ public class PointListviewAdapter extends BaseAdapter {
                     .into(photo);
         }
 
-
-
-
         return convertView;
     }
 }

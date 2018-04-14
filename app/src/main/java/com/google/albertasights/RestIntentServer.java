@@ -29,7 +29,7 @@ import java.util.HashMap;
  * TODO: Customize class - update intent actions, extra parameters and static
  * helper methods.
  */
-public class MyIntentService extends IntentService {
+public class RestIntentServer extends IntentService {
     public static final String URL = "URL";
     public static final String LNG = "LNG";
     public static final String LAT = "LAT";
@@ -38,9 +38,9 @@ public class MyIntentService extends IntentService {
             getClass().getSimpleName();
     private ArrayList<Place> places;
 
-    public MyIntentService() {
+    public RestIntentServer() {
 
-        super("MyIntentService");
+        super("RestIntentServer");
     }
 
     /**
@@ -149,22 +149,6 @@ public class MyIntentService extends IntentService {
     }
 
 
-
-    private String getPostDataString(HashMap<String, String> params)  {
-
-        JSONObject obj = new JSONObject();
-        try {
-            obj.put("lat",  params.get("lat"));
-            obj.put("lng",  params.get("lng"));
-            obj.put("distance", params.get("distance"));
-        } catch (JSONException e) {
-
-            //   e.printStackTrace();
-        }
-
-        return obj.toString();
-    }
-
     private ArrayList<Place> parsePlaceData (String data) {
         //    Log.d(TAG, "enter parsePlaceData (String data)");
         places = new ArrayList<>();
@@ -193,6 +177,7 @@ public class MyIntentService extends IntentService {
                             Double.valueOf(lat), webLink, rating);
                     //TODO!!!
                     p.setCategory(category);
+                    p.setId(id);
                     //   Place.places.add(p);
                     places.add(p);
 

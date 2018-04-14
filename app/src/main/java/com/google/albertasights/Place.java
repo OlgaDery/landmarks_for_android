@@ -36,7 +36,6 @@ public class Place implements Serializable {
             "scientifically important", "good for kids", "memorial", "historical building", "n/a"
     };
 
-    public static int distance=10;
     public static String selectedMarkerID;
 
     private String id;
@@ -52,14 +51,11 @@ public class Place implements Serializable {
 
     private String extraCategory;
     private Integer extraCategoryIndex;
-
     private Integer rating;
-
     private String pendStatus;
-
-
     private String photoLink = "lnk";
     private String webLink = "lnk";
+    private boolean isLoved = false;
 
     public Place(String name1, String descr1, String photoLink1, double lng1, double lat1,
                  String webLink, Integer rating) {
@@ -70,6 +66,14 @@ public class Place implements Serializable {
         this.lng = lng1;
         this.webLink = webLink;
         this.rating = rating;
+    }
+
+    public boolean isLoved() {
+        return isLoved;
+    }
+
+    public void setLoved(boolean loved) {
+        isLoved = loved;
     }
 
     public String getName() {
@@ -86,14 +90,6 @@ public class Place implements Serializable {
 
     public static void setPoi_main_cat(String[] poi_main_cat) {
         Place.poi_main_cat = poi_main_cat;
-    }
-
-    public static int getDistance() {
-        return distance;
-    }
-
-    public static void setDistance(int distance) {
-        Place.distance = distance;
     }
 
     public static String getSelectedMarkerID() {

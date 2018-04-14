@@ -2,6 +2,9 @@ package com.google.albertasights;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -90,7 +93,7 @@ public class PointActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.d(TAG, "onclick");
+            //    Log.d(TAG, "onclick");
                 String uri = String.format(Locale.ENGLISH, "http://maps.google.com/maps?daddr=%f,%f (%s)",
                         point.getLat(), point.getLng(), "Going there");
                 Intent mapIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
@@ -99,9 +102,31 @@ public class PointActivity extends AppCompatActivity {
             }
         });
 
-        ImageButton likeButton = (ImageButton) findViewById(R.id.like);
+        final ImageButton likeButton = (ImageButton) findViewById(R.id.like);
+        if (point.isLoved()==true) {
+            likeButton.setColorFilter(new PorterDuffColorFilter(Color.RED, PorterDuff.Mode.SRC_IN));
+        }
+        likeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.d(TAG, "onclick");
+                String id =((ImageButton) view).getTag().toString();
+                if (point.isLoved()==false) {
+                    Intent writeToFile = new Intent(getApplicationContext(), SaveToFileIntentService.class);
+                    writeToFile.setAction(SaveToFileIntentService.SAVE_TO_FILE);
+                    writeToFile.putExtra(SaveToFileIntentService.POINT_ID, point.getId());
+                    startService(writeToFile);
+                    likeButton.setColorFilter(new PorterDuffColorFilter(Color.RED, PorterDuff.Mode.SRC_IN));
+                } else {
+                    //TODO call the method to remove from selected
+                    likeButton.setColorFilter(new PorterDuffColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN));
+                }
+            }
+        });
+
         //TODO set onClick method for the button
         likeButton.setImageResource(R.drawable.like);
+        likeButton.setTag(point.getId());
         listview = (ListView) findViewById(R.id.listView1);
 
         //TODO provide dimensions, position and device type via constructor
