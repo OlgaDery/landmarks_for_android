@@ -4,23 +4,24 @@ import android.app.IntentService;
 import android.content.Intent;
 import android.util.Log;
 
+import com.couchbase.lite.CouchbaseLiteException;
+import com.couchbase.lite.Document;
+import com.google.albertasights.models.Place;
+
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * An {@link IntentService} subclass for handling asynchronous task requests in
@@ -50,10 +51,10 @@ public class RestIntentServer extends IntentService {
      * @see IntentService
      */
 
-
     @Override
     protected void onHandleIntent(Intent intent) {
         //   Log.d(TAG, "enter onHandleIntent(Intent intent) ");
+
         if (intent != null) {
             final String action = intent.getAction();
             if ("SUBMIT".equals(action)) {

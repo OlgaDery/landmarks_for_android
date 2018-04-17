@@ -1,4 +1,4 @@
-package com.google.albertasights;
+package com.google.albertasights.ui;
 
 
 import android.arch.lifecycle.MutableLiveData;

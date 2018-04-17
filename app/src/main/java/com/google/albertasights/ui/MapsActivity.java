@@ -1,4 +1,4 @@
-package com.google.albertasights;
+package com.google.albertasights.ui;
 
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -20,6 +21,12 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
+import com.google.albertasights.DBIntentService;
+import com.google.albertasights.R;
+import com.google.albertasights.RestIntentServer;
+import com.google.albertasights.UiUtils;
+import com.google.albertasights.models.Place;
+import com.google.albertasights.models.User;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
@@ -149,7 +156,12 @@ public class MapsActivity extends MenuActivity implements
         //will be different.
         Log.d(TAG, "enter onCreate");
         super.onCreate(savedInstanceState);
-        selectedByUser.addAll(UiUtils.selectedPointsIds);
+
+        //TODO check the DB content
+        Intent intent = new Intent(this, DBIntentService.class);
+        intent.setAction(DBIntentService.CHECK_CONFIG);
+        startService(intent);
+     //   selectedByUser.addAll(UiUtils.selectedPointsIds);
 
         // Retrieve all the saved variable
         if (savedInstanceState != null) {
@@ -251,10 +263,10 @@ public class MapsActivity extends MenuActivity implements
             }
         };
 
-        //TODO declare listeners for imagebuttons
-        //TODO set the listener for all the functional buttons. It has to change the filters map depending on the selected button.
-        //TODO If the "clear" button is selected, than the map should be empty. viewModel.updateFilterMap(filters) is called. Also the
-        //TODO clusters have to be reload and the lists of filters (for checkbox setting) as well
+        // declare listeners for imagebuttons
+        // set the listener for all the functional buttons. It has to change the filters map depending on the selected button.
+        // If the "clear" button is selected, than the map should be empty. viewModel.updateFilterMap(filters) is called. Also the
+        // clusters have to be reload and the lists of filters (for checkbox setting) as well
         filterButtonsListener = new View.OnClickListener() {
 
             public void onClick(View v) {
@@ -273,8 +285,14 @@ public class MapsActivity extends MenuActivity implements
 
                 } else if (button.equals(LOVED)) {
                     //TODO user has to be logged in, otherwise to show tost and return;
-                    filters.clear();
-                    filters.put(LOVED, showFiltersSidebar);
+                    SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+                    if (sharedPref.contains("USER")) {
+                        filters.clear();
+                        filters.put(LOVED, showFiltersSidebar);
+                    } else {
+                        UiUtils.showToast(getApplicationContext(), "To use this option, please log in or create an account");
+                    }
+
 
                 } else if (button.equals(ALL)) {
                     filters.clear();
@@ -377,7 +395,23 @@ public class MapsActivity extends MenuActivity implements
                         UiUtils.showToast(getApplicationContext(),
                                 "added!");
                     }
+                } else if (intent.getAction().equals("DB_CHECKED")) {
 
+                    //TODO the broadcast may receive the User data and the IDs selected by user
+                    if (intent.getSerializableExtra("USER")!=null) {
+                        User user = (User) intent.getSerializableExtra("USER");
+                        SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+                        SharedPreferences.Editor editor = sharedPref.edit();
+                        editor.putString("email", user.getEmail());
+                        editor.putString("id", user.getId());
+                        editor.putString("first name", user.getFirstName());
+                        editor.putString("role", user.getRole());
+                        editor.commit();
+                    }
+
+                    if (intent.getSerializableExtra("SELECTED_POINTS")!=null) {
+                        selectedByUser.addAll((ArrayList<String>)intent.getStringArrayListExtra("SELECTED_POINTS"));
+                    }
                 }
                 //       Log.d(TAG, "exit onReceive(Context context, Intent intent)");
             }
@@ -659,6 +693,7 @@ public class MapsActivity extends MenuActivity implements
                 new IntentFilter();
         intentFilter.addAction("DATA_RECEIVED");
         intentFilter.addAction("POINT_ADDED");
+        intentFilter.addAction("DB_CHECKED");
 
         // Register the receiver and the intent filter.
         registerReceiver(receiver,

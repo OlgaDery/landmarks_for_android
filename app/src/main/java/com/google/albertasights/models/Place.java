@@ -1,4 +1,4 @@
-package com.google.albertasights;
+package com.google.albertasights.models;
 
 import java.io.Serializable;
 

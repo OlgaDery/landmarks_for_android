@@ -1,16 +1,14 @@
-package com.google.albertasights;
+package com.google.albertasights.ui;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
@@ -20,12 +18,13 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
 
+import com.google.albertasights.DBIntentService;
+import com.google.albertasights.R;
+import com.google.albertasights.UiUtils;
+import com.google.albertasights.models.Place;
 import com.squareup.picasso.Picasso;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Locale;
 
 public class PointActivity extends AppCompatActivity {
@@ -110,16 +109,22 @@ public class PointActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Log.d(TAG, "onclick");
-                String id =((ImageButton) view).getTag().toString();
-                if (point.isLoved()==false) {
-                    Intent writeToFile = new Intent(getApplicationContext(), SaveToFileIntentService.class);
-                    writeToFile.setAction(SaveToFileIntentService.SAVE_TO_FILE);
-                    writeToFile.putExtra(SaveToFileIntentService.POINT_ID, point.getId());
-                    startService(writeToFile);
-                    likeButton.setColorFilter(new PorterDuffColorFilter(Color.RED, PorterDuff.Mode.SRC_IN));
+                SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+                if (sharedPref.contains("USER")) {
+                    String id =((ImageButton) view).getTag().toString();
+                    if (point.isLoved()==false) {
+                        Intent writeToFile = new Intent(getApplicationContext(), DBIntentService.class);
+                        writeToFile.setAction(DBIntentService.ADD_POINT_TO_LOVED);
+                        writeToFile.putExtra(DBIntentService.POINT_ID, point.getId());
+                        startService(writeToFile);
+                        likeButton.setColorFilter(new PorterDuffColorFilter(Color.RED, PorterDuff.Mode.SRC_IN));
+                    } else {
+                        //TODO call the method to remove from selected
+                        likeButton.setColorFilter(new PorterDuffColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN));
+                    }
+
                 } else {
-                    //TODO call the method to remove from selected
-                    likeButton.setColorFilter(new PorterDuffColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN));
+                    UiUtils.showToast(getApplicationContext(), "To use this option, please log in or create an account");
                 }
             }
         });

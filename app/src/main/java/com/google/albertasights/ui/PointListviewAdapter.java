@@ -1,15 +1,9 @@
-package com.google.albertasights;
+package com.google.albertasights.ui;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.net.Uri;
-import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
-import android.text.method.LinkMovementMethod;
-import android.text.util.Linkify;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
@@ -18,15 +12,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.BaseAdapter;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.google.albertasights.R;
+import com.google.albertasights.UiUtils;
+import com.google.albertasights.models.Place;
 import com.squareup.picasso.Picasso;
-
-import java.util.ArrayList;
-import java.util.Locale;
 
 /**
  * Created by olga on 4/1/18.

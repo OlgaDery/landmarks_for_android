@@ -1,4 +1,4 @@
-package com.google.albertasights;
+package com.google.albertasights.ui;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.android.clustering.ClusterItem;

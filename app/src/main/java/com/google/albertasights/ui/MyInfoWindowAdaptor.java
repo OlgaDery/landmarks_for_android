@@ -1,9 +1,10 @@
-package com.google.albertasights;
+package com.google.albertasights.ui;
 
+import com.google.albertasights.R;
+import com.google.albertasights.UiUtils;
+import com.google.albertasights.models.Place;
 import com.google.android.gms.maps.GoogleMap;
 import android.content.Context;
-import android.graphics.drawable.Drawable;
-import android.support.v4.content.ContextCompat;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
@@ -11,10 +12,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -22,7 +21,6 @@ import com.google.android.gms.maps.model.Marker;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
-import java.io.InputStream;
 import java.util.Set;
 
 /**
