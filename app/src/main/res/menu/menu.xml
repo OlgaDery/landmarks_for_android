@@ -4,12 +4,20 @@
     android:checkable="true"
     android:checked="true">
 
-    <item android:id="@+id/opt_filters"
+    <item android:id="@+id/map"
         app:showAsAction="never"
-        android:title="filters"/>
+        android:title="map"/>
 
-    <item android:id="@+id/all_points"
+    <item android:id="@+id/profile"
         app:showAsAction="never"
-        android:title="all"/>
+        android:title="profile"/>
+
+    <item android:id="@+id/log_in"
+        app:showAsAction="never"
+        android:title="log in"/>
+
+    <item android:id="@+id/log_out"
+        app:showAsAction="never"
+        android:title="log out"/>
 
 </menu>

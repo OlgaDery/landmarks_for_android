@@ -17,7 +17,6 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.google.albertasights.R;
-import com.google.albertasights.UiUtils;
 import com.google.albertasights.models.Place;
 import com.squareup.picasso.Picasso;
 

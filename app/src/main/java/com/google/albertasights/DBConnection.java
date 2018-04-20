@@ -4,10 +4,10 @@ package com.google.albertasights;
 import android.content.Context;
 import android.util.Log;
 
+
 import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.lite.Database;
-import com.couchbase.lite.Manager;
-import com.couchbase.lite.android.AndroidContext;
+import com.couchbase.lite.DatabaseConfiguration;
 
 import java.io.IOException;
 
@@ -20,51 +20,25 @@ public class DBConnection {
     private static final String TAG =
             DBConnection.class.getCanonicalName();
 
-    private com.couchbase.lite.Manager manager = null;
+    private static DatabaseConfiguration config;
+    private static Database database;
 
-    private Database database = null;
 
+    private DBConnection () {
 
-    public DBConnection (String databaseName, Context context) {
-        if (database!= null) {
-            if (database.getName().equals(databaseName)) {
-                //the required DB has been instantiated, no extra actions required
-                Log.d(TAG, databaseName+ " already exists");
+    }
 
-            } else {
-                //another DB has been instantiated, need to replace it
-                try {
+    public static Database getDatabase (String databaseName, Context context) {
 
-                    database = manager.getDatabase(databaseName);
-                    Log.d(TAG, "database instantiated: " + database.getName());
-
-                } catch (CouchbaseLiteException e) {
-                    Log.e(TAG, e.getMessage());
-                }
-            }
-
-        } else {
+        if (database==null) {
             try {
-                manager = new Manager(new AndroidContext(context), Manager.DEFAULT_OPTIONS);
-                Log.d(TAG, "DB manager created");
-            } catch (IOException e) {
-                Log.e(TAG, e.getMessage());
-            }
-
-            //TODO database has to have the same name as user email, to improve the later associations
-
-            try {
-                database = manager.getDatabase(databaseName);
-                //   Log.d(TAG, "database name: " + database.getName());
-                Log.d(TAG, "DB just instantiated: "+ database.getName());
+                config = new DatabaseConfiguration(context);
+                database = new Database(databaseName, config);
             } catch (CouchbaseLiteException e) {
                 Log.e(TAG, e.getMessage());
             }
         }
 
-    }
-
-    public Database getDatabase () {
         return database;
     }
 

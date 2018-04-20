@@ -4,9 +4,8 @@ import android.app.IntentService;
 import android.content.Intent;
 import android.util.Log;
 
-import com.couchbase.lite.CouchbaseLiteException;
-import com.couchbase.lite.Document;
 import com.google.albertasights.models.Place;
+import com.google.albertasights.ui.UiUtils;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -21,7 +20,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 
 /**
  * An {@link IntentService} subclass for handling asynchronous task requests in
@@ -31,10 +29,7 @@ import java.util.Map;
  * helper methods.
  */
 public class RestIntentServer extends IntentService {
-    public static final String URL = "URL";
-    public static final String LNG = "LNG";
-    public static final String LAT = "LAT";
-    public static final String DISTANCE = "DISTANCE";
+
     private final String TAG =
             getClass().getSimpleName();
     private ArrayList<Place> places;
@@ -57,11 +52,11 @@ public class RestIntentServer extends IntentService {
 
         if (intent != null) {
             final String action = intent.getAction();
-            if ("SUBMIT".equals(action)) {
-                final String url = intent.getStringExtra(URL);
-                final String lat = intent.getStringExtra(LAT);
-                final String lng = intent.getStringExtra(LNG);
-                final String dist = intent.getStringExtra(DISTANCE);
+            if (UiUtils.SUBMIT.equals(action)) {
+                final String url = intent.getStringExtra(UiUtils.URL);
+                final String lat = intent.getStringExtra(UiUtils.LAT);
+                final String lng = intent.getStringExtra(UiUtils.LNG);
+                final String dist = intent.getStringExtra(UiUtils.DISTANCE);
                 //   final String param2 = intent.getStringExtra(EXTRA_PARAM2);
                 postPointData(url, lng, lat, dist);
             }
@@ -83,7 +78,7 @@ public class RestIntentServer extends IntentService {
         params.put("distance", distance);
         //   Log.d(TAG, "distance: "+ distance);
         Intent intent = new Intent();
-        intent.setAction("DATA_RECEIVED");
+        intent.setAction(UiUtils.DATA_RECEIVED);
 
         try {
             url1 = new URL(url);
@@ -124,22 +119,22 @@ public class RestIntentServer extends IntentService {
 
                 ArrayList<Place> places1 = parsePlaceData(response.toString());
                 if (places1!=null) {
-                    intent.putExtra("RESULT", "Data received");
-                    intent.putExtra("PLACES", (Serializable)places1);
+                    intent.putExtra(UiUtils.RESULT, "Data received");
+                    intent.putExtra(UiUtils.PLACES, (Serializable)places1);
                 } else {
-                    intent.putExtra("RESULT", "Error, server may be unavailable");
+                    intent.putExtra(UiUtils.RESULT, "Error, server may be unavailable");
                 }
 
 
             } else {
 
                 Log.e(TAG, connection.getResponseMessage());
-                intent.putExtra("RESULT", "Error, server may be unavailable");
+                intent.putExtra(UiUtils.RESULT, "Error, server may be unavailable");
             }
 
         } catch (IOException e) {
             Log.e(TAG, "io exception");
-            intent.putExtra("RESULT", "Error, server may be unavailable");
+            intent.putExtra(UiUtils.RESULT, "Error, server may be unavailable");
         } finally {
             if (connection!=null)
                 connection.disconnect();
@@ -193,7 +188,6 @@ public class RestIntentServer extends IntentService {
         } finally {
             //   Log.d(TAG, "exit parsePlaceData (String data)");
         }
-
 
     }
 }

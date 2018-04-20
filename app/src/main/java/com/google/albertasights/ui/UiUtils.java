@@ -1,4 +1,4 @@
-package com.google.albertasights;
+package com.google.albertasights.ui;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
@@ -18,6 +18,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.albertasights.R;
 import com.google.albertasights.ui.MapsActivity;
 
 import java.util.ArrayList;
@@ -29,6 +30,34 @@ import java.util.Set;
  */
 
 public class UiUtils {
+    public static final String URL = "URL";
+    public static final String LNG = "LNG";
+    public static final String LAT = "LAT";
+    public static final String DISTANCE = "DISTANCE";
+    public static final String SUBMIT = "SUBMIT";
+    public static final String DATA_RECEIVED = "DATA_RECEIVED";
+    public static final String DB_CHECKED = "DB_CHECKED";
+    public static final String POINT_ADDED = "POINT_ADDED";
+    public static final String LOVED = "LOVED";
+    public static final String RESULT = "RESULT";
+    public static final String PLACES = "PLACES";
+    public static final String USER = "USER";
+    public static final String USER_CREATED = "USER_CREATED";
+    public static final String SELECTED_POINTS = "SELECTED_POINTS";
+    public static final String ADD_POINT_TO_LOVED = "ADD_POINT_TO_LOVED";
+    public static final String CREATE_USER = "CREATE_USER";
+    public static final String CHECK_CONFIG = "CHECK_CONFIG";
+    public static final String POINT_ID = "POINT_ID";
+    public static final String POINT_REMOVED = "POINT_REMOVED";
+    public static final String USER_UPDATED = "USER_UPDATED";
+    public static final String EMAIL = "EMAIL";
+    public static final String PASSWORD = "PASSWORD";
+    public static final String ROLE = "ROLE";
+    public static final String USER_ID = "USER_ID";
+    public static final String FIRST_NAME = "FIRST_NAME";
+    public static final String LAST_NAME = "LAST_NAME";
+
+
     private static final String TAG = MapsActivity.class.getSimpleName();
     public static Set <String> selectedPointsIds = new HashSet<>();
 
@@ -87,7 +116,7 @@ public class UiUtils {
                                          ArrayList<String> selectedFilters,
                                          View.OnClickListener checkBoxListener, String currentFilter) {
         Log.d(TAG, "enter configureFilters");
-        Log.d(TAG, "received filters: "+receivedFilters.size());
+     //   Log.d(TAG, "received filters: "+receivedFilters.size());
 
         filter.removeAllViews();
         WindowManager wm = (WindowManager)context.getSystemService(Context.WINDOW_SERVICE);
@@ -99,23 +128,44 @@ public class UiUtils {
 
         TextView text = new TextView(context);
         text.setPadding(20,20,20,20);
-        switch (currentFilter) {
-            case MapsActivity.FILTERS:
-                text.setText("Categories:");
-                filter.addView(text, 0);
-                elementWight = screen_width - 300;
-                break;
-            case MapsActivity.ALL:
-                text.setText("All points:");
-                filter.addView(text, 0);
-                elementWight = screen_width - 200;
-                break;
-            case MapsActivity.LOVED:
-                text.setText("Selected points:");
-                filter.addView(text, 0);
-                elementWight = screen_width - 200;
-                break;
+        if (getOrientation(context).equals("Portrait")) {
+            switch (currentFilter) {
+                case MapsActivity.FILTERS:
+                    text.setText("Categories:");
+                    filter.addView(text, 0);
+                    elementWight = screen_width - 300;
+                    break;
+                case MapsActivity.ALL:
+                    text.setText("All points:");
+                    filter.addView(text, 0);
+                    elementWight = screen_width - 200;
+                    break;
+                case MapsActivity.LOVED:
+                    text.setText("Selected points:");
+                    filter.addView(text, 0);
+                    elementWight = screen_width - 200;
+                    break;
+            }
+        } else {
+            switch (currentFilter) {
+                case MapsActivity.FILTERS:
+                    text.setText("Categories:");
+                    filter.addView(text, 0);
+                    elementWight = screen_width - 450;
+                    break;
+                case MapsActivity.ALL:
+                    text.setText("All points:");
+                    filter.addView(text, 0);
+                    elementWight = screen_width - 350;
+                    break;
+                case MapsActivity.LOVED:
+                    text.setText("Selected points:");
+                    filter.addView(text, 0);
+                    elementWight = screen_width - 350;
+                    break;
+            }
         }
+
         filter.setLayoutParams(new FrameLayout.LayoutParams(elementWight, FrameLayout.LayoutParams.WRAP_CONTENT));
 
         if (currentFilter.equals(MapsActivity.LOVED)&& receivedFilters.size()==0) {

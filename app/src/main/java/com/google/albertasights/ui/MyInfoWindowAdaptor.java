@@ -1,7 +1,6 @@
 package com.google.albertasights.ui;
 
 import com.google.albertasights.R;
-import com.google.albertasights.UiUtils;
 import com.google.albertasights.models.Place;
 import com.google.android.gms.maps.GoogleMap;
 import android.content.Context;
@@ -136,7 +135,6 @@ public class MyInfoWindowAdaptor implements GoogleMap.InfoWindowAdapter {
                 if (p.getName().equals(marker.getTitle())) {
                     name.setText(p.getName());
                     //TODO!!
-                    Place.selectedMarkerID = p.getName();
                     String newDescr;
                     if (p.getDescript().length() > 150) {
                         newDescr = p.getDescript().substring(0, 150);
@@ -244,12 +242,6 @@ public class MyInfoWindowAdaptor implements GoogleMap.InfoWindowAdapter {
         public void onError() {
             Log.d(TAG, "enter onError()");
             toLoad = "photo";
-//            //TODO replace with iterator
-//            for (Place p: places) {
-//                if (p.getName().equals(markerToRefresh.getTitle())) {
-//                    p.setPhotoLink("no");
-//                }
-//            }
 
             if (count>2) {
                 count=0;

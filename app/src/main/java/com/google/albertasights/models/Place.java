@@ -36,7 +36,7 @@ public class Place implements Serializable {
             "scientifically important", "good for kids", "memorial", "historical building", "n/a"
     };
 
-    public static String selectedMarkerID;
+ //   public static String selectedMarkerID;
 
     private String id;
 
@@ -90,14 +90,6 @@ public class Place implements Serializable {
 
     public static void setPoi_main_cat(String[] poi_main_cat) {
         Place.poi_main_cat = poi_main_cat;
-    }
-
-    public static String getSelectedMarkerID() {
-        return selectedMarkerID;
-    }
-
-    public static void setSelectedMarkerID(String selectedMarkerID) {
-        Place.selectedMarkerID = selectedMarkerID;
     }
 
     public void setName(String name) {

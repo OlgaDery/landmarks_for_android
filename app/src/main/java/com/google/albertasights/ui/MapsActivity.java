@@ -24,7 +24,6 @@ import android.widget.RelativeLayout;
 import com.google.albertasights.DBIntentService;
 import com.google.albertasights.R;
 import com.google.albertasights.RestIntentServer;
-import com.google.albertasights.UiUtils;
 import com.google.albertasights.models.Place;
 import com.google.albertasights.models.User;
 import com.google.android.gms.common.ConnectionResult;
@@ -72,9 +71,6 @@ public class MapsActivity extends MenuActivity implements
     //This boolean is to indicate if we need to zoom in or zoom out the camera while using filters. Extra zoom is necessary because
     //it helps to make the cluster more stable
     private boolean zoomingOut = true;
-
-  //  private TextView txt;
-  //  private MySpinner mySpinner;//
     private LinearLayout filter;
     private RelativeLayout rr;
     private RelativeLayout mapWrapper;
@@ -112,6 +108,7 @@ public class MapsActivity extends MenuActivity implements
     //to store markerIDs to track the photo loading, if the photo of the marker has once been loaded, it`s Id should be removed
    //TODO to store the name of current filter using for points
     private String current_filter;
+    private String selectedMarkerID = "";
 
     //TODO place them in ModelView???
     public static Set<String> markerIds = new HashSet<>();
@@ -130,7 +127,7 @@ public class MapsActivity extends MenuActivity implements
     private static final String KEY_RECEIVED_FILTERS = "received_fltrs";
     private static final String KEY_SELECTED_FILTERS = "selected_fltrs";
     private static final String KEY_SELECT_POINTS_TO_SHOW = "select_points_to_show";
-    private static final String KEY_PLACES = "places";
+  //  private static final String KEY_PLACES = "places";
     private static final String SPINNER_POSIT = "spinner_posit";
     private static final String SAVE_INFO_WINDOW = "save_i_w";
     private static final String STARTED_ANIMATION = "animation";
@@ -157,10 +154,19 @@ public class MapsActivity extends MenuActivity implements
         Log.d(TAG, "enter onCreate");
         super.onCreate(savedInstanceState);
 
-        //TODO check the DB content
-        Intent intent = new Intent(this, DBIntentService.class);
-        intent.setAction(DBIntentService.CHECK_CONFIG);
-        startService(intent);
+        //TODO check the shared preferences
+        SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
+        if (sharedPref.getStringSet(UiUtils.SELECTED_POINTS, new HashSet<String>())!=null) {
+            selectedByUser.addAll(sharedPref.getStringSet(UiUtils.SELECTED_POINTS, new HashSet<String>()));
+        }
+
+        if (sharedPref.getString(UiUtils.EMAIL, "email")!=null) {
+            Log.d(TAG, "user not null");
+           // Intent intent = new Intent(this, DBIntentService.class);
+           // intent.setAction(UiUtils.CHECK_CONFIG);
+           // startService(intent);
+        }
+
      //   selectedByUser.addAll(UiUtils.selectedPointsIds);
 
         // Retrieve all the saved variable
@@ -171,8 +177,9 @@ public class MapsActivity extends MenuActivity implements
             selectPointsToShow = savedInstanceState.getBoolean(KEY_SELECT_POINTS_TO_SHOW);
             ArrayList<String> ids = savedInstanceState.getStringArrayList(KEY_MARKER_IDS);
             currentZoom = savedInstanceState.getFloat(CURRENT_ZOOM);
+            selectedMarkerID = savedInstanceState.getString("SELECTED_MARKER_ID");
             mCameraPosition = savedInstanceState.getParcelable(KEY_CAMERA_POSITION);
-            places = (HashSet)savedInstanceState.getSerializable(KEY_PLACES);
+            places = (HashSet)savedInstanceState.getSerializable(UiUtils.PLACES);
             posit = savedInstanceState.getInt(SPINNER_POSIT);
             saveInfoWindow = savedInstanceState.getBoolean(SAVE_INFO_WINDOW);
             animationStarted = savedInstanceState.getBoolean(STARTED_ANIMATION);
@@ -190,7 +197,7 @@ public class MapsActivity extends MenuActivity implements
         deviceType = UiUtils.findScreenSize(getApplicationContext());
         rr = (RelativeLayout) findViewById(R.id.rr);
         mapWrapper = (RelativeLayout) findViewById(R.id.mapWrapper);
-      //  topWrapper = (RelativeLayout) findViewById(R.id.wrapper_top);
+        topWrapper = (LinearLayout) findViewById(R.id.wrapperTop);
         showFilterSection = (ImageButton) findViewById(R.id.imageB);
         showFilterSection.setImageResource(R.drawable.expand_more);
         showFilterSection.getBackground().setAlpha(0);
@@ -214,16 +221,16 @@ public class MapsActivity extends MenuActivity implements
         clearAll.setImageResource(R.drawable.clear);
         clearAll.getBackground().setAlpha(0);
         clearAll.setTag(CLEAR_MAP);
-     //   if (deviceType.equals("tablet")) {
-           // txt.setTextSize(getApplicationContext().getResources().getDimension(R.dimen.big_textsize));
-        //    filterText.setTextSize(getApplicationContext().getResources().getDimension(R.dimen.big_textsize));
-     //   }
+
+        //temporary remove buttons from the top
+        topWrapper.removeView(showFilterSection);
+        topWrapper.removeView(showAll);
+        topWrapper.removeView(clearAll);
+        topWrapper.removeView(showLoved);
+        topWrapper.removeView(showFilters);
 
         filter = (LinearLayout) findViewById(R.id.filters);
 
-        // set the position of the spinner
-        topWrapper = (LinearLayout) findViewById(R.id.wrapperTop);
-    //    mySpinner = new MySpinner(this);
         RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams
                 (RelativeLayout.LayoutParams.WRAP_CONTENT,
                         RelativeLayout.LayoutParams.WRAP_CONTENT);
@@ -286,11 +293,12 @@ public class MapsActivity extends MenuActivity implements
                 } else if (button.equals(LOVED)) {
                     //TODO user has to be logged in, otherwise to show tost and return;
                     SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
-                    if (sharedPref.contains("USER")) {
+                    if (sharedPref.contains(UiUtils.EMAIL)) {
                         filters.clear();
                         filters.put(LOVED, showFiltersSidebar);
                     } else {
                         UiUtils.showToast(getApplicationContext(), "To use this option, please log in or create an account");
+                        return;
                     }
 
 
@@ -326,10 +334,17 @@ public class MapsActivity extends MenuActivity implements
               //  UiUtils.showFilters=!UiUtils.showFilters;
 
                 //TODO visible
-                showFilters.setAlpha(1.0f);
-                showLoved.setAlpha(1.0f);
-                showAll.setAlpha(1.0f);
-                clearAll.setAlpha(1.0f);
+//                showFilters.setAlpha(1.0f);
+//                showLoved.setAlpha(1.0f);
+//                showAll.setAlpha(1.0f);
+//                clearAll.setAlpha(1.0f);
+                if (filters.isEmpty()) {
+                    topWrapper.addView(showFilters);
+                    topWrapper.addView(showLoved);
+                    topWrapper.addView(showAll);
+                    topWrapper.addView(clearAll);
+                }
+
                 filterSidebarModified = true;
 
                 if (filters.isEmpty()) {
@@ -364,9 +379,9 @@ public class MapsActivity extends MenuActivity implements
                 //On receive should be called very rarely, onle the current location is significantly changed. In our case, it is calling
                 //onle once
                 //      Log.d(TAG, "enter onReceive(Context context, Intent intent)");
-                if (intent.getAction().equals("DATA_RECEIVED")) {
-                    if (intent.getSerializableExtra("PLACES")!=null) {
-                        ArrayList<Place> placesLst = (ArrayList)intent.getSerializableExtra("PLACES");
+                if (intent.getAction().equals(UiUtils.DATA_RECEIVED)) {
+                    if (intent.getSerializableExtra(UiUtils.PLACES)!=null) {
+                        ArrayList<Place> placesLst = (ArrayList)intent.getSerializableExtra(UiUtils.PLACES);
                         //         Log.i(TAG, "places: "+ placesLst.size());
                         places.addAll(placesLst);
 
@@ -375,7 +390,9 @@ public class MapsActivity extends MenuActivity implements
                             showClusters();
                             updateLocationUI(filters);
                             stabilizeVieWithZoom();
-                            simpleProgressBar.setVisibility(View.INVISIBLE);
+                          //  simpleProgressBar.setVisibility(View.INVISIBLE);
+                            topWrapper.removeView(simpleProgressBar);
+                            topWrapper.addView(showFilterSection);
                             animationStarted = false;
                             // isDataRequestedFromDropDown=false;
                         }
@@ -388,30 +405,35 @@ public class MapsActivity extends MenuActivity implements
                         UiUtils.showToast(getApplicationContext(),
                                 "server with the data may be unavailable, try again later");
                     }
-                } else if (intent.getAction().equals("POINT_ADDED")) {
-                    if (intent.getStringExtra("LOVED")!=null) {
-                        selectedByUser.add(intent.getStringExtra("LOVED"));
+                } else if (intent.getAction().equals(UiUtils.POINT_ADDED)) {
+                    if (intent.getStringExtra(UiUtils.LOVED)!=null) {
+                        selectedByUser.add(intent.getStringExtra(UiUtils.LOVED));
                         updateLocationUI(filters);
                         UiUtils.showToast(getApplicationContext(),
                                 "added!");
                     }
-                } else if (intent.getAction().equals("DB_CHECKED")) {
+                } else if (intent.getAction().equals(UiUtils.DB_CHECKED)) {
+                    Log.d(TAG, "DB checked, receiver started");
 
                     //TODO the broadcast may receive the User data and the IDs selected by user
-                    if (intent.getSerializableExtra("USER")!=null) {
-                        User user = (User) intent.getSerializableExtra("USER");
+                    if (intent.getSerializableExtra(UiUtils.USER)!=null) {
+                        User user = (User) intent.getSerializableExtra(UiUtils.USER);
                         SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
                         SharedPreferences.Editor editor = sharedPref.edit();
-                        editor.putString("email", user.getEmail());
-                        editor.putString("id", user.getId());
-                        editor.putString("first name", user.getFirstName());
-                        editor.putString("role", user.getRole());
+                        editor.putString(UiUtils.EMAIL, user.getEmail());
+                        editor.putString(UiUtils.USER_ID, user.getId());
+                        editor.putString(UiUtils.FIRST_NAME, user.getFirstName());
+                        editor.putString(UiUtils.LAST_NAME, user.getLastName());
+                        editor.putString(UiUtils.ROLE, user.getRole());
                         editor.commit();
+
+                        if (intent.getSerializableExtra(UiUtils.SELECTED_POINTS)!=null) {
+                            selectedByUser.addAll((ArrayList<String>)intent.getStringArrayListExtra(UiUtils.SELECTED_POINTS));
+                        }
+                    } else {
+                        UiUtils.showToast(getApplicationContext(), "user is null");
                     }
 
-                    if (intent.getSerializableExtra("SELECTED_POINTS")!=null) {
-                        selectedByUser.addAll((ArrayList<String>)intent.getStringArrayListExtra("SELECTED_POINTS"));
-                    }
                 }
                 //       Log.d(TAG, "exit onReceive(Context context, Intent intent)");
             }
@@ -419,10 +441,10 @@ public class MapsActivity extends MenuActivity implements
 
         if (places.size()==0) {
             showFilterSection.setAlpha(0.0f);
-            showLoved.setAlpha(0.0f);
-            showAll.setAlpha(0.0f);
-            showFilters.setAlpha(0.0f);
-            clearAll.setAlpha(0.0f);
+//            showLoved.setAlpha(0.0f);
+//            showAll.setAlpha(0.0f);
+//            showFilters.setAlpha(0.0f);
+//            clearAll.setAlpha(0.0f);
 
         }
         //TODO if not instantiated
@@ -455,11 +477,12 @@ public class MapsActivity extends MenuActivity implements
             ArrayList <String> ids = new  ArrayList <String>(markerIds.size());
             ids.addAll(markerIds);
             outState.putStringArrayList(KEY_MARKER_IDS, ids);
-            outState.putSerializable(KEY_PLACES, places);
+            outState.putSerializable(UiUtils.PLACES, places);
             outState.putStringArrayList(KEY_RECEIVED_FILTERS, receivedFilters);
             outState.putStringArrayList(KEY_SELECTED_FILTERS, selectedFilters);
             outState.putBoolean(KEY_SELECT_POINTS_TO_SHOW, selectPointsToShow);
             outState.putInt(SPINNER_POSIT, posit);
+            outState.putString("SELECTED_MARKER_ID", selectedMarkerID);
             outState.putFloat(CURRENT_ZOOM, mMap.getCameraPosition().zoom);
             zoomIfRestarted = mMap.getCameraPosition().zoom;
          //   outState.putBoolean(API_WAS_CALLED, apiNotCalled);
@@ -468,7 +491,7 @@ public class MapsActivity extends MenuActivity implements
             // save info window
             for (Marker m: mClusterManager.getMarkerCollection().getMarkers()) {
                 if (m.isInfoWindowShown()==true) {
-                    Place.selectedMarkerID = m.getTitle();
+                    selectedMarkerID = m.getTitle();
                     saveInfoWindow = true;
                     break;
                 }
@@ -578,16 +601,15 @@ public class MapsActivity extends MenuActivity implements
         if (places.size()==0) {
             //to send the intent to request the data from API
             Intent intent = new Intent(this, RestIntentServer.class);
-            intent.setAction("SUBMIT");
-            intent.putExtra(RestIntentServer.URL, "https://albertasights.herokuapp.com/api/v1/points_by_district?district=Calgary");
-            intent.putExtra(RestIntentServer.LNG, String.valueOf(mDefaultCoord.longitude));
-            intent.putExtra(RestIntentServer.LAT, String.valueOf(mDefaultCoord.latitude));
-            intent.putExtra(RestIntentServer.DISTANCE, String.valueOf(30));
+            intent.setAction(UiUtils.SUBMIT);
+            intent.putExtra(UiUtils.URL, "https://albertasights.herokuapp.com/api/v1/points_by_district?district=Calgary");
+            intent.putExtra(UiUtils.LNG, String.valueOf(mDefaultCoord.longitude));
+            intent.putExtra(UiUtils.LAT, String.valueOf(mDefaultCoord.latitude));
+            intent.putExtra(UiUtils.DISTANCE, String.valueOf(30));
             startService(intent);
             // start the animation for the period of data loading
             animationStarted = true;
             simpleProgressBar.setVisibility(View.VISIBLE);
-
         }
 
     //    mySpinner.setSelection(posit);//Arrays.asList(Place.distances).indexOf(Place.distance)
@@ -691,9 +713,9 @@ public class MapsActivity extends MenuActivity implements
         // Create an intent filter for DATA_RECEIVED.
         IntentFilter intentFilter =
                 new IntentFilter();
-        intentFilter.addAction("DATA_RECEIVED");
-        intentFilter.addAction("POINT_ADDED");
-        intentFilter.addAction("DB_CHECKED");
+        intentFilter.addAction(UiUtils.DATA_RECEIVED);
+        intentFilter.addAction(UiUtils.POINT_ADDED);
+        intentFilter.addAction(UiUtils.DB_CHECKED);
 
         // Register the receiver and the intent filter.
         registerReceiver(receiver,
@@ -782,10 +804,15 @@ public class MapsActivity extends MenuActivity implements
                } else if (newFilter.containsKey(CLEAR_MAP)) {
                    // set all buttons of the same color, remove filter view
                    newFilter.clear();
-                   showAll.setAlpha(0.0f);
-                   showFilters.setAlpha(0.0f);
-                   showLoved.setAlpha(0.0f);
-                   clearAll.setAlpha(0.0f);
+//                   showAll.setAlpha(0.0f);
+//                   showFilters.setAlpha(0.0f);
+//                   showLoved.setAlpha(0.0f);
+//                   clearAll.setAlpha(0.0f);
+                   topWrapper.removeView(showAll);
+                   topWrapper.removeView(showFilters);
+                   topWrapper.removeView(showLoved);
+                   topWrapper.removeView(clearAll);
+
                    filter.removeAllViews();
                    filter.getLayoutParams().height = 0;
                    filter.getLayoutParams().width = 0;
@@ -963,7 +990,7 @@ public class MapsActivity extends MenuActivity implements
         protected void onClusterItemRendered(MyClusterItem item, Marker marker) {
             super.onClusterItemRendered(item, marker);
             if (saveInfoWindow==true) {
-                if (Place.selectedMarkerID.equals(marker.getTitle())) {
+                if (selectedMarkerID.equals(marker.getTitle())) {
                 //    Log.i(TAG, "got it!");
                     marker.showInfoWindow();
                     saveInfoWindow=false;

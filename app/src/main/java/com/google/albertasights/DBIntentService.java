@@ -4,10 +4,15 @@ import android.app.IntentService;
 import android.content.Intent;
 import android.util.Log;
 
+
 import com.couchbase.lite.CouchbaseLiteException;
-import com.couchbase.lite.Document;
+import com.couchbase.lite.Database;
+import com.couchbase.lite.MutableDocument;
+import com.google.albertasights.models.User;
+import com.google.albertasights.ui.UiUtils;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 
 /**
@@ -19,13 +24,6 @@ import java.util.Map;
  */
 public class DBIntentService extends IntentService {
     // IntentService can perform, e.g. ACTION_FETCH_NEW_ITEMS
-    public static final String ADD_POINT_TO_LOVED = "add_to_loved";
-    public static final String CREATE_USER = "create_user";
-    public static final String CHECK_CONFIG = "check_config";
-    public static final String POINT_ID = "point_id";
-    public static final String EMAIL = "email";
-    public static final String PASSWORD = "password";
-    public static final String ROLE = "role";
     private static final String TAG = DBIntentService.class.getSimpleName();
 
     public DBIntentService() {
@@ -39,30 +37,26 @@ public class DBIntentService extends IntentService {
         Log.d(TAG, "enter onHandleIntent(Intent intent)");
         if (intent != null) {
             final String action = intent.getAction();
-            if (ADD_POINT_TO_LOVED.equals(action)) {
-                final String param1 = intent.getStringExtra(POINT_ID);
+            if (UiUtils.ADD_POINT_TO_LOVED.equals(action)) {
+                final String param1 = intent.getStringExtra(UiUtils.POINT_ID);
                 saveSelectedPoint(param1);
-            } else if (CREATE_USER.equals(action)) {
-                final String email = intent.getStringExtra(EMAIL);
-                final String password = intent.getStringExtra(PASSWORD);
+            } else if (UiUtils.CREATE_USER.equals(action)) {
+                final String email = intent.getStringExtra(UiUtils.EMAIL);
+                final String password = intent.getStringExtra(UiUtils.PASSWORD);
                 String role = "user";
                 try {
-                    role = intent.getStringExtra(ROLE);
+                    role = intent.getStringExtra(UiUtils.ROLE);
                 } catch (Exception e) {
 
                 }
                 try {
                     createUser(email, password, role);
-                    Intent i = new Intent();
-                    i.setAction("USER_CREATED");
-                    //  i.putExtra("USER_CREATED", param1);
-                    getApplicationContext().sendBroadcast(i);
+
                 } catch (Exception e) {
 
                 }
-            } else if (CHECK_CONFIG.equals(action)) {
-
-
+            } else if (UiUtils.CHECK_CONFIG.equals(action)) {
+                checkDB();
             }
         }
         Log.d(TAG, "exit onHandleIntent(Intent intent)");
@@ -73,50 +67,111 @@ public class DBIntentService extends IntentService {
      * parameters.
      */
     private void saveSelectedPoint(String param1) {
-        // TODO: Handle action Foo
+
         Log.d(TAG, "exit saveSelectedPoint(String param1)");
-        //TODO temporary
+        //TODO add point ID to the document "selected_points", if does not exist, create the new one
         UiUtils.selectedPointsIds.add(param1);
         Intent i = new Intent();
-        i.setAction("POINT_ADDED");
-        i.putExtra("LOVED", param1);
+        i.setAction(UiUtils.POINT_ADDED);
+        i.putExtra(UiUtils.LOVED, param1);
         getApplicationContext().sendBroadcast(i);
 
     }
 
+    private void removeFromSelectedPoint(String id) {
+
+        Log.d(TAG, "enter removeFromSelectedPoint(String param1)");
+        //TODO add point ID to the document "selected_points", if does not exist, create the new one
+
+        Intent i = new Intent();
+        i.setAction(UiUtils.POINT_REMOVED);
+        i.putExtra(UiUtils.LOVED, id);
+        getApplicationContext().sendBroadcast(i);
+
+    }
+
+
     private void createUser(String email, String uPassword, String role) {
         Log.d(TAG, "enter createUser");
         // TODO: Replace with injection
-        DBConnection connection = new DBConnection("user", getApplicationContext());
+        Intent i = new Intent();
         Map<String, Object> properties = new HashMap<String, Object>();
-        properties.put("user_name", "Olga");
-        properties.put("email", "androgeny80@gmail.com");
+        properties.put(UiUtils.FIRST_NAME, "Dear friend");
+        properties.put(UiUtils.LAST_NAME, "No");
+        properties.put(UiUtils.EMAIL, email);
         //TODO encript
-        properties.put("password", "androgeny80@gmail.com");
-        properties.put("role", "admin");
-    //    properties.put("ID", document.getId());
-//        try {
-//            document.putProperties(properties);
-//        } catch (CouchbaseLiteException e) {
-//            e.printStackTrace();
-//        }
+        properties.put(UiUtils.PASSWORD, uPassword);
+        properties.put(UiUtils.ROLE, role);
+        Database db = DBConnection.getDatabase("mydb", getApplicationContext());
+        MutableDocument userDoc = new MutableDocument(UiUtils.USER);
+        userDoc.setData(properties);
+        try {
+            db.save(userDoc);
+            User user = new User(email, uPassword);
+            user.setRole(role);
+            i.putExtra(UiUtils.USER, user);
+        } catch (CouchbaseLiteException e) {
+            Log.e(TAG, e.toString());
+        }
+
+        i.setAction(UiUtils.USER_CREATED);
+        //  i.putExtra("USER_CREATED", param1);
+        getApplicationContext().sendBroadcast(i);
 
     }
 
     private void checkDB() {
-        Log.d(TAG, "enter createUser");
+        Log.d(TAG, "enter checkDB()");
         // TODO: Replace with injection
-        DBConnection connection = new DBConnection("user", getApplicationContext());
-        if (connection.getDatabase().getDocumentCount()>1) {
-
+        // TODO chech if docks exist: USER, SELECTED_POINTS
+        Database db = DBConnection.getDatabase("mydb", getApplicationContext());
+        Intent i = new Intent();
+        i.setAction(UiUtils.DB_CHECKED);
+        if (db.getDocument(UiUtils.USER)!=null) {
+            Log.d(TAG, "user is not null");
+            User user = new User(db.getDocument(UiUtils.USER).getString(UiUtils.EMAIL),
+                    db.getDocument(UiUtils.USER).getString(UiUtils.PASSWORD));
+            user.setRole( db.getDocument(UiUtils.USER).getString(UiUtils.ROLE));
+            user.setFirstName( db.getDocument(UiUtils.USER).getString(UiUtils.FIRST_NAME));
+            user.setLastName( db.getDocument(UiUtils.USER).getString(UiUtils.LAST_NAME));
+            if (db.getDocument(UiUtils.USER).contains(UiUtils.USER_ID)) {
+                //TODO add user
+                user.setId(db.getDocument(UiUtils.USER).getString(UiUtils.USER_ID));
+            }
+            //any points have been saved as selected
+            if (db.getDocument(UiUtils.SELECTED_POINTS)!=null) {
+                LinkedList<String> pointsIDs = new LinkedList<String>();
+                for (Object o : db.getDocument(UiUtils.SELECTED_POINTS).getArray(UiUtils.SELECTED_POINTS)) {
+                    pointsIDs.add(o.toString());
+                }
+                i.putExtra(UiUtils.SELECTED_POINTS, pointsIDs);
+            }
+            i.putExtra(UiUtils.USER, user);
 
         } else {
-            //TODO create documents: USER, SELECTED_POINTS
+            Log.d(TAG, "user is null");
 
         }
 
+        getApplicationContext().sendBroadcast(i);
+        Log.d(TAG, "exit checkDB()");
     }
 
+    private void updateUser() {
+        Log.d(TAG, "enter updateUser()");
+        // TODO: Replace with injection
 
+        Database db = DBConnection.getDatabase("mydb", getApplicationContext());
+        Intent i = new Intent();
+        i.setAction(UiUtils.USER_UPDATED);
+        if (db.getDocument("user")!=null) {
+            if (db.getDocument("user").contains("id")) {
+                //TODO add user and list of selected points
+            }
+
+        }
+        getApplicationContext().sendBroadcast(i);
+        Log.d(TAG, "enter updateUser()");
+    }
 
 }

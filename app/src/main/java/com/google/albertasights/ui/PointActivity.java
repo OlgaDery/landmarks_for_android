@@ -21,7 +21,6 @@ import android.widget.RelativeLayout;
 
 import com.google.albertasights.DBIntentService;
 import com.google.albertasights.R;
-import com.google.albertasights.UiUtils;
 import com.google.albertasights.models.Place;
 import com.squareup.picasso.Picasso;
 
@@ -114,8 +113,8 @@ public class PointActivity extends AppCompatActivity {
                     String id =((ImageButton) view).getTag().toString();
                     if (point.isLoved()==false) {
                         Intent writeToFile = new Intent(getApplicationContext(), DBIntentService.class);
-                        writeToFile.setAction(DBIntentService.ADD_POINT_TO_LOVED);
-                        writeToFile.putExtra(DBIntentService.POINT_ID, point.getId());
+                        writeToFile.setAction(UiUtils.ADD_POINT_TO_LOVED);
+                        writeToFile.putExtra(UiUtils.POINT_ID, point.getId());
                         startService(writeToFile);
                         likeButton.setColorFilter(new PorterDuffColorFilter(Color.RED, PorterDuff.Mode.SRC_IN));
                     } else {

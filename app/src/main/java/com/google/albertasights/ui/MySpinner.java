@@ -1,11 +1,8 @@
-package com.google.albertasights;
+package com.google.albertasights.ui;
 
 import android.content.Context;
-import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 import android.widget.RelativeLayout;
-import android.widget.Spinner;
 
 /**
  * Created by olga on 2/25/18.
