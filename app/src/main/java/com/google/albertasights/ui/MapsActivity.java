@@ -223,7 +223,7 @@ public class MapsActivity extends MenuActivity implements
         clearAll.setTag(CLEAR_MAP);
 
         //temporary remove buttons from the top
-        topWrapper.removeView(showFilterSection);
+        showFilterSection.setAlpha(0.0f);
         topWrapper.removeView(showAll);
         topWrapper.removeView(clearAll);
         topWrapper.removeView(showLoved);
@@ -387,14 +387,11 @@ public class MapsActivity extends MenuActivity implements
 
                         if (mMap!=null) { //isDataRequestedFromDropDown == true &&
                       //      Log.d(TAG, "received!");
+                            topWrapper.removeView(simpleProgressBar);
                             showClusters();
                             updateLocationUI(filters);
                             stabilizeVieWithZoom();
-                          //  simpleProgressBar.setVisibility(View.INVISIBLE);
-                            topWrapper.removeView(simpleProgressBar);
-                            topWrapper.addView(showFilterSection);
                             animationStarted = false;
-                            // isDataRequestedFromDropDown=false;
                         }
 
                         // show toast if the service failed
@@ -440,7 +437,7 @@ public class MapsActivity extends MenuActivity implements
         };
 
         if (places.size()==0) {
-            showFilterSection.setAlpha(0.0f);
+ //           topWrapper.addView(showFilterSection);
 //            showLoved.setAlpha(0.0f);
 //            showAll.setAlpha(0.0f);
 //            showFilters.setAlpha(0.0f);
@@ -763,8 +760,8 @@ public class MapsActivity extends MenuActivity implements
         if (places.size()>0) { //&& selectPointsToShow==true
             // set full opacity
             //       Log.i(TAG, "setting full opacity");
+           // topWrapper.addView(showFilterSection);
             showFilterSection.setAlpha(1.0f);
-            //   filterText.setText("Select:");
         }
 
         //TODO logic to process filters (add/remove element with filters, change the list of filters, change the buttons color)

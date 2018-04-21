@@ -36,6 +36,7 @@ android {
 }
 
 dependencies {
+    compile 'com.android.support:support-v4:27.1.1'
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
@@ -55,5 +56,3 @@ dependencies {
     testCompile 'junit:junit:4.12'
     annotationProcessor 'android.arch.persistence.room:compiler:1.0.0'
 }
-
-

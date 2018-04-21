@@ -47,7 +47,6 @@
             android:layout_height="wrap_content"
             android:id="@+id/like"
             android:background="@drawable/button"
-            android:onClick="addToSelected"
             android:layout_alignParentLeft="true"
             android:layout_alignParentTop="true"
             android:layout_marginLeft="80dp" />
