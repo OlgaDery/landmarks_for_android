@@ -17,6 +17,8 @@ import android.widget.TextView;
 import com.google.albertasights.R;
 import com.google.albertasights.models.User;
 
+import java.io.Serializable;
+
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
@@ -34,8 +36,11 @@ public class UserFragment extends Fragment {
     private BroadcastReceiver receiver;
 
     // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    private User user;
+    private TextView email;
+    private TextView firstName;
+    private TextView lastName;
+    private TextView role;
 
     private OnUserUpdateListener mListener;
 
@@ -65,8 +70,10 @@ public class UserFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+            user = (User)getArguments().getSerializable(UiUtils.USER);
+//            for (String s : getArguments().keySet()) {
+//                Log.d(TAG, "in args: "+s);
+//            };
         }
     }
 
@@ -76,7 +83,6 @@ public class UserFragment extends Fragment {
         // Inflate the layout for this fragment
         Log.d(TAG, "enter onCreateView");
         View view = inflater.inflate(R.layout.fragment_user, container, false);
-        TextView text = (TextView) view.findViewById(R.id.user_text);
         receiver = new BroadcastReceiver () {
             @Override
             public void onReceive(Context context, Intent intent) {

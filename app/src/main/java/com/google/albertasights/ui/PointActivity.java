@@ -8,6 +8,7 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -26,7 +27,7 @@ import com.squareup.picasso.Picasso;
 
 import java.util.Locale;
 
-public class PointActivity extends AppCompatActivity {
+public class PointActivity extends MenuActivity {
     private Place point;
     private ListView listview;
     private static final String TAG = PointActivity.class.getSimpleName();
@@ -47,10 +48,10 @@ public class PointActivity extends AppCompatActivity {
 
         if (getIntent().getExtras()!= null) {
             Bundle extras = getIntent().getExtras();
-            point = (Place) extras.getSerializable("POINT");
+            point = (Place) extras.getSerializable(UiUtils.POINT);
         } else {
             if (savedInstanceState != null) {
-                point = (Place)savedInstanceState.getSerializable("POINT");
+                point = (Place)savedInstanceState.getSerializable(UiUtils.POINT);
 
             }
         }
@@ -108,8 +109,8 @@ public class PointActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Log.d(TAG, "onclick");
-                SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
-                if (sharedPref.contains("USER")) {
+                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                if (prefs.getBoolean(UiUtils.LOGGED_IN, true)==true) {
                     String id =((ImageButton) view).getTag().toString();
                     if (point.isLoved()==false) {
                         Intent writeToFile = new Intent(getApplicationContext(), DBIntentService.class);

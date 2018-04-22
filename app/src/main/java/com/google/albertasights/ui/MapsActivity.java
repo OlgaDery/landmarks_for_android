@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -155,20 +156,11 @@ public class MapsActivity extends MenuActivity implements
         super.onCreate(savedInstanceState);
 
         //TODO check the shared preferences
-        SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
-        if (sharedPref.getStringSet(UiUtils.SELECTED_POINTS, new HashSet<String>())!=null) {
-            selectedByUser.addAll(sharedPref.getStringSet(UiUtils.SELECTED_POINTS, new HashSet<String>()));
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+
+        if (prefs.getStringSet(UiUtils.SELECTED_POINTS, new HashSet<String>())!=null) {
+            selectedByUser.addAll(prefs.getStringSet(UiUtils.SELECTED_POINTS, new HashSet<String>()));
         }
-
-        if (sharedPref.getString(UiUtils.EMAIL, "email")!=null) {
-            Log.d(TAG, "user not null");
-           // Intent intent = new Intent(this, DBIntentService.class);
-           // intent.setAction(UiUtils.CHECK_CONFIG);
-           // startService(intent);
-        }
-
-     //   selectedByUser.addAll(UiUtils.selectedPointsIds);
-
         // Retrieve all the saved variable
         if (savedInstanceState != null) {
        //     mLastKnownLocation = savedInstanceState.getParcelable(KEY_LOCATION);
@@ -292,15 +284,17 @@ public class MapsActivity extends MenuActivity implements
 
                 } else if (button.equals(LOVED)) {
                     //TODO user has to be logged in, otherwise to show tost and return;
-                    SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
-                    if (sharedPref.contains(UiUtils.EMAIL)) {
-                        filters.clear();
-                        filters.put(LOVED, showFiltersSidebar);
+                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                    if (prefs.contains(UiUtils.LOGGED_IN)) {
+                        Log.i(TAG, "user logged in: "+ prefs.getBoolean(UiUtils.LOGGED_IN, true));
+                        if (prefs.getBoolean(UiUtils.LOGGED_IN, true)==true) {
+                            filters.clear();
+                            filters.put(LOVED, showFiltersSidebar);
+                        }
                     } else {
                         UiUtils.showToast(getApplicationContext(), "To use this option, please log in or create an account");
                         return;
                     }
-
 
                 } else if (button.equals(ALL)) {
                     filters.clear();
@@ -315,6 +309,7 @@ public class MapsActivity extends MenuActivity implements
                 selectedFilters.clear();
                 viewModel.updateFilterMap(filters);
                 showClusters ();
+                stabilizeVieWithZoom();
 
                 Log.d(TAG, "exit onClick imageButtons(View view) ");
             }
@@ -415,14 +410,6 @@ public class MapsActivity extends MenuActivity implements
                     //TODO the broadcast may receive the User data and the IDs selected by user
                     if (intent.getSerializableExtra(UiUtils.USER)!=null) {
                         User user = (User) intent.getSerializableExtra(UiUtils.USER);
-                        SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
-                        SharedPreferences.Editor editor = sharedPref.edit();
-                        editor.putString(UiUtils.EMAIL, user.getEmail());
-                        editor.putString(UiUtils.USER_ID, user.getId());
-                        editor.putString(UiUtils.FIRST_NAME, user.getFirstName());
-                        editor.putString(UiUtils.LAST_NAME, user.getLastName());
-                        editor.putString(UiUtils.ROLE, user.getRole());
-                        editor.commit();
 
                         if (intent.getSerializableExtra(UiUtils.SELECTED_POINTS)!=null) {
                             selectedByUser.addAll((ArrayList<String>)intent.getStringArrayListExtra(UiUtils.SELECTED_POINTS));
@@ -785,11 +772,11 @@ public class MapsActivity extends MenuActivity implements
 
                } else if (newFilter.containsKey(LOVED)) {
                    //  receivedFilters
-                   //TODO remove!!!
-                   selectedByUser.addAll(UiUtils.selectedPointsIds);
-                   for (Place p : places) {
-                       if (selectedByUser.contains(p.getId())) {
-                           receivedFilters.add(p.getName());
+                   if (selectedByUser.size()>0) {
+                       for (Place p : places) {
+                           if (selectedByUser.contains(p.getId())) {
+                               receivedFilters.add(p.getName());
+                           }
                        }
                    }
 

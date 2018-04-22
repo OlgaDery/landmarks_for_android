@@ -35,6 +35,16 @@ public class User implements Serializable {
     @Expose
     private String lastName = "last name";
 
+    public Boolean getLoggedIn() {
+        return loggedIn;
+    }
+
+    public void setLoggedIn(Boolean loggedIn) {
+        this.loggedIn = loggedIn;
+    }
+
+    private Boolean loggedIn = true;
+
     private List<String> selectedPointsIds = new ArrayList<>();
     private List<String> createdPointsIds = new ArrayList<>();
     private List<String> selectedRoutesIds = new ArrayList<>();

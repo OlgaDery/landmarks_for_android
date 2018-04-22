@@ -16,31 +16,54 @@ import android.view.View;
 
 import com.google.albertasights.DBIntentService;
 import com.google.albertasights.R;
+import com.google.albertasights.models.Place;
 import com.google.albertasights.models.User;
 
-public class UserActivity extends AppCompatActivity implements NoUserFragment.OnButtonClickedListener,
+public class UserActivity extends MenuActivity implements NoUserFragment.OnButtonClickedListener,
         UserFragment.OnUserUpdateListener{
 
 
     private Fragment firstFragment;
+    private Fragment second;
+    private User user;
     private static final String TAG = UserActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.d(TAG, "enter onCreate(Bundle savedInstanceState)");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.user_container);
 //        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 //        setSupportActionBar(toolbar);
-        //TODO
         if (savedInstanceState != null) {
             return;
         }
-        firstFragment = new NoUserFragment();
-        firstFragment.setArguments(getIntent().getExtras());
+        //TODO
+        if (getIntent().getExtras()!= null) {
+            user = (User) getIntent().getExtras().getSerializable(UiUtils.USER);
+            if (user.getLoggedIn()==true) {
+                Log.d(TAG, "user logged in, adding the User Fragment");
+                second = new UserFragment();
+                second.setArguments(getIntent().getExtras());
+                getSupportFragmentManager().beginTransaction()
+                        .add(R.id.user_container, second).commit();
+            } else {
+                Log.d(TAG, "user exists but not logged in");
+                firstFragment = new NoUserFragment();
+                firstFragment.setArguments(getIntent().getExtras());
+                getSupportFragmentManager().beginTransaction()
+                        .add(R.id.user_container, firstFragment).commit();
+            }
+        } else {
+            firstFragment = new NoUserFragment();
+            Log.i("TAG", "user does not exists");
+            //  firstFragment.setArguments(getIntent().getExtras());
+            // Add the fragment to the 'fragment_container' FrameLayout
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.user_container, firstFragment).commit();
+        }
 
-        // Add the fragment to the 'fragment_container' FrameLayout
-        getSupportFragmentManager().beginTransaction()
-                .add(R.id.user_container, firstFragment).commit();
+        Log.d(TAG, "exit onCreate(Bundle savedInstanceState)");
 
     }
 
@@ -57,7 +80,7 @@ public class UserActivity extends AppCompatActivity implements NoUserFragment.On
     @Override
     public void onButtonClickedListener() {
         Log.i(TAG, "enter onButtonClickedListener()");
-        Fragment second = new UserFragment();
+        second = new UserFragment();
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
 
 // Replace whatever is in the fragment_container view with this fragment,

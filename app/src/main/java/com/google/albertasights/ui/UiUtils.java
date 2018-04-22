@@ -1,10 +1,12 @@
 package com.google.albertasights.ui;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
+import android.preference.PreferenceManager;
 import android.support.v4.widget.CompoundButtonCompat;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -35,6 +37,7 @@ public class UiUtils {
     public static final String LAT = "LAT";
     public static final String DISTANCE = "DISTANCE";
     public static final String SUBMIT = "SUBMIT";
+    public static final String POINT = "POINT";
     public static final String DATA_RECEIVED = "DATA_RECEIVED";
     public static final String DB_CHECKED = "DB_CHECKED";
     public static final String POINT_ADDED = "POINT_ADDED";
@@ -42,6 +45,9 @@ public class UiUtils {
     public static final String RESULT = "RESULT";
     public static final String PLACES = "PLACES";
     public static final String USER = "USER";
+    public static final String LOGGED_IN = "LOGGED_IN";
+    public static final String LOG_IN = "LOG_IN";
+    public static final String LOG_OUT = "LOG_OUT";
     public static final String USER_CREATED = "USER_CREATED";
     public static final String SELECTED_POINTS = "SELECTED_POINTS";
     public static final String ADD_POINT_TO_LOVED = "ADD_POINT_TO_LOVED";
@@ -59,7 +65,7 @@ public class UiUtils {
 
 
     private static final String TAG = MapsActivity.class.getSimpleName();
-    public static Set <String> selectedPointsIds = new HashSet<>();
+  //  public static Set <String> selectedPointsIds = new HashSet<>();
 
   //  public static boolean showFilters = false;
 
@@ -232,6 +238,13 @@ public class UiUtils {
                 b.setColorFilter(new PorterDuffColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN));
             }
         }
+    }
+
+    public static SharedPreferences.Editor getEditor (Context context) {
+        Log.d(TAG, "enter getEditor (Context context)");
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        return editor;
     }
 
 }

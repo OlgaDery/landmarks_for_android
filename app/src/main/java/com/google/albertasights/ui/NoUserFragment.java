@@ -5,14 +5,20 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.DisplayMetrics;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.albertasights.DBIntentService;
 import com.google.albertasights.R;
+import com.squareup.picasso.Picasso;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -33,7 +39,9 @@ public class NoUserFragment extends Fragment {
     private String mParam2;
     private TextView text;
     private ImageView image;
-    private android.support.design.widget.FloatingActionButton button;
+    private Button button1;
+    private Button logInButton;
+    private String deviceType;
 
     private OnButtonClickedListener mListener;
 
@@ -62,6 +70,7 @@ public class NoUserFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         if (getArguments() != null) {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
@@ -73,9 +82,25 @@ public class NoUserFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_no_user, container, false);
+        EditText email = (EditText) view.findViewById(R.id.email);
+        EditText passord = (EditText) view.findViewById(R.id.password);
         text = (TextView) view.findViewById(R.id.txt_user);
-        image = (ImageView) view.findViewById(R.id.image_no_user);
-        button = (android.support.design.widget.FloatingActionButton)view.findViewById(R.id.user_button);
+        button1 = (Button)view.findViewById(R.id.sign_in_button);
+        logInButton = (Button)view.findViewById(R.id.reg_button);
+
+        WindowManager wm = (WindowManager)getActivity().getSystemService(Context.WINDOW_SERVICE);
+        Display display = wm.getDefaultDisplay();
+        DisplayMetrics metrics = new DisplayMetrics();
+        display.getMetrics(metrics);
+        int screen_height = metrics.heightPixels;
+        int screen_width = metrics.widthPixels;
+        String orientation = UiUtils.getOrientation(getActivity());
+        deviceType = UiUtils.findScreenSize(getActivity());
+        if (deviceType.equals("tablet")) {
+            text.setTextSize(getActivity().getResources().getDimension(R.dimen.avg_header));
+        } else {
+            text.setTextSize(getActivity().getResources().getDimension(R.dimen.big_textsize));
+        }
 
         View.OnClickListener lstn = new View.OnClickListener() {
             public void onClick(View view) {
@@ -85,11 +110,13 @@ public class NoUserFragment extends Fragment {
                 intent.setAction(UiUtils.CREATE_USER);
                 intent.putExtra(UiUtils.EMAIL, "androgeny80@gmail.com");
                 intent.putExtra(UiUtils.PASSWORD, "bla");
+                intent.putExtra(UiUtils.FIRST_NAME, "Olga");
+                intent.putExtra(UiUtils.LAST_NAME, "No");
                 getActivity().startService(intent);
                 //    Log.d(TAG, "exit showFilters(View view)");
             }
         };
-        button.setOnClickListener(lstn);
+        button1.setOnClickListener(lstn);
         return view;
     }
 

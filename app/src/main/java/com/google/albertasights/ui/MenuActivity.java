@@ -1,7 +1,9 @@
 package com.google.albertasights.ui;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -9,13 +11,17 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import com.google.albertasights.R;
+import com.google.albertasights.models.User;
 
 public class MenuActivity extends AppCompatActivity {
 
     private static final String TAG = MenuActivity.class.getSimpleName();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.d(TAG, "enter onCreate");
         super.onCreate(savedInstanceState);
+        Log.d(TAG, "exit onCreate");
     }
 
     @Override
@@ -40,6 +46,17 @@ public class MenuActivity extends AppCompatActivity {
 
                 item.setChecked(true);
                 final Intent intent5 = new Intent(this, UserActivity.class);
+                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+                if (prefs.contains(UiUtils.EMAIL)) {
+                    Log.i(TAG, "user found");
+                    User user = new User (prefs.getString(UiUtils.EMAIL, "email"),
+                            prefs.getString(UiUtils.PASSWORD, "email"));
+                    user.setFirstName(prefs.getString(UiUtils.FIRST_NAME, "Dear Friend"));
+                    user.setFirstName(prefs.getString(UiUtils.LAST_NAME, "No"));
+                    user.setLoggedIn(prefs.getBoolean(UiUtils.LOGGED_IN, true));
+                    user.setRole(prefs.getString(UiUtils.ROLE, "user"));
+                    intent5.putExtra(UiUtils.USER, user);
+                }
                 startActivity(intent5);
                 return true;
             case R.id.log_in:
