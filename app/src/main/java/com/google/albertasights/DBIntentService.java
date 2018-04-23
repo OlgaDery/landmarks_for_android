@@ -79,9 +79,19 @@ public class DBIntentService extends IntentService {
         Log.d(TAG, "exit saveSelectedPoint(String param1)");
         //TODO add point ID to the document "selected_points", if does not exist, create the new one
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        Set<String> selectedPoints = prefs.getStringSet(UiUtils.SELECTED_POINTS, new HashSet<String>());
-        selectedPoints.add(param1);
-        UiUtils.getEditor(this).putStringSet(UiUtils.SELECTED_POINTS,  selectedPoints);
+        Set<String> selectedPoints = new HashSet<>();
+        if (prefs.contains(UiUtils.SELECTED_POINTS)) {
+            selectedPoints = prefs.getStringSet(UiUtils.SELECTED_POINTS, new HashSet<String>());
+            selectedPoints.add(param1);
+        } else {
+            selectedPoints.add(param1);
+        }
+
+        SharedPreferences.Editor editor = UiUtils.getEditor(this).putStringSet
+                (UiUtils.SELECTED_POINTS,  selectedPoints);
+        editor.commit();
+        int size = prefs.getStringSet(UiUtils.SELECTED_POINTS, new HashSet<String>()).size();
+        Log.i(TAG, "selected size: "+size);
         Intent i = new Intent();
         i.setAction(UiUtils.POINT_ADDED);
         i.putExtra(UiUtils.LOVED, param1);

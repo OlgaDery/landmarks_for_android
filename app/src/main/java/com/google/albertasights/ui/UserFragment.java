@@ -1,5 +1,7 @@
 package com.google.albertasights.ui;
 
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -7,17 +9,24 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.google.albertasights.R;
 import com.google.albertasights.models.User;
 
 import java.io.Serializable;
+import java.util.Map;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -30,17 +39,20 @@ import java.io.Serializable;
 public class UserFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+
     private static final String TAG = UserFragment.class.getSimpleName();
     private BroadcastReceiver receiver;
 
     // TODO: Rename and change types of parameters
+    private UserViewModel viewModel;
     private User user;
     private TextView email;
     private TextView firstName;
     private TextView lastName;
     private TextView role;
+    private Button button1;
+    private LinearLayout layout;
+    private ProgressBar prBar;
 
     private OnUserUpdateListener mListener;
 
@@ -60,21 +72,29 @@ public class UserFragment extends Fragment {
     public static UserFragment newInstance(String param1, String param2) {
         UserFragment fragment = new UserFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
+//        args.putString(ARG_PARAM1, param1);
+//        args.putString(ARG_PARAM2, param2);
+//        fragment.setArguments(args);
         return fragment;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            user = (User)getArguments().getSerializable(UiUtils.USER);
+        viewModel = ViewModelProviders.of(getActivity()).get(UserViewModel.class);
+        final Observer<User> userObserver = new Observer<User>() {
+            @Override
+            public void onChanged(@Nullable final User updatedUser) {
+                // Update the UI.
+                updateUI(updatedUser);
+            }
+        };
+//        if (getArguments() != null) {
+//            user = (User)getArguments().getSerializable(UiUtils.USER);
 //            for (String s : getArguments().keySet()) {
 //                Log.d(TAG, "in args: "+s);
 //            };
-        }
+ //       }
     }
 
     @Override
@@ -83,35 +103,26 @@ public class UserFragment extends Fragment {
         // Inflate the layout for this fragment
         Log.d(TAG, "enter onCreateView");
         View view = inflater.inflate(R.layout.fragment_user, container, false);
-        receiver = new BroadcastReceiver () {
-            @Override
-            public void onReceive(Context context, Intent intent) {
+        layout = (LinearLayout) view.findViewById(R.id.user_data);
+        email = (TextView) view.findViewById(R.id.email_data);
+        lastName = (TextView) view.findViewById(R.id.last_name_data);
+        firstName = (TextView) view.findViewById(R.id.first_name_data);
+        role = (TextView) view.findViewById(R.id.role_data);
+        button1 = (Button)view.findViewById(R.id.updt_button);
+        if (viewModel.getUser().getValue()!=null) {
+            updateUI(viewModel.getUser().getValue());
+        }
+        else {
+            prBar = new ProgressBar(getActivity());
+            RelativeLayout.LayoutParams lp1 = new RelativeLayout.LayoutParams
+                    (RelativeLayout.LayoutParams.WRAP_CONTENT,
+                            RelativeLayout.LayoutParams.WRAP_CONTENT);
 
-                Log.d(TAG, "enter onReceive(Context context, Intent intent)");
-                if (intent.getAction().equals(UiUtils.USER_CREATED)) {
-                    //TODO the broadcast may receive the User data
-                    if (intent.getSerializableExtra(UiUtils.USER)!=null) {
-                        User user = (User) intent.getSerializableExtra(UiUtils.USER);
-                        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
-                        SharedPreferences.Editor editor = sharedPref.edit();
-                        editor.putString(UiUtils.EMAIL, user.getEmail());
-                        //  editor.putString(U, user.getId());
-                        editor.putString(UiUtils.FIRST_NAME, user.getFirstName());
-                        editor.putString(UiUtils.LAST_NAME, user.getLastName());
-                        editor.putString(UiUtils.ROLE, user.getRole());
-                        editor.commit();
-                        Log.d(TAG, "user added");
-                        //TODO update UI (replace one fragment with another)
+            lp1.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
+            prBar.setLayoutParams(lp1);
+            layout.addView(prBar);
+        }
 
-                    } else {
-                        UiUtils.showToast(getActivity().getApplicationContext(), "user is null");
-                    }
-                    Log.d(TAG, "exit onReceive(Context context, Intent intent)");
-                }
-            }
-
-        };
-        registerReceiver();
         Log.d(TAG, "exit onCreateView");
         return view;
     }
@@ -143,32 +154,26 @@ public class UserFragment extends Fragment {
         mListener = null;
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
     public interface OnUserUpdateListener {
         // TODO: Update argument type and name
         void onUserUpdateListener();
     }
 
-    private void registerReceiver() {
-        Log.d(TAG, "enter registerReceiver()");
-        // Create an intent filter for DATA_RECEIVED.
-        IntentFilter intentFilter =
-                new IntentFilter();
-        intentFilter.addAction(UiUtils.USER_CREATED);
+    private void updateUI (User user) {
+        Log.d(TAG, "enter updateUI (User user)");
+        try{
+            if (prBar.getParent()!=null) {
+                layout.removeView(prBar);
+            }
+        } catch (Exception e) {
 
-        // Register the receiver and the intent filter.
-        getActivity().registerReceiver(receiver,
-                intentFilter);
-        Log.d(TAG, "exit registerReceiver()");
+        }
+        email.setText(user.getEmail());
+        firstName.setText(user.getFirstName());
+        lastName.setText(user.getLastName());
+        role.setText(user.getRole());
+        Log.d(TAG, "exit updateUI (User user)");
+
     }
 
 }

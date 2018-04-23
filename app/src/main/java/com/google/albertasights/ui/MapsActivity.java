@@ -142,6 +142,7 @@ public class MapsActivity extends MenuActivity implements
     private View.OnClickListener checkBoxListener;
     private View.OnClickListener filterButtonsListener;
     private Set <ImageButton> buttons = new HashSet<>();
+    //TODO to create the infrastracture to update selectedByUser
     private Set <String> selectedByUser = new HashSet<>();
 
     private BroadcastReceiver receiver;
@@ -534,6 +535,13 @@ public class MapsActivity extends MenuActivity implements
         Log.d(TAG, "enter onRestart()");
         super.onRestart();
         isRestarted = true;
+        //TODO check shared preferences
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+
+        if (prefs.getStringSet(UiUtils.SELECTED_POINTS, new HashSet<String>())!=null) {
+            selectedByUser.clear();
+            selectedByUser.addAll(prefs.getStringSet(UiUtils.SELECTED_POINTS, new HashSet<String>()));
+        }
         Log.d(TAG, "exit onRestart()");
     }
 
@@ -698,8 +706,8 @@ public class MapsActivity extends MenuActivity implements
         IntentFilter intentFilter =
                 new IntentFilter();
         intentFilter.addAction(UiUtils.DATA_RECEIVED);
-        intentFilter.addAction(UiUtils.POINT_ADDED);
         intentFilter.addAction(UiUtils.DB_CHECKED);
+        intentFilter.addAction(UiUtils.POINT_ADDED);
 
         // Register the receiver and the intent filter.
         registerReceiver(receiver,
