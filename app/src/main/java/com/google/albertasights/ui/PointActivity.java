@@ -115,11 +115,15 @@ public class PointActivity extends MenuActivity {
                     if (point.isLoved()==false) {
                         Intent writeToFile = new Intent(getApplicationContext(), DBIntentService.class);
                         writeToFile.setAction(UiUtils.ADD_POINT_TO_LOVED);
-                        writeToFile.putExtra(UiUtils.POINT_ID, point.getId());
+                        writeToFile.putExtra(UiUtils.POINT_ID, id);
                         startService(writeToFile);
                         likeButton.setColorFilter(new PorterDuffColorFilter(Color.RED, PorterDuff.Mode.SRC_IN));
                     } else {
                         //TODO call the method to remove from selected
+                        Intent remove = new Intent(getApplicationContext(), DBIntentService.class);
+                        remove.setAction(UiUtils.REMOVE_POINT);
+                        remove.putExtra(UiUtils.POINT_ID, id);
+                        startService(remove);
                         likeButton.setColorFilter(new PorterDuffColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN));
                     }
 
@@ -131,7 +135,7 @@ public class PointActivity extends MenuActivity {
 
         //TODO set onClick method for the button
         likeButton.setImageResource(R.drawable.like);
-        likeButton.setTag(point.getId());
+        likeButton.setTag(point.getName());
         listview = (ListView) findViewById(R.id.listView1);
 
         //TODO provide dimensions, position and device type via constructor

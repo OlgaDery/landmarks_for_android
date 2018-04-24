@@ -65,6 +65,9 @@ public class DBIntentService extends IntentService {
                 }
             } else if (UiUtils.CHECK_CONFIG.equals(action)) {
                 checkDB();
+            } else if (UiUtils.REMOVE_POINT.equals(action)) {
+                final String param1 = intent.getStringExtra(UiUtils.POINT_ID);
+                removeFromSelectedPoint(param1);
             }
         }
         Log.d(TAG, "exit onHandleIntent(Intent intent)");
@@ -81,7 +84,7 @@ public class DBIntentService extends IntentService {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         Set<String> selectedPoints = new HashSet<>();
         if (prefs.contains(UiUtils.SELECTED_POINTS)) {
-            selectedPoints = prefs.getStringSet(UiUtils.SELECTED_POINTS, new HashSet<String>());
+            selectedPoints.addAll(prefs.getStringSet(UiUtils.SELECTED_POINTS, new HashSet<String>()));
             selectedPoints.add(param1);
         } else {
             selectedPoints.add(param1);
@@ -90,8 +93,8 @@ public class DBIntentService extends IntentService {
         SharedPreferences.Editor editor = UiUtils.getEditor(this).putStringSet
                 (UiUtils.SELECTED_POINTS,  selectedPoints);
         editor.commit();
-        int size = prefs.getStringSet(UiUtils.SELECTED_POINTS, new HashSet<String>()).size();
-        Log.i(TAG, "selected size: "+size);
+     //   int size = prefs.getStringSet(UiUtils.SELECTED_POINTS, new HashSet<String>()).size();
+     //   Log.i(TAG, "selected size: "+size);
         Intent i = new Intent();
         i.setAction(UiUtils.POINT_ADDED);
         i.putExtra(UiUtils.LOVED, param1);
@@ -104,13 +107,19 @@ public class DBIntentService extends IntentService {
         Log.d(TAG, "enter removeFromSelectedPoint(String param1)");
         //TODO add point ID to the document "selected_points", if does not exist, create the new one
 
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        Set<String> selectedPoints = new HashSet<>();
+        selectedPoints.addAll(prefs.getStringSet(UiUtils.SELECTED_POINTS, new HashSet<String>()));
+        selectedPoints.remove(id);
+        SharedPreferences.Editor editor = UiUtils.getEditor(this).putStringSet
+                (UiUtils.SELECTED_POINTS,  selectedPoints);
+        editor.commit();
         Intent i = new Intent();
         i.setAction(UiUtils.POINT_REMOVED);
         i.putExtra(UiUtils.LOVED, id);
         getApplicationContext().sendBroadcast(i);
 
     }
-
 
     private void createUser(String email, String uPassword, String role, String firstName, String lastName) {
         Log.d(TAG, "enter createUser");

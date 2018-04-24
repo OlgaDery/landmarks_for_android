@@ -419,6 +419,13 @@ public class MapsActivity extends MenuActivity implements
                         UiUtils.showToast(getApplicationContext(), "user is null");
                     }
 
+                } else if (intent.getAction().equals(UiUtils.POINT_REMOVED)) {
+                    if (intent.getStringExtra(UiUtils.LOVED)!=null) {
+                        selectedByUser.remove(intent.getStringExtra(UiUtils.LOVED));
+                        updateLocationUI(filters);
+                        UiUtils.showToast(getApplicationContext(),
+                                "removed!");
+                    }
                 }
                 //       Log.d(TAG, "exit onReceive(Context context, Intent intent)");
             }
@@ -541,6 +548,14 @@ public class MapsActivity extends MenuActivity implements
         if (prefs.getStringSet(UiUtils.SELECTED_POINTS, new HashSet<String>())!=null) {
             selectedByUser.clear();
             selectedByUser.addAll(prefs.getStringSet(UiUtils.SELECTED_POINTS, new HashSet<String>()));
+            if (current_filter.equals(LOVED)) {
+                for (String s : selectedFilters) {
+                    if (!selectedByUser.contains(s)) {
+                        selectedFilters.remove(s);
+                        break;
+                    }
+                }
+            }
         }
         Log.d(TAG, "exit onRestart()");
     }
@@ -669,7 +684,7 @@ public class MapsActivity extends MenuActivity implements
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLatLng,
                         currentZoom));
 
-                showClusters();
+                //showClusters();
                 if (simpleProgressBar.getVisibility()==View.VISIBLE) {
                     simpleProgressBar.setVisibility(View.INVISIBLE);
                 }
@@ -679,24 +694,22 @@ public class MapsActivity extends MenuActivity implements
                                 longIfRestarted))
                         .build();//mMap.getCameraPosition();
                 currentZoom = zoomIfRestarted;
-             //   Log.i(TAG, "long after restart: " + mCameraPosition.target.longitude);
-             //   Log.i(TAG, "zoom after restart: " + mCameraPosition.zoom);
+                //TODO in the activity has been recreation or reset the ViewModel data has to be used
+                if (viewModel.filtersToApply.getValue()!=null) {
+                    filters = viewModel.filtersToApply.getValue();
+                }
+
+                updateLocationUI(filters);
+                showClusters();
+                stabilizeVieWithZoom ();
+
+                isRestarted=false;
             }
         } else {
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mDefaultCoord,
                     default_zoom));
         }
-        Log.d(TAG, "tracking filters size:" + filters.size());
 
-        //TODO in the activity has been recreation or reset the ViewModel data has to be used
-        if (viewModel.filtersToApply.getValue()!=null) {
-            filters = viewModel.filtersToApply.getValue();
-        }
-
-        updateLocationUI(filters);
-        stabilizeVieWithZoom ();
-
-        isRestarted=false;
         Log.d(TAG, "exit onMapReady");
     }
 
@@ -708,6 +721,7 @@ public class MapsActivity extends MenuActivity implements
         intentFilter.addAction(UiUtils.DATA_RECEIVED);
         intentFilter.addAction(UiUtils.DB_CHECKED);
         intentFilter.addAction(UiUtils.POINT_ADDED);
+        intentFilter.addAction(UiUtils.POINT_REMOVED);
 
         // Register the receiver and the intent filter.
         registerReceiver(receiver,
@@ -763,11 +777,15 @@ public class MapsActivity extends MenuActivity implements
        if (!newFilter.isEmpty()) {
            ArrayList<String> temp = new ArrayList<String>(0);
            temp.addAll(newFilter.keySet());
+           receivedFilters.clear();
 
-           Log.d(TAG, "current filter: " + temp.get(0));
-           Log.d(TAG, "sidebar modified: "+filterSidebarModified);
-           Log.d(TAG, "active filters modified: "+filtersModified);
-           Log.d(TAG, "show sidebar: " + newFilter.get(temp.get(0)));
+//           Log.d(TAG, "current filter: " + temp.get(0));
+//           Log.d(TAG, "sidebar modified: "+filterSidebarModified);
+//           Log.d(TAG, "active filters modified: "+filtersModified);
+//           Log.d(TAG, "show sidebar: " + newFilter.get(temp.get(0)));
+           SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+           Log.i(TAG, "selected points: "+prefs.getStringSet
+                   (UiUtils.SELECTED_POINTS, new HashSet<String>()).size());
 
            if (filtersModified==true) {
 
@@ -824,7 +842,6 @@ public class MapsActivity extends MenuActivity implements
                }
 
            } else if (filtersModified==false && newFilter.get(temp.get(0))==true) {
-
                //using the same filter, opening the filter sidebar
                Log.d(TAG, "3");
                if (newFilter.containsKey(FILTERS)) {
@@ -835,6 +852,10 @@ public class MapsActivity extends MenuActivity implements
 
                } else if (newFilter.containsKey(LOVED)) {
                    //  receivedFilters
+                   for (Place p : places) {
+                       if (selectedByUser.contains(p.getId()))
+                       receivedFilters.add(p.getName());
+                   }
 
                } else if (newFilter.containsKey(ALL)) {
                    for (Place p : places) {
@@ -896,7 +917,7 @@ public class MapsActivity extends MenuActivity implements
 
 
     private void showClusters () {
-        //    Log.d(TAG, "enter showClusters()");
+           Log.d(TAG, "enter showClusters()");
         //    Log.i(TAG, "marker to show up: "+Place.selectedMarkerID);
         mClusterManager.clearItems();
         mClusterManager.getClusterMarkerCollection().clear();
@@ -927,6 +948,7 @@ public class MapsActivity extends MenuActivity implements
                     if (selectedFilters.contains(p.getName())) {
 
                         MyClusterItem offsetItem = new MyClusterItem(p.getLat(), p.getLng(), p.getName(), p.getCategory());
+                        Log.d(TAG, "name " + p.getName());
                         mClusterManager.addItem(offsetItem);
                         markerIds.add(p.getName());
                     }
@@ -934,8 +956,9 @@ public class MapsActivity extends MenuActivity implements
 
             }
         }
-
-        //   Log.d(TAG, "exit showClusters()");
+        saveInfoWindow=false;
+        selectedMarkerID = "";
+          Log.d(TAG, "exit showClusters()");
 
     }
 
@@ -985,12 +1008,11 @@ public class MapsActivity extends MenuActivity implements
                 if (selectedMarkerID.equals(marker.getTitle())) {
                 //    Log.i(TAG, "got it!");
                     marker.showInfoWindow();
-                    saveInfoWindow=false;
+
                 }
             }
 
         }
 
     }
-
 }

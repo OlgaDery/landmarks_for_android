@@ -59,12 +59,10 @@
 
         <activity
             android:name=".ui.PointActivity"
-            android:label="@string/title_activity_point"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:label="@string/title_activity_point" />
         <activity
             android:name=".ui.MenuActivity"
-            android:label="@string/title_activity_menu"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:label="@string/title_activity_menu" />
 
         <service
             android:name=".DBIntentService"
@@ -73,8 +71,9 @@
 
         <activity
             android:name=".ui.UserActivity"
-            android:label="@string/title_activity_main"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:label="@string/title_activity_main">
+
+        </activity>
     </application>
 
 </manifest>

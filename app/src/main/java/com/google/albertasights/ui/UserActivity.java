@@ -36,6 +36,7 @@ public class UserActivity extends MenuActivity implements NoUserFragment.OnButto
         Log.d(TAG, "enter onCreate(Bundle savedInstanceState)");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.user_container);
+        viewModel = ViewModelProviders.of(this).get(UserViewModel.class);
 //        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 //        setSupportActionBar(toolbar);
         if (savedInstanceState != null) {
@@ -77,7 +78,6 @@ public class UserActivity extends MenuActivity implements NoUserFragment.OnButto
         //TODO
         if (getIntent().getExtras()!= null) {
             user = (User) getIntent().getExtras().getSerializable(UiUtils.USER);
-            viewModel = ViewModelProviders.of(this).get(UserViewModel.class);
             viewModel.updateUser(user);
 
             if (user.getLoggedIn()==true) {
@@ -119,16 +119,17 @@ public class UserActivity extends MenuActivity implements NoUserFragment.OnButto
 
     }
 
-
     @Override
-    public void onButtonClickedListener() {
+    public void onButtonClickedListener(String action) {
         Log.i(TAG, "enter onButtonClickedListener()");
-        second = new UserFragment();
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-
-// Replace whatever is in the fragment_container view with this fragment,
-// and add the transaction to the back stack so the user can navigate back
-        transaction.replace(R.id.user_container, second);
+        if (action.equals(UiUtils.LOG_IN)) {
+            //show the fragment with user data
+            second = new UserFragment();
+            transaction.replace(R.id.user_container, second);
+        } else if (action.equals(UiUtils.CREATE_USER)) {
+            //TODO show the 3d fragment with forms
+        }
         transaction.addToBackStack(null);
 // Commit the transaction
         transaction.commit();

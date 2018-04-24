@@ -51,6 +51,7 @@ public class UiUtils {
     public static final String USER_CREATED = "USER_CREATED";
     public static final String SELECTED_POINTS = "SELECTED_POINTS";
     public static final String ADD_POINT_TO_LOVED = "ADD_POINT_TO_LOVED";
+    public static final String REMOVE_POINT = "REMOVE_POINT";
     public static final String CREATE_USER = "CREATE_USER";
     public static final String CHECK_CONFIG = "CHECK_CONFIG";
     public static final String POINT_ID = "POINT_ID";

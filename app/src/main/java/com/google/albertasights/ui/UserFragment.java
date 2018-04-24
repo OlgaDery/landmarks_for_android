@@ -41,7 +41,7 @@ public class UserFragment extends Fragment {
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
 
     private static final String TAG = UserFragment.class.getSimpleName();
-    private BroadcastReceiver receiver;
+  //  private BroadcastReceiver receiver;
 
     // TODO: Rename and change types of parameters
     private UserViewModel viewModel;
@@ -150,7 +150,7 @@ public class UserFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
-        getActivity().unregisterReceiver(this.receiver);
+//        getActivity().unregisterReceiver(this.receiver);
         mListener = null;
     }
 

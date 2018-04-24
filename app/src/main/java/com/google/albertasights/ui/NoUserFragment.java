@@ -2,7 +2,6 @@ package com.google.albertasights.ui;
 
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.DisplayMetrics;
@@ -18,7 +17,6 @@ import android.widget.TextView;
 
 import com.google.albertasights.DBIntentService;
 import com.google.albertasights.R;
-import com.squareup.picasso.Picasso;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -39,7 +37,7 @@ public class NoUserFragment extends Fragment {
     private String mParam2;
     private TextView text;
     private ImageView image;
-    private Button button1;
+    private Button regBtn;
     private Button logInButton;
     private String deviceType;
 
@@ -83,10 +81,12 @@ public class NoUserFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_no_user, container, false);
         EditText email = (EditText) view.findViewById(R.id.email);
-        EditText passord = (EditText) view.findViewById(R.id.password);
+        EditText password = (EditText) view.findViewById(R.id.password);
         text = (TextView) view.findViewById(R.id.txt_user);
-        button1 = (Button)view.findViewById(R.id.sign_in_button);
-        logInButton = (Button)view.findViewById(R.id.reg_button);
+        regBtn = (Button)view.findViewById(R.id.sign_in_button);
+        regBtn.setTag(UiUtils.CREATE_USER);
+        logInButton = (Button)view.findViewById(R.id.log_button);
+        logInButton.setTag(UiUtils.LOG_IN);
 
         WindowManager wm = (WindowManager)getActivity().getSystemService(Context.WINDOW_SERVICE);
         Display display = wm.getDefaultDisplay();
@@ -105,18 +105,29 @@ public class NoUserFragment extends Fragment {
         View.OnClickListener lstn = new View.OnClickListener() {
             public void onClick(View view) {
                 //   Log.d(TAG, "enter showFilters(View view)");
-              mListener.onButtonClickedListener();
+              mListener.onButtonClickedListener((String)view.getTag());
                 Intent intent = new Intent(getActivity().getApplicationContext(), DBIntentService.class);
-                intent.setAction(UiUtils.CREATE_USER);
-                intent.putExtra(UiUtils.EMAIL, "androgeny80@gmail.com");
-                intent.putExtra(UiUtils.PASSWORD, "bla");
-                intent.putExtra(UiUtils.FIRST_NAME, "Olga");
-                intent.putExtra(UiUtils.LAST_NAME, "No");
+              if (view.getTag().equals(UiUtils.CREATE_USER)) {
+
+                  intent.setAction(UiUtils.CREATE_USER);
+                  intent.putExtra(UiUtils.EMAIL, "androgeny80@gmail.com");
+                  intent.putExtra(UiUtils.PASSWORD, "bla");
+                  intent.putExtra(UiUtils.FIRST_NAME, "Olga");
+                  intent.putExtra(UiUtils.LAST_NAME, "No");
+
+              } else {
+
+                  intent.setAction(UiUtils.LOG_IN);
+                  intent.putExtra(UiUtils.EMAIL, "androgeny80@gmail.com");
+                  intent.putExtra(UiUtils.PASSWORD, "bla");
+              }
                 getActivity().startService(intent);
+
                 //    Log.d(TAG, "exit showFilters(View view)");
             }
         };
-        button1.setOnClickListener(lstn);
+        regBtn.setOnClickListener(lstn);
+        logInButton.setOnClickListener(lstn);
         return view;
     }
 
@@ -149,6 +160,6 @@ public class NoUserFragment extends Fragment {
      */
     public interface OnButtonClickedListener {
         // TODO: Update argument type and name
-        void onButtonClickedListener();
+        void onButtonClickedListener(String action);
     }
 }
