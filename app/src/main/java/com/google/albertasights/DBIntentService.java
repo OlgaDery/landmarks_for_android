@@ -43,6 +43,7 @@ public class DBIntentService extends IntentService {
         Log.d(TAG, "enter onHandleIntent(Intent intent)");
         if (intent != null) {
             final String action = intent.getAction();
+            Log.i(TAG, "action: "+ action);
             if (UiUtils.ADD_POINT_TO_LOVED.equals(action)) {
                 final String param1 = intent.getStringExtra(UiUtils.POINT_ID);
                 saveSelectedPoint(param1);
@@ -220,6 +221,11 @@ public class DBIntentService extends IntentService {
             i.putExtra(UiUtils.LOGGED_IN, true);
             SharedPreferences.Editor editor = UiUtils.getEditor(this);
             editor.putBoolean(UiUtils.LOGGED_IN, true);
+            User user = new User (email, password);
+            user.setRole(prefs.getString(UiUtils.ROLE, "user"));
+            user.setFirstName(prefs.getString(UiUtils.FIRST_NAME, "Dear friend"));
+            user.setLastName(prefs.getString(UiUtils.LAST_NAME, "No"));
+            i.putExtra(UiUtils.USER, user);
         } else {
             i.putExtra(UiUtils.LOGGED_IN, false);
         }

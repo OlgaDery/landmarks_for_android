@@ -80,6 +80,7 @@ public class UserFragment extends Fragment {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        Log.d(TAG, "enter onCreate");
         super.onCreate(savedInstanceState);
         viewModel = ViewModelProviders.of(getActivity()).get(UserViewModel.class);
         final Observer<User> userObserver = new Observer<User>() {
@@ -89,12 +90,7 @@ public class UserFragment extends Fragment {
                 updateUI(updatedUser);
             }
         };
-//        if (getArguments() != null) {
-//            user = (User)getArguments().getSerializable(UiUtils.USER);
-//            for (String s : getArguments().keySet()) {
-//                Log.d(TAG, "in args: "+s);
-//            };
- //       }
+        Log.d(TAG, "exit onCreate");
     }
 
     @Override
@@ -121,6 +117,12 @@ public class UserFragment extends Fragment {
             lp1.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
             prBar.setLayoutParams(lp1);
             layout.addView(prBar);
+            View.OnClickListener lstn = new View.OnClickListener() {
+                public void onClick(View view) {
+                    onUpdateUserButtonPressed();
+                }
+            };
+            button1.setOnClickListener(lstn);
         }
 
         Log.d(TAG, "exit onCreateView");
@@ -128,7 +130,7 @@ public class UserFragment extends Fragment {
     }
 
     // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
+    public void onUpdateUserButtonPressed() {
         if (mListener != null) {
             mListener.onUserUpdateListener();
         }
@@ -145,13 +147,16 @@ public class UserFragment extends Fragment {
             throw new RuntimeException(context.toString()
                     + " must implement OnFragmentInteractionListener");
         }
+        Log.d(TAG, "exit onAttach(Context context)");
     }
 
     @Override
     public void onDetach() {
+        Log.d(TAG, "enter onDetach(Context context)");
         super.onDetach();
 //        getActivity().unregisterReceiver(this.receiver);
         mListener = null;
+        Log.d(TAG, "enter onDetach(Context context)");
     }
 
     public interface OnUserUpdateListener {
@@ -168,10 +173,10 @@ public class UserFragment extends Fragment {
         } catch (Exception e) {
 
         }
-        email.setText(user.getEmail());
-        firstName.setText(user.getFirstName());
-        lastName.setText(user.getLastName());
-        role.setText(user.getRole());
+        email.setText("Email: " +user.getEmail());
+        firstName.setText("First name: " + user.getFirstName());
+        lastName.setText("Last name: " + user.getLastName());
+        role.setText("Current role: " + user.getRole());
         Log.d(TAG, "exit updateUI (User user)");
 
     }

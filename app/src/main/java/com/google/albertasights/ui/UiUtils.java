@@ -57,6 +57,7 @@ public class UiUtils {
     public static final String POINT_ID = "POINT_ID";
     public static final String POINT_REMOVED = "POINT_REMOVED";
     public static final String USER_UPDATED = "USER_UPDATED";
+    public static final String UPDATE_USER = "UPDATE_USER";
     public static final String EMAIL = "EMAIL";
     public static final String PASSWORD = "PASSWORD";
     public static final String ROLE = "ROLE";

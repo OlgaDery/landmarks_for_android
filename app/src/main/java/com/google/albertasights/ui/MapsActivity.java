@@ -374,7 +374,7 @@ public class MapsActivity extends MenuActivity implements
             public void onReceive(Context context, Intent intent) {
                 //On receive should be called very rarely, onle the current location is significantly changed. In our case, it is calling
                 //onle once
-                //      Log.d(TAG, "enter onReceive(Context context, Intent intent)");
+                Log.d(TAG, "enter onReceive(Context context, Intent intent)");
                 if (intent.getAction().equals(UiUtils.DATA_RECEIVED)) {
                     if (intent.getSerializableExtra(UiUtils.PLACES)!=null) {
                         ArrayList<Place> placesLst = (ArrayList)intent.getSerializableExtra(UiUtils.PLACES);
@@ -427,7 +427,7 @@ public class MapsActivity extends MenuActivity implements
                                 "removed!");
                     }
                 }
-                //       Log.d(TAG, "exit onReceive(Context context, Intent intent)");
+                Log.d(TAG, "exit onReceive(Context context, Intent intent)");
             }
         };
 
@@ -474,7 +474,6 @@ public class MapsActivity extends MenuActivity implements
             outState.putStringArrayList(KEY_SELECTED_FILTERS, selectedFilters);
             outState.putBoolean(KEY_SELECT_POINTS_TO_SHOW, selectPointsToShow);
             outState.putInt(SPINNER_POSIT, posit);
-            outState.putString("SELECTED_MARKER_ID", selectedMarkerID);
             outState.putFloat(CURRENT_ZOOM, mMap.getCameraPosition().zoom);
             zoomIfRestarted = mMap.getCameraPosition().zoom;
          //   outState.putBoolean(API_WAS_CALLED, apiNotCalled);
@@ -488,6 +487,7 @@ public class MapsActivity extends MenuActivity implements
                     break;
                 }
             }
+            outState.putString("SELECTED_MARKER_ID", selectedMarkerID);
             outState.putBoolean(SAVE_INFO_WINDOW, saveInfoWindow);
 
             super.onSaveInstanceState(outState);
@@ -743,10 +743,15 @@ public class MapsActivity extends MenuActivity implements
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     mLocationPermissionGranted = true;
+                    updateLocationUI(filters);
+
+                    if (places.size()>0) {
+                        showClusters();
+                        stabilizeVieWithZoom ();
+                    }
                 }
             }
         }
-     //   updateLocationUI();
     }
     /**
      * Updates the map's UI settings based on whether the user has granted location permission.
@@ -800,7 +805,7 @@ public class MapsActivity extends MenuActivity implements
                    //  receivedFilters
                    if (selectedByUser.size()>0) {
                        for (Place p : places) {
-                           if (selectedByUser.contains(p.getId())) {
+                           if (selectedByUser.contains(p.getName())) {
                                receivedFilters.add(p.getName());
                            }
                        }
@@ -853,7 +858,7 @@ public class MapsActivity extends MenuActivity implements
                } else if (newFilter.containsKey(LOVED)) {
                    //  receivedFilters
                    for (Place p : places) {
-                       if (selectedByUser.contains(p.getId()))
+                       if (selectedByUser.contains(p.getName()))
                        receivedFilters.add(p.getName());
                    }
 
@@ -895,7 +900,7 @@ public class MapsActivity extends MenuActivity implements
         Intent i = new Intent(getApplicationContext(), PointActivity.class);
         for (Place p : places) {
             if (p.getName().equals(marker.getTitle())) {
-                if (selectedByUser.contains(p.getId())) {
+                if (selectedByUser.contains(p.getName())) {
                     p.setLoved(true);
                 }
                 i.putExtra("POINT", p);

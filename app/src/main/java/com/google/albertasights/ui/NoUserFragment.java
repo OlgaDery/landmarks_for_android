@@ -3,8 +3,10 @@ package com.google.albertasights.ui;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -80,10 +82,10 @@ public class NoUserFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_no_user, container, false);
-        EditText email = (EditText) view.findViewById(R.id.email);
-        EditText password = (EditText) view.findViewById(R.id.password);
+        final EditText email = (EditText) view.findViewById(R.id.email);
+        final EditText password = (EditText) view.findViewById(R.id.password);
         text = (TextView) view.findViewById(R.id.txt_user);
-        regBtn = (Button)view.findViewById(R.id.sign_in_button);
+        regBtn = (Button)view.findViewById(R.id.reg);
         regBtn.setTag(UiUtils.CREATE_USER);
         logInButton = (Button)view.findViewById(R.id.log_button);
         logInButton.setTag(UiUtils.LOG_IN);
@@ -105,23 +107,19 @@ public class NoUserFragment extends Fragment {
         View.OnClickListener lstn = new View.OnClickListener() {
             public void onClick(View view) {
                 //   Log.d(TAG, "enter showFilters(View view)");
-              mListener.onButtonClickedListener((String)view.getTag());
-                Intent intent = new Intent(getActivity().getApplicationContext(), DBIntentService.class);
-              if (view.getTag().equals(UiUtils.CREATE_USER)) {
-
-                  intent.setAction(UiUtils.CREATE_USER);
-                  intent.putExtra(UiUtils.EMAIL, "androgeny80@gmail.com");
-                  intent.putExtra(UiUtils.PASSWORD, "bla");
-                  intent.putExtra(UiUtils.FIRST_NAME, "Olga");
-                  intent.putExtra(UiUtils.LAST_NAME, "No");
-
-              } else {
+              Intent intent = new Intent(getActivity().getApplicationContext(), DBIntentService.class);
+              if (view.getTag().equals(UiUtils.LOG_IN)) {
+                  Log.d(NoUserFragment.class.getCanonicalName(), "Log in event");
 
                   intent.setAction(UiUtils.LOG_IN);
-                  intent.putExtra(UiUtils.EMAIL, "androgeny80@gmail.com");
-                  intent.putExtra(UiUtils.PASSWORD, "bla");
+                  intent.putExtra(UiUtils.EMAIL, email.getText().toString());
+                  intent.putExtra(UiUtils.PASSWORD, password.getText().toString());
+              } else {
+                  intent.setAction(UiUtils.CREATE_USER);
+                  Log.d(NoUserFragment.class.getCanonicalName(), "Create event");
               }
                 getActivity().startService(intent);
+                mListener.onLogInOrRegisterButtonClickedListener((String)view.getTag());
 
                 //    Log.d(TAG, "exit showFilters(View view)");
             }
@@ -160,6 +158,6 @@ public class NoUserFragment extends Fragment {
      */
     public interface OnButtonClickedListener {
         // TODO: Update argument type and name
-        void onButtonClickedListener(String action);
+        void onLogInOrRegisterButtonClickedListener(String action);
     }
 }

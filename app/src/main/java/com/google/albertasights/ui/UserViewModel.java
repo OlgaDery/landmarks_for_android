@@ -13,6 +13,7 @@ public class UserViewModel extends ViewModel {
 
     private static final String TAG = UserViewModel.class.getSimpleName();
     public final MutableLiveData<User> user = new MutableLiveData<>();
+    public final MutableLiveData<String> currentAction = new MutableLiveData<>();
 
     public UserViewModel() {
         Log.d(TAG, "enter UserViewModel()");
@@ -25,7 +26,19 @@ public class UserViewModel extends ViewModel {
         Log.d(TAG, "exit updateFilterMap (Map<String, Boolean> newFilter)");
     }
 
+    public void updateAction (String newAction) {
+        Log.d(TAG, "enter updateAction");
+        currentAction.setValue(newAction);
+        Log.d(TAG, "exit updateAction");
+    }
+
     public LiveData<User> getUser () {
+
         return user;
+    }
+
+    public LiveData<String> getCurrentAction () {
+
+        return currentAction;
     }
 }
