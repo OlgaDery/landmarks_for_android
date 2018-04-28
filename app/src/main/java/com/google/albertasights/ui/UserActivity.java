@@ -26,7 +26,6 @@ public class UserActivity extends MenuActivity implements NoUserFragment.OnButto
     private User user;
     private BroadcastReceiver receiver;
     private UserViewModel viewModel;
-    private FragmentTransaction transaction;
     private static final String TAG = UserActivity.class.getSimpleName();
 
     @Override
@@ -34,12 +33,12 @@ public class UserActivity extends MenuActivity implements NoUserFragment.OnButto
         Log.d(TAG, "enter onCreate(Bundle savedInstanceState)");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.user_container);
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         logInFragment = new NoUserFragment();
         userDataFragment = new UserFragment();
         modifYUserDataFragment = new EnterUserFragment();
         statusFragment = new StatusBarFragment();
         viewModel = ViewModelProviders.of(this).get(UserViewModel.class);
-        transaction = getSupportFragmentManager().beginTransaction();
         if (viewModel.getUser().getValue()!=null) {
             if (viewModel.getCurrentAction().getValue()!=null) {
                 //current action has already ben set, selecting the fragment
@@ -71,7 +70,6 @@ public class UserActivity extends MenuActivity implements NoUserFragment.OnButto
                 //If user exists in SharedPreferences
                 user = (User) getIntent().getExtras().getSerializable(UiUtils.USER);
                 viewModel.updateUser(user);
-
                 if (user.getLoggedIn()==true) {
                     //User logged in, adding UserFragment
 //                    Log.d(TAG, user.getEmail());
@@ -109,6 +107,7 @@ public class UserActivity extends MenuActivity implements NoUserFragment.OnButto
 
                 Log.d(TAG, "enter onReceive(Context context, Intent intent)");
                 if (intent.getAction().equals(UiUtils.USER_CREATED)||intent.getAction().equals(UiUtils.LOG_IN)) {
+                    FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
                     //TODO the broadcast may receive the User data
                     if (intent.getSerializableExtra(UiUtils.USER)!=null) {
                         User user = (User) intent.getSerializableExtra(UiUtils.USER);
@@ -165,7 +164,7 @@ public class UserActivity extends MenuActivity implements NoUserFragment.OnButto
         //Listener in NoUserFragment
         Log.i(TAG, "enter onLogInOrRegisterButtonClickedListener()");
         viewModel.updateAction(action);
-        transaction = getSupportFragmentManager().beginTransaction();
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         if (action.equals(UiUtils.LOG_IN)) {
             //show the fragment with user data
             transaction.replace(R.id.user_container, statusFragment);
@@ -186,7 +185,7 @@ public class UserActivity extends MenuActivity implements NoUserFragment.OnButto
         //here is the listener from UserFragment
         Log.i(TAG, "enter onUserUpdateListener()");
         viewModel.updateAction(UiUtils.UPDATE_USER);
-        transaction = getSupportFragmentManager().beginTransaction();
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.user_container, modifYUserDataFragment);
         transaction.addToBackStack(null);
 // Commit the transaction
@@ -200,7 +199,7 @@ public class UserActivity extends MenuActivity implements NoUserFragment.OnButto
         //Listener in EnterUserFragment, adding UserFragment
         Log.i(TAG, "enter onSubmitUser()");
         viewModel.updateAction(UiUtils.USER_CREATED);
-        transaction = getSupportFragmentManager().beginTransaction();
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.user_container, statusFragment);
         transaction.addToBackStack(null);
 // Commit the transaction

@@ -53,11 +53,11 @@ public class DBIntentService extends IntentService {
                 final String firstName = intent.getStringExtra(UiUtils.FIRST_NAME);
                 final String lastName = intent.getStringExtra(UiUtils.LAST_NAME);
                 String role = "user";
-                try {
-                    role = intent.getStringExtra(UiUtils.ROLE);
-                } catch (Exception e) {
-                    role = "user";
-                }
+//                try {
+//                    role = intent.getStringExtra(UiUtils.ROLE);
+//                } catch (Exception e) {
+//                    role = "user";
+//                }
                 try {
                     createUser(email, password, role, firstName, lastName);
 

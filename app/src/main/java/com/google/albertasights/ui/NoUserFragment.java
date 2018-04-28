@@ -114,11 +114,12 @@ public class NoUserFragment extends Fragment {
                   intent.setAction(UiUtils.LOG_IN);
                   intent.putExtra(UiUtils.EMAIL, email.getText().toString());
                   intent.putExtra(UiUtils.PASSWORD, password.getText().toString());
+                  getActivity().startService(intent);
               } else {
-                  intent.setAction(UiUtils.CREATE_USER);
+                 // intent.setAction(UiUtils.CREATE_USER);
                   Log.d(NoUserFragment.class.getCanonicalName(), "Create event");
               }
-                getActivity().startService(intent);
+
                 mListener.onLogInOrRegisterButtonClickedListener((String)view.getTag());
 
                 //    Log.d(TAG, "exit showFilters(View view)");

@@ -98,9 +98,21 @@ public class EnterUserFragment extends Fragment {
         submitBt = (Button) view.findViewById(R.id.submit);
         View.OnClickListener lstn = new View.OnClickListener() {
             public void onClick(View view) {
+
+                String firstN = "Dear friend";
+                String lastN = "No";
+
+                if (firstName.getText().toString()!=null || (firstName.getText().toString().length()>0)) {
+                    firstN = firstName.getText().toString();
+                }
+                if (lastName.getText().toString()!=null || (lastName.getText().toString().length()>0)) {
+                    lastN = lastName.getText().toString();
+                }
+
+
                 //   Log.d(TAG, "enter showFilters(View view)");
                 onButtonPressed(email.getText().toString(), password.getText().toString(),
-                        firstName.getText().toString(), lastName.getText().toString());
+                        firstN, lastN);
 
                 //    Log.d(TAG, "exit showFilters(View view)");
             }

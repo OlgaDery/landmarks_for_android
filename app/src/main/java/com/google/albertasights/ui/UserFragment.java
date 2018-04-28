@@ -109,21 +109,21 @@ public class UserFragment extends Fragment {
             updateUI(viewModel.getUser().getValue());
         }
         else {
-            prBar = new ProgressBar(getActivity());
+          //  prBar = new ProgressBar(getActivity());
             RelativeLayout.LayoutParams lp1 = new RelativeLayout.LayoutParams
                     (RelativeLayout.LayoutParams.WRAP_CONTENT,
                             RelativeLayout.LayoutParams.WRAP_CONTENT);
 
             lp1.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
-            prBar.setLayoutParams(lp1);
-            layout.addView(prBar);
-            View.OnClickListener lstn = new View.OnClickListener() {
-                public void onClick(View view) {
-                    onUpdateUserButtonPressed();
-                }
-            };
-            button1.setOnClickListener(lstn);
+         //   prBar.setLayoutParams(lp1);
+         //   layout.addView(prBar);
         }
+        View.OnClickListener lstn = new View.OnClickListener() {
+            public void onClick(View view) {
+                onUpdateUserButtonPressed();
+            }
+        };
+        button1.setOnClickListener(lstn);
 
         Log.d(TAG, "exit onCreateView");
         return view;
@@ -131,6 +131,7 @@ public class UserFragment extends Fragment {
 
     // TODO: Rename method, update argument and hook method into UI event
     public void onUpdateUserButtonPressed() {
+        Log.d(TAG, "enter onUpdateUserButtonPressed");
         if (mListener != null) {
             mListener.onUserUpdateListener();
         }
@@ -166,13 +167,7 @@ public class UserFragment extends Fragment {
 
     private void updateUI (User user) {
         Log.d(TAG, "enter updateUI (User user)");
-        try{
-            if (prBar.getParent()!=null) {
-                layout.removeView(prBar);
-            }
-        } catch (Exception e) {
 
-        }
         email.setText("Email: " +user.getEmail());
         firstName.setText("First name: " + user.getFirstName());
         lastName.setText("Last name: " + user.getLastName());
