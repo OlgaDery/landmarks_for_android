@@ -123,7 +123,7 @@ public class EnterUserFragment extends Fragment {
     }
 
     public void onButtonPressed(String email, String password, String fst, String lst) {
-        Log.d(TAG, "enter onButtonPressed");
+        Log.d(TAG, "enter onInfoViewExpanded");
         if (mListener != null) {
             // TODO: send data to IntentService
             mListener.onSubmitUser();
@@ -145,7 +145,7 @@ public class EnterUserFragment extends Fragment {
             mListener = (OnSubmitUserListener) context;
         } else {
             throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
+                    + " must implement OnPointDataExtendedListener");
         }
     }
 

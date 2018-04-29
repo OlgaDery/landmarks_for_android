@@ -138,17 +138,17 @@ public class UiUtils {
         text.setPadding(20,20,20,20);
         if (getOrientation(context).equals("Portrait")) {
             switch (currentFilter) {
-                case MapsActivity.FILTERS:
+                case MapFragment.FILTERS:
                     text.setText("Categories:");
                     filter.addView(text, 0);
                     elementWight = screen_width - 300;
                     break;
-                case MapsActivity.ALL:
+                case MapFragment.ALL:
                     text.setText("All points:");
                     filter.addView(text, 0);
                     elementWight = screen_width - 200;
                     break;
-                case MapsActivity.LOVED:
+                case MapFragment.LOVED:
                     text.setText("Selected points:");
                     filter.addView(text, 0);
                     elementWight = screen_width - 200;
@@ -156,17 +156,17 @@ public class UiUtils {
             }
         } else {
             switch (currentFilter) {
-                case MapsActivity.FILTERS:
+                case MapFragment.FILTERS:
                     text.setText("Categories:");
                     filter.addView(text, 0);
                     elementWight = screen_width - 450;
                     break;
-                case MapsActivity.ALL:
+                case MapFragment.ALL:
                     text.setText("All points:");
                     filter.addView(text, 0);
                     elementWight = screen_width - 350;
                     break;
-                case MapsActivity.LOVED:
+                case MapFragment.LOVED:
                     text.setText("Selected points:");
                     filter.addView(text, 0);
                     elementWight = screen_width - 350;
@@ -176,7 +176,7 @@ public class UiUtils {
 
         filter.setLayoutParams(new FrameLayout.LayoutParams(elementWight, FrameLayout.LayoutParams.WRAP_CONTENT));
 
-        if (currentFilter.equals(MapsActivity.LOVED)&& receivedFilters.size()==0) {
+        if (currentFilter.equals(MapFragment.LOVED)&& receivedFilters.size()==0) {
             TextView text1 = new TextView(context);
             text.setText("You have not selected any points yet");
             filter.addView(text1);

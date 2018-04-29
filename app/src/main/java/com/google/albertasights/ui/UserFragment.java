@@ -146,7 +146,7 @@ public class UserFragment extends Fragment {
 
         } else {
             throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
+                    + " must implement OnPointDataExtendedListener");
         }
         Log.d(TAG, "exit onAttach(Context context)");
     }

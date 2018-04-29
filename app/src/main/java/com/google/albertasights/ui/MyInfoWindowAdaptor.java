@@ -144,7 +144,7 @@ public class MyInfoWindowAdaptor implements GoogleMap.InfoWindowAdapter {
                     descr.setText(newDescr + "...");
 
                     // to get a link
-                    if (!MapsActivity.markerIds.contains(marker.getTitle())) {
+                    if (!MapFragment.markerIds.contains(marker.getTitle())) {
                              Log.i(TAG, "link: "+ p.getPhotoLink());
                         if (p.getPhotoLink()!=null && p.getPhotoLink().length()>5)
                         {
@@ -227,7 +227,7 @@ public class MyInfoWindowAdaptor implements GoogleMap.InfoWindowAdapter {
         public void onSuccess() {
             Log.d(TAG, "enter onSuccess()");
             //    Log.i(TAG, "count: "+ count);
-            MapsActivity.markerIds.remove(markerToRefresh.getTitle());
+            MapFragment.markerIds.remove(markerToRefresh.getTitle());
             if (count>2) {
                 count=0;
                 return;

@@ -138,7 +138,7 @@ public class NoUserFragment extends Fragment {
             mListener = (OnButtonClickedListener) context;
         } else {
             throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
+                    + " must implement OnPointDataExtendedListener");
         }
     }
 
