@@ -26,6 +26,7 @@ public class MapViewModel extends ViewModel {
     public final MutableLiveData<LinkedList<String>> pointsToShow = new MutableLiveData<LinkedList<String>>();
     public final MutableLiveData<LinkedList<String>> loved = new MutableLiveData<LinkedList<String>>();
     public final MutableLiveData<LinkedList<Place>> receivedPoints = new MutableLiveData<LinkedList<Place>>();
+    public final MutableLiveData<Place> pointToSee = new MutableLiveData<>();
 
 
     public MapViewModel() {
@@ -45,7 +46,7 @@ public class MapViewModel extends ViewModel {
     }
 
     public LiveData<LinkedList<String>> getPointsNamesToShow () {
-        Log.d(TAG, "enter getPointsNamesToShow");
+      //  Log.d(TAG, "enter getPointsNamesToShow");
         return pointsToShow;
     }
 
@@ -56,7 +57,7 @@ public class MapViewModel extends ViewModel {
     }
 
     public LiveData<LinkedList<Place>> getRecievedPoints () {
-        Log.d(TAG, "enter getPointsNamesToShow");
+      //  Log.d(TAG, "enter getRecievedPoints");
         return receivedPoints;
     }
 
@@ -75,6 +76,16 @@ public class MapViewModel extends ViewModel {
         Log.d(TAG, "enter updateLoved");
         loved.setValue(pointNames);
         Log.d(TAG, "exit updateLoved");
+    }
+
+    public void updatePoint (Place newPoint) {
+        Log.d(TAG, "enter updatePoint");
+        pointToSee.setValue(newPoint);
+        Log.d(TAG, "exit updatePoint");
+    }
+
+    public LiveData<Place> getPointToSee() {
+        return pointToSee;
     }
 
 

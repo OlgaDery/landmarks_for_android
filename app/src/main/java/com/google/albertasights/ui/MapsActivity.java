@@ -7,141 +7,28 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.content.ContextCompat;
 import android.util.Log;
-import android.view.View;
-import android.widget.CheckBox;
-import android.widget.ImageButton;
-import android.widget.LinearLayout;
-import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
-
-import com.google.albertasights.DBIntentService;
 import com.google.albertasights.R;
 import com.google.albertasights.RestIntentServer;
 import com.google.albertasights.models.Place;
-import com.google.albertasights.models.User;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
-import com.google.maps.android.clustering.ClusterManager;
-import com.google.maps.android.clustering.view.DefaultClusterRenderer;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.Map;
-import java.util.Set;
 
 public class MapsActivity extends MenuActivity implements MapFragment.OnPointDataExtendedListener {
 
     private static final String TAG = MapsActivity.class.getSimpleName();
     //TODO variables to store map position and zoom if the activity is restarted
-    private float zoomIfRestarted = 0.0f;
-    private double longIfRestarted = 0.0f;
-    private double latIfRestarted = 0.0f;
-
-    private GoogleMap mMap;
-    private CameraPosition mCameraPosition;
-
-    // The entry point to Google Play services, used by the Places API and Fused Location Provider.
-    private GoogleApiClient mGoogleApiClient;
     private final LatLng mDefaultCoord = new LatLng(51.0533674, -114.072997);
-    private float default_zoom = 9.0f;
-    private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
-    private boolean mLocationPermissionGranted;
-    private float currentZoom = 0.0f;
-
-    //This boolean is to indicate if we need to zoom in or zoom out the camera while using filters. Extra zoom is necessary because
-    //it helps to make the cluster more stable
-    private boolean zoomingOut = true;
-    private LinearLayout filter;
-    private RelativeLayout rr;
-    private RelativeLayout mapWrapper;
-    private LinearLayout topWrapper;
-
-    private ImageButton showFilterSection;
-    private ImageButton showFilters;
-    private ImageButton showLoved;
-    private ImageButton showAll;
-    private ImageButton clearAll;
-   // private TextView filterText;
-    private ProgressBar simpleProgressBar;
-    private Map<String, Boolean> filters = new HashMap<String, Boolean>(1);
-
-
-    private String orientation;
-    private String deviceType;
-    private boolean isRestarted = false;
-    private boolean saveInfoWindow = false;
-    private boolean animationStarted = false;
-    private boolean filterSidebarModified = false;
-    private boolean filtersModified = false;
-    private boolean showFiltersSidebar = false;
-    private int posit=0;
-
-    // Declare a variable for the cluster manager.
-    private ClusterManager<MyClusterItem> mClusterManager;
 
     //has to be saved as the SavedInstance
-    private HashSet<Place> places = new HashSet<>();
+ //   private HashSet<Place> places = new HashSet<>();
     //filters selected by user
-    private ArrayList<String> selectedFilters = new ArrayList<>();
-    //filters received from APIs
-    private ArrayList<String> receivedFilters = new ArrayList<>();
-    //to store markerIDs to track the photo loading, if the photo of the marker has once been loaded, it`s Id should be removed
-   //TODO to store the name of current filter using for points
-    private String current_filter;
-    private String selectedMarkerID = "";
-
-    //TODO place them in ModelView???
-  //  public static Set<String> markerIds = new HashSet<>();
-    //all the markers is stored here and extracted to modify
-    //   public Set<Marker> markers = new HashSet<>();
-    //boolean to indicate if the markers must be shown on the map after the activity has been recreated
-    private boolean selectPointsToShow = false;
-    // The geographical location where the device is currently located. That is, the last-known
-    // location retrieved by the Fused Location Provider.
-  //  private Location mLastKnownLocation;
-
-    // Keys for storing activity state.
-    private static final String KEY_CAMERA_POSITION = "camera_position";
-    private static final String CURRENT_ZOOM = "zoom";
-    private static final String KEY_MARKER_IDS = "marker_ids";
-    private static final String KEY_RECEIVED_FILTERS = "received_fltrs";
-    private static final String KEY_SELECTED_FILTERS = "selected_fltrs";
-    private static final String KEY_SELECT_POINTS_TO_SHOW = "select_points_to_show";
-  //  private static final String KEY_PLACES = "places";
-    private static final String SPINNER_POSIT = "spinner_posit";
-    private static final String SAVE_INFO_WINDOW = "save_i_w";
-    private static final String STARTED_ANIMATION = "animation";
-
-    //button tags
-   // public static final String FILTERS = "filters";
-//    public static final String LOVED = "loved";
- //   public static final String ALL = "all";
-    private static final String CLEAR_MAP = "clear_map";
-
-    private View.OnClickListener checkBoxListener;
-    private View.OnClickListener filterButtonsListener;
-    private Set <ImageButton> buttons = new HashSet<>();
-    //TODO to create the infrastracture to update selectedByUser
-    private Set <String> selectedByUser = new HashSet<>();
 
     private BroadcastReceiver receiver;
     private MapViewModel viewModel;
@@ -165,8 +52,7 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
             viewModel.updateLoved(lst);
         }
 
-        if (places.size()==0) {
-            //to send the intent to request the data from API
+        if (viewModel.getRecievedPoints().getValue()==null) {
             Intent intent = new Intent(this, RestIntentServer.class);
             intent.setAction(UiUtils.SUBMIT);
             intent.putExtra(UiUtils.URL, "https://albertasights.herokuapp.com/api/v1/points_by_district?district=Calgary");
@@ -177,12 +63,9 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
             // start the animation for the period of data loading
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
             transaction.add(R.id.map_container, new StatusBarFragment()).commit();
-
         }
 
         // Retrieve the content view that renders the map.
-
-
 
         receiver = new BroadcastReceiver () {
             @Override

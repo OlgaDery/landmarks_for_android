@@ -4,6 +4,7 @@ import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -24,6 +25,7 @@ import android.widget.RelativeLayout;
 
 import com.google.albertasights.R;
 import com.google.albertasights.models.Place;
+import com.google.albertasights.models.User;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
@@ -40,6 +42,7 @@ import com.google.maps.android.clustering.view.DefaultClusterRenderer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
@@ -206,16 +209,37 @@ public class MapFragment extends Fragment implements
                 .addApi(LocationServices.API)
                 .build();
         mGoogleApiClient.connect();
-        //TODO if not instantiated
+
         viewModel = ViewModelProviders.of(getActivity()).get(MapViewModel.class);
+
+        //observes the map with selected points filters to apply
         final Observer<Map<String, Boolean>> filtersObserver = new Observer<Map<String, Boolean>>() {
             @Override
             public void onChanged(@Nullable final Map<String, Boolean> newFilter) {
+                Log.i(TAG, "enter onChanged(@Nullable final Map<String, Boolean> newFilter)");
                 // Update the UI, in this case, a TextView.
                 updateLocationUI(newFilter);
             }
         };
         viewModel.filtersToApply.observe(this, filtersObserver);
+
+        //observes the list with points names to show on the map
+        final Observer<LinkedList<String>> pointsToShowObserver = new Observer<LinkedList<String>>() {
+            @Override
+            public void onChanged(@Nullable LinkedList<String> strings) {
+                Log.d(TAG, "enter onChanged(@Nullable LinkedList<String> strings)");
+                if (mMap!=null) {
+                    Log.d(TAG, "map is not null");
+                    showClusters();
+                    stabilizeVieWithZoom();
+                } else {
+                    Log.d(TAG, "map is null");
+                }
+
+            }
+        };
+        viewModel.getPointsNamesToShow().observe(this, pointsToShowObserver);
+
         places.addAll(viewModel.getRecievedPoints().getValue());
         Log.d(TAG, "places: "+places.size());
         Log.d(TAG, "exit onCreate(Bundle savedInstanceState)");
@@ -316,43 +340,54 @@ public class MapFragment extends Fragment implements
 
         filter = (LinearLayout) v.findViewById(R.id.filters);
 
-//        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams
-//                (RelativeLayout.LayoutParams.WRAP_CONTENT,
-//                        RelativeLayout.LayoutParams.WRAP_CONTENT);
-
-        //declaring the progress bar and set the visibility
-        //TODO revove progress bar
-//        simpleProgressBar = new ProgressBar(this);
-//        RelativeLayout.LayoutParams lp1 = new RelativeLayout.LayoutParams
-//                (RelativeLayout.LayoutParams.WRAP_CONTENT,
-//                        RelativeLayout.LayoutParams.WRAP_CONTENT);
-//
-//        lp1.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
-//        simpleProgressBar.setLayoutParams(lp1);
-//        topWrapper.addView(simpleProgressBar);
-//        if (animationStarted) {
-//            simpleProgressBar.setVisibility(View.VISIBLE);
-//        } else {
-//            simpleProgressBar.setVisibility(View.INVISIBLE);
-//        }
-
         //this listener starts when the user check the checkbox in
         checkBoxListener = new View.OnClickListener() {
 
             public void onClick(View v) {
-                //    Log.d(TAG, "enter onClick checkBox(View view) ");
+                Log.d(TAG, "enter onClick checkBox(View view) ");
                 String checked =((CheckBox) v).getTag().toString();
                 if (selectedFilters.contains(checked)) {
                     selectedFilters.remove(checked);
+                    Log.i(TAG, "removing: "+checked);
                 } else {
                     selectedFilters.add(checked);
+                    Log.i(TAG, "adding: "+checked);
                 }
+                //TODO create the logic to modify the list of points to show
+                LinkedList <String> list = new LinkedList<>();
+                switch (current_filter) {
+                    case FILTERS:
+                        //TODO move this to separate activities start methods
+                        for (Place p :places) {
+                            if (selectedFilters.contains(p.getCategory())) {
+                                list.add(p.getName());
+                                Log.i(TAG, p.getName());
+                            }
+                        }
 
-                showClusters();
-                stabilizeVieWithZoom ();
+                        break;
+                    case LOVED:
+                        for (Place p :places) {
+                            if (selectedFilters.contains(p.getName())) {
+                                list.add(p.getName());
+                            }
+                        }
+                        break;
+                    case ALL:
+                        for (Place p :places) {
+                            if (selectedFilters.contains(p.getName())) {
+                                list.add(p.getName());
+                            }
+                        }
+                        break;
 
 
-                //      Log.d(TAG, "exit onClick checkBox(View view) ");
+                    default:
+                        break;
+                }
+                //TODO TEST THIS SECTION
+                viewModel.updatePointsToShow(list);
+                Log.d(TAG, "exit onClick checkBox(View view) ");
             }
         };
 
@@ -374,7 +409,7 @@ public class MapFragment extends Fragment implements
                 //  current_filter = button;
                 if (button.equals(FILTERS)) {
                     filters.clear();
-                    filters.put(FILTERS, showFiltersSidebar);
+                    filters.put(FILTERS, true);
 
                 } else if (button.equals(LOVED)) {
                     //TODO user has to be logged in, otherwise to show tost and return;
@@ -383,7 +418,7 @@ public class MapFragment extends Fragment implements
                         Log.i(TAG, "user logged in: "+ prefs.getBoolean(UiUtils.LOGGED_IN, true));
                         if (prefs.getBoolean(UiUtils.LOGGED_IN, true)==true) {
                             filters.clear();
-                            filters.put(LOVED, showFiltersSidebar);
+                            filters.put(LOVED, true);
                         }
                     } else {
                         UiUtils.showToast(getActivity(), "To use this option, please log in or create an account");
@@ -392,7 +427,7 @@ public class MapFragment extends Fragment implements
 
                 } else if (button.equals(ALL)) {
                     filters.clear();
-                    filters.put(ALL, showFiltersSidebar);
+                    filters.put(ALL, true);
 
                 } else {
                     //clear all
@@ -402,7 +437,7 @@ public class MapFragment extends Fragment implements
                 filtersModified = true;
                 selectedFilters.clear();
                 viewModel.updateFilterMap(filters);
-                showClusters ();
+                viewModel.updatePointsToShow(new LinkedList<String>());
                 stabilizeVieWithZoom();
 
                 Log.d(TAG, "exit onClick imageButtons(View view) ");
@@ -438,6 +473,7 @@ public class MapFragment extends Fragment implements
 
                 if (filters.isEmpty()) {
                     filters.put(FILTERS, !showFiltersSidebar);
+                    viewModel.updatePointsToShow(new LinkedList<String>());
                     filtersModified = true;
                     //    current_filter = FILTERS;
                 } else {
@@ -462,6 +498,7 @@ public class MapFragment extends Fragment implements
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String permissions[],
                                            @NonNull int[] grantResults) {
+        Log.d(TAG, "enter onRequestPermissionsResult");
         mLocationPermissionGranted = false;
         switch (requestCode) {
             case PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION: {
@@ -478,6 +515,7 @@ public class MapFragment extends Fragment implements
                 }
             }
         }
+        Log.d(TAG, "exit onRequestPermissionsResult");
     }
 
     @Override
@@ -610,21 +648,15 @@ public class MapFragment extends Fragment implements
     private void updateLocationUI(Map <String, Boolean> newFilter) {
 
         Log.d(TAG, "enter updateLocationUI");
-//        if (mMap == null) {
-//            UiUtils.showToast(getApplicationContext(),
-//                    "Map is currently unavailable");
-//            return;
-//        }
 
-//TODO set visibility for buttons
+// set visibility for buttons
         if (places.size()>0) { //&& selectPointsToShow==true
-            // set full opacity
-            //       Log.i(TAG, "setting full opacity");
-            // topWrapper.addView(showFilterSection);
             showFilterSection.setAlpha(1.0f);
         }
+        //TODO WHY FALSE ???????
+        Log.d(TAG, "show sidebar: " + newFilter.values().contains(Boolean.TRUE));
 
-        //TODO logic to process filters (add/remove element with filters, change the list of filters, change the buttons color)
+        // logic to process filters (add/remove element with filters, change the list of filters, change the buttons color)
         if (!newFilter.isEmpty()) {
             ArrayList<String> temp = new ArrayList<String>(0);
             temp.addAll(newFilter.keySet());
@@ -633,10 +665,9 @@ public class MapFragment extends Fragment implements
 //           Log.d(TAG, "current filter: " + temp.get(0));
 //           Log.d(TAG, "sidebar modified: "+filterSidebarModified);
 //           Log.d(TAG, "active filters modified: "+filtersModified);
-//           Log.d(TAG, "show sidebar: " + newFilter.get(temp.get(0)));
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
-            Log.i(TAG, "selected points: "+prefs.getStringSet
-                    (UiUtils.SELECTED_POINTS, new HashSet<String>()).size());
+         //   SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+         //   Log.i(TAG, "selected points: "+prefs.getStringSet
+          //          (UiUtils.SELECTED_POINTS, new HashSet<String>()).size());
 
             if (filtersModified==true) {
 
@@ -663,12 +694,8 @@ public class MapFragment extends Fragment implements
                     }
 
                 } else if (newFilter.containsKey(CLEAR_MAP)) {
-                    // set all buttons of the same color, remove filter view
-                    newFilter.clear();
-//                   showAll.setAlpha(0.0f);
-//                   showFilters.setAlpha(0.0f);
-//                   showLoved.setAlpha(0.0f);
-//                   clearAll.setAlpha(0.0f);
+                    // TODO!!!!!!!!!!!!!!
+
                     topWrapper.removeView(showAll);
                     topWrapper.removeView(showFilters);
                     topWrapper.removeView(showLoved);
@@ -677,6 +704,12 @@ public class MapFragment extends Fragment implements
                     filter.removeAllViews();
                     filter.getLayoutParams().height = 0;
                     filter.getLayoutParams().width = 0;
+                    viewModel.updateFilterMap(new HashMap<String, Boolean>());
+                    LinkedList<String> lst = new LinkedList<>();
+                    for (Place p : places) {
+                        lst.add(p.getName());
+                    }
+                    viewModel.updatePointsToShow(lst);
                     filterSidebarModified = false;
                     filtersModified = false;
                     return;
@@ -746,6 +779,7 @@ public class MapFragment extends Fragment implements
         mClusterManager.getMarkerCollection().clear();
         markerIds.clear();
         mClusterManager.cluster();
+        Log.i(TAG, "to show: "+viewModel.getPointsNamesToShow().getValue().size());
 
         //  int i = 0;
         for (Place p : places) {
@@ -754,23 +788,6 @@ public class MapFragment extends Fragment implements
                 mClusterManager.addItem(offsetItem);
                 markerIds.add(p.getName());
             }
-//                if (current_filter.equals(FILTERS)) {
-//                    if (viewModel.getFilters().getValue().keySet().contains(p.getCategory())) {
-//
-//                        MyClusterItem offsetItem = new MyClusterItem(p.getLat(), p.getLng(), p.getName(), p.getCategory());
-//                        mClusterManager.addItem(offsetItem);
-//                        markerIds.add(p.getName());
-//                    }
-//                } else {
-//                    //to see "ALL" or "LOVED"
-//                    if (viewModel.getFilters().getValue().keySet().contains(p.getName())) {
-//
-//                        MyClusterItem offsetItem = new MyClusterItem(p.getLat(), p.getLng(), p.getName(), p.getCategory());
-//                        Log.d(TAG, "name " + p.getName());
-//                        mClusterManager.addItem(offsetItem);
-//                        markerIds.add(p.getName());
-//                    }
-//                }
 
         }
         saveInfoWindow=false;
@@ -818,6 +835,12 @@ public class MapFragment extends Fragment implements
     @Override
     public void onInfoWindowClick(Marker marker) {
         //TODO hook the click on the marker to the listener, what should trigger the replacement of the activity
+        for (Place p : places) {
+            if (p.getName().equals(marker.getTitle())) {
+                viewModel.updatePoint(p);
+                break;
+            }
+        }
         onInfoViewExpanded(marker.getTitle());
 
     }
