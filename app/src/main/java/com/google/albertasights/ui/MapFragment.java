@@ -4,7 +4,6 @@ import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -25,7 +24,6 @@ import android.widget.RelativeLayout;
 
 import com.google.albertasights.R;
 import com.google.albertasights.models.Place;
-import com.google.albertasights.models.User;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
@@ -839,7 +837,7 @@ public class MapFragment extends Fragment implements
             latIfRestarted = mMap.getCameraPosition().target.latitude;
             longIfRestarted = mMap.getCameraPosition().target.longitude;
             zoomIfRestarted = mMap.getCameraPosition().zoom;
-            mListener.onPointDetailsSelected(UiUtils.LOG_IN, pointName);
+            mListener.onPointDetailsSelected(action);
         }
     }
 
@@ -891,7 +889,7 @@ public class MapFragment extends Fragment implements
      */
     public interface OnPointDataExtendedListener {
         // TODO: Update argument type and name
-        void onPointDetailsSelected(String pointName, String action);
+        void onPointDetailsSelected(String action);
 
     }
 

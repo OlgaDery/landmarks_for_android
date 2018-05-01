@@ -1,6 +1,5 @@
 package com.google.albertasights.ui;
 
-import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -22,7 +21,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 
 public class MapsActivity extends MenuActivity implements MapFragment.OnPointDataExtendedListener,
-        PointFragment.OnPointFragmentInteractionListener {
+        PointFragment.OnPointFragmentInteractionListener, NoUserFragment.OnButtonClickedListener {
 
     private static final String TAG = MapsActivity.class.getSimpleName();
     //TODO variables to store map position and zoom if the activity is restarted
@@ -247,7 +246,7 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
 
 
     @Override
-    public void onPointDetailsSelected(String name, String action) {
+    public void onPointDetailsSelected(String action) {
         Log.d(TAG, "enter onPointDetailsSelected(String name)");
         Log.i(TAG, "act: "+action);
         if (action.equals(UiUtils.LOG_IN)) {
@@ -264,6 +263,11 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
 
     @Override
     public void onFragmentInteraction(Uri uri) {
+
+    }
+
+    @Override
+    public void onLogInOrRegisterButtonClickedListener(String action) {
 
     }
 }
