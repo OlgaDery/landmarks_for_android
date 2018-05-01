@@ -159,17 +159,17 @@ public class UiUtils {
                 case MapFragment.FILTERS:
                     text.setText("Categories:");
                     filter.addView(text, 0);
-                    elementWight = screen_width - 450;
+                    elementWight = screen_width - 550;
                     break;
                 case MapFragment.ALL:
                     text.setText("All points:");
                     filter.addView(text, 0);
-                    elementWight = screen_width - 350;
+                    elementWight = screen_width - 450;
                     break;
                 case MapFragment.LOVED:
                     text.setText("Selected points:");
                     filter.addView(text, 0);
-                    elementWight = screen_width - 350;
+                    elementWight = screen_width - 450;
                     break;
             }
         }

@@ -182,16 +182,18 @@ public class MapFragment extends Fragment implements
     public void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "enter onCreate(Bundle savedInstanceState)");
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
+        if (savedInstanceState != null) {
+            Log.d(TAG, "savedInstanceState not null");
             receivedFilters = savedInstanceState.getStringArrayList(KEY_RECEIVED_FILTERS);
             selectedFilters = savedInstanceState.getStringArrayList(KEY_SELECTED_FILTERS);
             selectPointsToShow = savedInstanceState.getBoolean(KEY_SELECT_POINTS_TO_SHOW);
             ArrayList<String> ids = savedInstanceState.getStringArrayList(KEY_MARKER_IDS);
             currentZoom = savedInstanceState.getFloat(CURRENT_ZOOM);
+            Log.i(TAG, "zoom: " + currentZoom);
             selectedMarkerID = savedInstanceState.getString("SELECTED_MARKER_ID");
             mCameraPosition = savedInstanceState.getParcelable(KEY_CAMERA_POSITION);
-            places = (HashSet)savedInstanceState.getSerializable(UiUtils.PLACES);
-            posit = savedInstanceState.getInt(SPINNER_POSIT);
+            Log.i(TAG, mCameraPosition.target.toString());
+        //    places = (HashSet)savedInstanceState.getSerializable(UiUtils.PLACES);
             saveInfoWindow = savedInstanceState.getBoolean(SAVE_INFO_WINDOW);
             animationStarted = savedInstanceState.getBoolean(STARTED_ANIMATION);
             markerIds.addAll(ids);
@@ -231,7 +233,7 @@ public class MapFragment extends Fragment implements
                 if (mMap!=null) {
                     Log.d(TAG, "map is not null");
                     showClusters();
-                    stabilizeVieWithZoom();
+                   // stabilizeVieWithZoom();
                 } else {
                     Log.d(TAG, "map is null");
                 }
@@ -248,6 +250,7 @@ public class MapFragment extends Fragment implements
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
+        Log.d(TAG, "enter onSaveInstanceState(@NonNull Bundle outState)");
         super.onSaveInstanceState(outState);
         outState.putParcelable(KEY_CAMERA_POSITION, mMap.getCameraPosition());
         latIfRestarted = mMap.getCameraPosition().target.latitude;
@@ -256,11 +259,10 @@ public class MapFragment extends Fragment implements
         ArrayList <String> ids = new  ArrayList <String>(markerIds.size());
         ids.addAll(markerIds);
         outState.putStringArrayList(KEY_MARKER_IDS, ids);
-        outState.putSerializable(UiUtils.PLACES, places);
+     //   outState.putSerializable(UiUtils.PLACES, places);
         outState.putStringArrayList(KEY_RECEIVED_FILTERS, receivedFilters);
         outState.putStringArrayList(KEY_SELECTED_FILTERS, selectedFilters);
         outState.putBoolean(KEY_SELECT_POINTS_TO_SHOW, selectPointsToShow);
-        outState.putInt(SPINNER_POSIT, posit);
         outState.putFloat(CURRENT_ZOOM, mMap.getCameraPosition().zoom);
         zoomIfRestarted = mMap.getCameraPosition().zoom;
         //   outState.putBoolean(API_WAS_CALLED, apiNotCalled);
@@ -276,6 +278,7 @@ public class MapFragment extends Fragment implements
         }
         outState.putString("SELECTED_MARKER_ID", selectedMarkerID);
         outState.putBoolean(SAVE_INFO_WINDOW, saveInfoWindow);
+        Log.d(TAG, "enter onSaveInstanceState(@NonNull Bundle outState)");
 
     }
 
@@ -300,6 +303,7 @@ public class MapFragment extends Fragment implements
         // Inflate the layout for this fragment
         Log.d(TAG, "enter onCreateView");
         View v = inflater.inflate(R.layout.fragment_map, container, false);
+        Log.i(TAG, "restarted: " + isRestarted);
         SupportMapFragment mMapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         mMapFragment.getMapAsync(this);
         orientation = UiUtils.getOrientation(getActivity());
@@ -410,6 +414,7 @@ public class MapFragment extends Fragment implements
                 if (button.equals(FILTERS)) {
                     filters.clear();
                     filters.put(FILTERS, true);
+                    viewModel.updatePointsToShow(new LinkedList<String>());
 
                 } else if (button.equals(LOVED)) {
                     //TODO user has to be logged in, otherwise to show tost and return;
@@ -419,15 +424,18 @@ public class MapFragment extends Fragment implements
                         if (prefs.getBoolean(UiUtils.LOGGED_IN, true)==true) {
                             filters.clear();
                             filters.put(LOVED, true);
+                            viewModel.updatePointsToShow(new LinkedList<String>());
                         }
                     } else {
-                        UiUtils.showToast(getActivity(), "To use this option, please log in or create an account");
+                        //UiUtils.showToast(getActivity(), "To use this option, please log in or create an account");
+                        onInfoViewExpanded(UiUtils.LOG_IN, "");
                         return;
                     }
 
                 } else if (button.equals(ALL)) {
                     filters.clear();
                     filters.put(ALL, true);
+                    viewModel.updatePointsToShow(new LinkedList<String>());
 
                 } else {
                     //clear all
@@ -437,8 +445,7 @@ public class MapFragment extends Fragment implements
                 filtersModified = true;
                 selectedFilters.clear();
                 viewModel.updateFilterMap(filters);
-                viewModel.updatePointsToShow(new LinkedList<String>());
-                stabilizeVieWithZoom();
+             //   stabilizeVieWithZoom();
 
                 Log.d(TAG, "exit onClick imageButtons(View view) ");
             }
@@ -455,19 +462,6 @@ public class MapFragment extends Fragment implements
         View.OnClickListener showMoreButtonsListener = new View.OnClickListener() {
             public void onClick(View view) {
                 //   Log.d(TAG, "enter showFilters(View view)");
-                //  UiUtils.showFilters=!UiUtils.showFilters;
-
-                //TODO visible
-//                showFilters.setAlpha(1.0f);
-//                showLoved.setAlpha(1.0f);
-//                showAll.setAlpha(1.0f);
-//                clearAll.setAlpha(1.0f);
-                if (filters.isEmpty()) {
-                    topWrapper.addView(showFilters);
-                    topWrapper.addView(showLoved);
-                    topWrapper.addView(showAll);
-                    topWrapper.addView(clearAll);
-                }
 
                 filterSidebarModified = true;
 
@@ -510,13 +504,15 @@ public class MapFragment extends Fragment implements
 
                     if (places.size()>0) {
                         showClusters();
-                        stabilizeVieWithZoom ();
+                      //  stabilizeVieWithZoom ();
                     }
                 }
             }
         }
         Log.d(TAG, "exit onRequestPermissionsResult");
     }
+
+
 
     @Override
     public void onMapReady(GoogleMap map) {
@@ -599,46 +595,38 @@ public class MapFragment extends Fragment implements
 
                 }
             });
-        }
-
-
-        if (places.size()>0)  {
-            //if not, that means that the activity is being recreated and the points already received from the server
-            if (isRestarted==false) {
-                LatLng myLatLng;
-                if (mCameraPosition!= null) {
-                    myLatLng =  new LatLng(mCameraPosition.target.latitude,
-                            mCameraPosition.target.longitude);
-                } else {
-
-                    myLatLng = mDefaultCoord;
-                    currentZoom = default_zoom;
-                }
-
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLatLng,
-                        currentZoom));
-
+            LatLng myLatLng;
+            if (mCameraPosition!= null) {
+                myLatLng =  new LatLng(mCameraPosition.target.latitude,
+                        mCameraPosition.target.longitude);
             } else {
-                mCameraPosition = new CameraPosition.Builder()
-                        .target(new LatLng(latIfRestarted,
-                                longIfRestarted))
-                        .build();//mMap.getCameraPosition();
-                currentZoom = zoomIfRestarted;
-                //TODO in the activity has been recreation or reset the ViewModel data has to be used
-                if (viewModel.filtersToApply.getValue()!=null) {
-                    filters = viewModel.filtersToApply.getValue();
-                }
 
-                isRestarted=false;
+                myLatLng = mDefaultCoord;
+                currentZoom = default_zoom;
             }
-            updateLocationUI(filters);
+
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLatLng,
+                    currentZoom));
+            //   updateLocationUI(filters);
             showClusters();
-            stabilizeVieWithZoom ();
 
         } else {
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mDefaultCoord,
-                    default_zoom));
+            Log.i(TAG, "restarted");
+            mCameraPosition = new CameraPosition.Builder()
+                    .target(new LatLng(latIfRestarted,
+                            longIfRestarted))
+                    .build();//mMap.getCameraPosition();
+            currentZoom = zoomIfRestarted;
+
+            isRestarted=false;
         }
+
+        //TODO in the activity has been recreation or reset the ViewModel data has to be used
+        if (viewModel.filtersToApply.getValue()!=null) {
+            Log.i (TAG, "not null");
+            filters = viewModel.filtersToApply.getValue();
+        }
+        updateLocationUI(filters);
 
         Log.d(TAG, "exit onMapReady");
 
@@ -658,11 +646,19 @@ public class MapFragment extends Fragment implements
 
         // logic to process filters (add/remove element with filters, change the list of filters, change the buttons color)
         if (!newFilter.isEmpty()) {
+
+           try {
+               topWrapper.addView(showFilters);
+               topWrapper.addView(showLoved);
+               topWrapper.addView(showAll);
+               topWrapper.addView(clearAll);
+           } catch (Exception e) {
+               Log.d(TAG, "buttons alreay added");
+           }
             ArrayList<String> temp = new ArrayList<String>(0);
             temp.addAll(newFilter.keySet());
             receivedFilters.clear();
-
-//           Log.d(TAG, "current filter: " + temp.get(0));
+            Log.d(TAG, "current filter: " + temp.get(0));
 //           Log.d(TAG, "sidebar modified: "+filterSidebarModified);
 //           Log.d(TAG, "active filters modified: "+filtersModified);
          //   SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
@@ -710,6 +706,8 @@ public class MapFragment extends Fragment implements
                         lst.add(p.getName());
                     }
                     viewModel.updatePointsToShow(lst);
+                    filters.clear();
+                    showFiltersSidebar = false;
                     filterSidebarModified = false;
                     filtersModified = false;
                     return;
@@ -792,6 +790,7 @@ public class MapFragment extends Fragment implements
         }
         saveInfoWindow=false;
         selectedMarkerID = "";
+        stabilizeVieWithZoom();
         Log.d(TAG, "exit showClusters()");
 
     }
@@ -799,6 +798,7 @@ public class MapFragment extends Fragment implements
 
     @Override
     public void onAttach(Context context) {
+        Log.d(TAG, "enter onAttach(Context context)");
         super.onAttach(context);
         if (context instanceof OnPointDataExtendedListener) {
             mListener = (OnPointDataExtendedListener) context;
@@ -806,15 +806,19 @@ public class MapFragment extends Fragment implements
             throw new RuntimeException(context.toString()
                     + " must implement OnPointDataExtendedListener");
         }
+        Log.d(TAG, "exit onAttach(Context context)");
     }
 
     @Override
     public void onDetach() {
+        Log.d(TAG, "enter onDetach()");
         super.onDetach();
         mListener = null;
+        Log.d(TAG, "exit onDetach()");
     }
 
     private void stabilizeVieWithZoom () {
+        Log.d(TAG, "enter stabilizeVieWithZoom ()");
         if (zoomingOut==false) {
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mMap.getCameraPosition().target,
                     mMap.getCameraPosition().zoom-0.005f));
@@ -823,12 +827,19 @@ public class MapFragment extends Fragment implements
                     mMap.getCameraPosition().zoom+0.005f));
         }
         zoomingOut=!zoomingOut;
+        Log.d(TAG, "exit stabilizeVieWithZoom ()");
     }
 
 
-    public void onInfoViewExpanded(String pointName) {
+    public void onInfoViewExpanded(String action, String pointName) {
+        //TODO
+        Log.i(TAG, "action: "+action);
         if (mListener != null) {
-            mListener.onPointDetailsSelected(pointName);
+            isRestarted=true;
+            latIfRestarted = mMap.getCameraPosition().target.latitude;
+            longIfRestarted = mMap.getCameraPosition().target.longitude;
+            zoomIfRestarted = mMap.getCameraPosition().zoom;
+            mListener.onPointDetailsSelected(UiUtils.LOG_IN, pointName);
         }
     }
 
@@ -841,7 +852,7 @@ public class MapFragment extends Fragment implements
                 break;
             }
         }
-        onInfoViewExpanded(marker.getTitle());
+        onInfoViewExpanded("SEE_MORE", marker.getTitle());
 
     }
 
@@ -880,6 +891,31 @@ public class MapFragment extends Fragment implements
      */
     public interface OnPointDataExtendedListener {
         // TODO: Update argument type and name
-        void onPointDetailsSelected(String name);
+        void onPointDetailsSelected(String pointName, String action);
+
+    }
+
+
+    @Override
+    public void onStart() {
+        super.onStart();
+    }
+
+    @Override
+    public void onResume() {
+        Log.d(TAG, "enter onResume()");
+        super.onResume();
+    }
+
+    @Override
+    public void onPause() {
+        Log.d(TAG, "enter onPause()");
+        super.onPause();
+    }
+
+    @Override
+    public void onStop() {
+        Log.d(TAG, "enter onStop()");
+        super.onStop();
     }
 }

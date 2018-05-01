@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
@@ -20,7 +21,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 
-public class MapsActivity extends MenuActivity implements MapFragment.OnPointDataExtendedListener {
+public class MapsActivity extends MenuActivity implements MapFragment.OnPointDataExtendedListener,
+        PointFragment.OnPointFragmentInteractionListener {
 
     private static final String TAG = MapsActivity.class.getSimpleName();
     //TODO variables to store map position and zoom if the activity is restarted
@@ -52,6 +54,7 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
             viewModel.updateLoved(lst);
         }
 
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         if (viewModel.getRecievedPoints().getValue()==null) {
             Intent intent = new Intent(this, RestIntentServer.class);
             intent.setAction(UiUtils.SUBMIT);
@@ -61,8 +64,9 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
             intent.putExtra(UiUtils.DISTANCE, String.valueOf(30));
             startService(intent);
             // start the animation for the period of data loading
-            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
             transaction.add(R.id.map_container, new StatusBarFragment()).commit();
+        } else if (viewModel.getPointToSee().getValue()!=null){
+            transaction.add(R.id.map_container, new PointFragment()).commit();
         }
 
         // Retrieve the content view that renders the map.
@@ -243,7 +247,23 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
 
 
     @Override
-    public void onPointDetailsSelected(String name) {
+    public void onPointDetailsSelected(String name, String action) {
+        Log.d(TAG, "enter onPointDetailsSelected(String name)");
+        Log.i(TAG, "act: "+action);
+        if (action.equals(UiUtils.LOG_IN)) {
+            getSupportFragmentManager().beginTransaction().replace(R.id.map_container,
+                    new NoUserFragment()).addToBackStack(null).commit();
+        } else {
+            getSupportFragmentManager().beginTransaction().replace(R.id.map_container,
+                    new PointFragment()).addToBackStack(null).commit();
+        }
+
+        Log.d(TAG, "exit onPointDetailsSelected(String name)");
+
+    }
+
+    @Override
+    public void onFragmentInteraction(Uri uri) {
 
     }
 }

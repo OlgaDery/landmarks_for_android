@@ -70,7 +70,7 @@ public class MyInfoWindowAdaptor implements GoogleMap.InfoWindowAdapter {
             name = (TextView) v.findViewById(R.id.name);
             photo = (ImageView) v.findViewById(R.id.img);
             ImageButton button = (ImageButton) v.findViewById(R.id.more);
-            button.setImageResource(R.drawable.expand_more);
+            button.setImageResource(R.drawable.more_horizontal);
             if (deviceType.equals("tablet")) {
                 descr.setTextSize(context.getResources().getDimension(R.dimen.avg_textsize));
                 name.setTextSize(context.getResources().getDimension(R.dimen.big_textsize));
