@@ -14,6 +14,7 @@ public class UserViewModel extends ViewModel {
     private static final String TAG = UserViewModel.class.getSimpleName();
     public final MutableLiveData<User> user = new MutableLiveData<>();
     public final MutableLiveData<String> currentAction = new MutableLiveData<>();
+    public final MutableLiveData<String> destination = new MutableLiveData<>();
 
     public UserViewModel() {
         Log.d(TAG, "enter UserViewModel()");
@@ -41,4 +42,17 @@ public class UserViewModel extends ViewModel {
 
         return currentAction;
     }
+
+    public LiveData<String> getDestination () {
+
+        return destination;
+    }
+
+    public void updateDestination (String newDest) {
+        Log.d(TAG, "enter updateDestination");
+        destination.setValue(newDest);
+        Log.d(TAG, "exit updateDestination");
+    }
+
+
 }

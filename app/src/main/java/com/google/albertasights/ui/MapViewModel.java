@@ -61,7 +61,7 @@ public class MapViewModel extends ViewModel {
         return receivedPoints;
     }
 
-    public void updatePoint (LinkedList <Place> points) {
+    public void updatePoints(LinkedList <Place> points) {
         Log.d(TAG, "enter updatePoint");
         receivedPoints.setValue(points);
         Log.d(TAG, "exit updatePoint");
@@ -78,7 +78,7 @@ public class MapViewModel extends ViewModel {
         Log.d(TAG, "exit updateLoved");
     }
 
-    public void updatePoint (Place newPoint) {
+    public void updatePoint(Place newPoint) {
         Log.d(TAG, "enter updatePoint");
         pointToSee.setValue(newPoint);
         Log.d(TAG, "exit updatePoint");

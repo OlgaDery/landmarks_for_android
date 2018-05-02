@@ -144,6 +144,7 @@ public class PointFragment extends Fragment {
         likeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                //TODO hook this method to the listener to make it visible for the activity
                 Log.d(TAG, "onclick");
                 SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
                 if (prefs.getBoolean(UiUtils.LOGGED_IN, true)==true) {
@@ -155,7 +156,7 @@ public class PointFragment extends Fragment {
                         getActivity().startService(writeToFile);
                         likeButton.setColorFilter(new PorterDuffColorFilter(Color.RED, PorterDuff.Mode.SRC_IN));
                     } else {
-                        //TODO call the method to remove from selected
+                        //call the method to remove from selected
                         Intent remove = new Intent(getActivity(), DBIntentService.class);
                         remove.setAction(UiUtils.REMOVE_POINT);
                         remove.putExtra(UiUtils.POINT_ID, id);
@@ -164,12 +165,12 @@ public class PointFragment extends Fragment {
                     }
 
                 } else {
+                    //TODO!!!!!!
                     UiUtils.showToast(getActivity(), "To use this option, please log in or create an account");
                 }
             }
         });
 
-        //TODO set onClick method for the button
         likeButton.setImageResource(R.drawable.like);
         likeButton.setTag(point.getName());
         listview = (ListView) v.findViewById(R.id.listView1);
@@ -207,6 +208,11 @@ public class PointFragment extends Fragment {
         super.onDetach();
         mListener = null;
         Log.d(TAG, "exit onDetach()");
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
     }
 
     /**

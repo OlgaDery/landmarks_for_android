@@ -65,6 +65,9 @@ public class UiUtils {
     public static final String FIRST_NAME = "FIRST_NAME";
     public static final String LAST_NAME = "LAST_NAME";
 
+    public static final String BACK_TO_MAP = "BACK_TO_MAP";
+    public static final String BACK_TO_POINT = "BACK_TO_POINT";
+
 
     private static final String TAG = MapsActivity.class.getSimpleName();
   //  public static Set <String> selectedPointsIds = new HashSet<>();

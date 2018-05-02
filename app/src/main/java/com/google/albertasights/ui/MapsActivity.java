@@ -82,7 +82,7 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
                         //         Log.i(TAG, "places: "+ placesLst.size());
                         LinkedList <Place> lst = new LinkedList<>();
                         lst.addAll(placesLst);
-                        viewModel.updatePoint(lst);
+                        viewModel.updatePoints(lst);
                         LinkedList <String> lst1 = new LinkedList<>();
                         for (Place p : placesLst) {
                             lst1.add(p.getName());
@@ -240,6 +240,7 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
     @Override
     protected void onDestroy() {
         Log.d(TAG, "enter onDestroy()");
+        viewModel.updatePoint(null);
         super.onDestroy();
         Log.d(TAG, "exit onDestroy()");
     }
@@ -268,6 +269,17 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
 
     @Override
     public void onLogInOrRegisterButtonClickedListener(String action) {
+        if (action.equals(UiUtils.LOG_IN)) {
+            //show the fragment with user data
+
+        } else if (action.equals(UiUtils.CREATE_USER)) {
+            //TODO show the 3d fragment with forms
+            //   modifYUserDataFragment = new EnterUserFragment();
+            Intent i = new Intent(this, UserActivity.class);
+            i.setAction(UiUtils.CREATE_USER);
+            i.putExtra(UiUtils.BACK_TO_MAP, true);
+            startActivity(i);
+        }
 
     }
 }

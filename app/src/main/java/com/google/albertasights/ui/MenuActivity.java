@@ -28,7 +28,23 @@ public class MenuActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         Log.d(TAG, "exit onCreateOptionsMenu(Menu menu)");
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.menu, menu); //your file name
+        inflater.inflate(R.menu.menu, menu);
+        Log.i(TAG, "class name: " + this.getClass().getCanonicalName());
+        if (this.getClass().getCanonicalName().contains("User")) {
+            menu.removeItem(R.id.profile);
+        } else if (this.getClass().getCanonicalName().contains("Map")) {
+            menu.removeItem(R.id.map);
+        }
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        if (prefs.contains(UiUtils.LOGGED_IN)) {
+            if (prefs.getBoolean(UiUtils.LOGGED_IN, true)==true) {
+                menu.removeItem(R.id.log_in);
+            } else {
+                menu.removeItem(R.id.log_out);
+            }
+        } else {
+            menu.removeItem(R.id.log_out);
+        }
 
         //TODO if user is null or it logged out regarding the shared preferences data, remove R.id.log_out
 
@@ -60,10 +76,10 @@ public class MenuActivity extends AppCompatActivity {
                 startActivity(intent5);
                 return true;
             case R.id.log_in:
-
               //show log in form
-                //  Log.d(TAG, "session list has been already created");
-                //               }
+                final Intent intent3 = new Intent(this, UserActivity.class);
+                startActivity(intent3);
+
                 item.setChecked(true);
                 return true;
 

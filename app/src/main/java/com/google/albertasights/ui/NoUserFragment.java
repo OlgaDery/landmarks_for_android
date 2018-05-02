@@ -98,11 +98,11 @@ public class NoUserFragment extends Fragment {
         int screen_width = metrics.widthPixels;
         String orientation = UiUtils.getOrientation(getActivity());
         deviceType = UiUtils.findScreenSize(getActivity());
-        if (deviceType.equals("tablet")) {
-            text.setTextSize(getActivity().getResources().getDimension(R.dimen.avg_header));
-        } else {
-            text.setTextSize(getActivity().getResources().getDimension(R.dimen.big_textsize));
-        }
+//        if (deviceType.equals("tablet")) {
+//            text.setTextSize(getActivity().getResources().getDimension(R.dimen.avg_header));
+//        } else {
+//            text.setTextSize(getActivity().getResources().getDimension(R.dimen.big_textsize));
+//        }
 
         View.OnClickListener lstn = new View.OnClickListener() {
             public void onClick(View view) {

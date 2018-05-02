@@ -39,6 +39,7 @@ public class UserActivity extends MenuActivity implements NoUserFragment.OnButto
         modifYUserDataFragment = new EnterUserFragment();
         statusFragment = new StatusBarFragment();
         viewModel = ViewModelProviders.of(this).get(UserViewModel.class);
+
         if (viewModel.getUser().getValue()!=null) {
             if (viewModel.getCurrentAction().getValue()!=null) {
                 //current action has already ben set, selecting the fragment
@@ -66,7 +67,7 @@ public class UserActivity extends MenuActivity implements NoUserFragment.OnButto
         } else {
             //activity created the first time, no data exist in the ModelView
             //TODO
-            if (getIntent().getExtras()!= null) {
+            if (getIntent().getExtras().getSerializable(UiUtils.USER)!= null) {
                 //If user exists in SharedPreferences
                 user = (User) getIntent().getExtras().getSerializable(UiUtils.USER);
                 viewModel.updateUser(user);
@@ -87,14 +88,23 @@ public class UserActivity extends MenuActivity implements NoUserFragment.OnButto
                     //    logInFragment.setArguments(getIntent().getExtras());
                     transaction.add(R.id.user_container, logInFragment).commit();
                 }
+            } else if (getIntent().getAction().equals(UiUtils.CREATE_USER)) {
+                if (getIntent().getExtras().getBoolean(UiUtils.BACK_TO_MAP)==true) {
+                    viewModel.updateDestination(UiUtils.BACK_TO_MAP);
+
+                } else if (getIntent().getExtras().getBoolean(UiUtils.BACK_TO_POINT)==true) {
+                    viewModel.updateDestination(UiUtils.BACK_TO_POINT);
+                }
+                transaction.add(R.id.user_container, modifYUserDataFragment).commit();
+
             } else {
-                //User does not exist and has to be set
-                //  logInFragment = new NoUserFragment();
-                Log.i("TAG", "user does not exists");
-                //  logInFragment.setArguments(getIntent().getExtras());
-                // Add the fragment to the 'fragment_container' FrameLayout
-                transaction.add(R.id.user_container, logInFragment).commit();
-            }
+                    //User does not exist and has to be set
+                    //  logInFragment = new NoUserFragment();
+                    Log.i("TAG", "user does not exists");
+                    //  logInFragment.setArguments(getIntent().getExtras());
+                    // Add the fragment to the 'fragment_container' FrameLayout
+                    transaction.add(R.id.user_container, logInFragment).commit();
+                }
         }
 
 //        if (savedInstanceState != null) {
@@ -107,27 +117,41 @@ public class UserActivity extends MenuActivity implements NoUserFragment.OnButto
 
                 Log.d(TAG, "enter onReceive(Context context, Intent intent)");
                 if (intent.getAction().equals(UiUtils.USER_CREATED)||intent.getAction().equals(UiUtils.LOG_IN)) {
-                    FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-                    //TODO the broadcast may receive the User data
-                    if (intent.getSerializableExtra(UiUtils.USER)!=null) {
-                        User user = (User) intent.getSerializableExtra(UiUtils.USER);
-                        viewModel.updateUser(user);
-                        transaction.replace(R.id.user_container, userDataFragment);
+                    Log.i(TAG, "destination: "+ viewModel.getDestination().getValue());
+                    if (viewModel.getDestination().getValue()!=null && viewModel.getDestination().getValue().length()>2) {
 
-                        Log.d(TAG, "user added");
-                        //TODO update UI (replace one fragment with another)
+                        if (viewModel.getDestination().getValue().equals(UiUtils.BACK_TO_MAP)) {
+                            Intent i = new Intent(getApplicationContext(), MapsActivity.class);
+                            startActivity(i);
 
+                        } else if (viewModel.getDestination().getValue().equals(UiUtils.BACK_TO_POINT)) {
+
+                        }
+                        viewModel.updateDestination(new String());
                     } else {
-                        //no User data received from the service, the reason may be either an error or the lack of user data
-                        if (intent.getBooleanExtra((UiUtils.LOGGED_IN), true)==false) {
-                            UiUtils.showToast(getApplicationContext(), "We have not find these credentials");
+                        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                        //TODO the broadcast may receive the User data
+                        if (intent.getSerializableExtra(UiUtils.USER)!=null) {
+                            User user = (User) intent.getSerializableExtra(UiUtils.USER);
+                            viewModel.updateUser(user);
+                            transaction.replace(R.id.user_container, userDataFragment);
+
+                            Log.d(TAG, "user added");
+                            //TODO update UI (replace one fragment with another)
 
                         } else {
-                            UiUtils.showToast(getApplicationContext(), "Error with data submittion");
+                            //no User data received from the service, the reason may be either an error or the lack of user data
+                            if (intent.getBooleanExtra((UiUtils.LOGGED_IN), true)==false) {
+                                UiUtils.showToast(getApplicationContext(), "We have not find these credentials");
+
+                            } else {
+                                UiUtils.showToast(getApplicationContext(), "Error with data submittion");
+                            }
+                            transaction.replace(R.id.user_container, logInFragment);
                         }
-                        transaction.replace(R.id.user_container, logInFragment);
+                        transaction.commit();
                     }
-                    transaction.commit();
+
                     Log.d(TAG, "exit onReceive(Context context, Intent intent)");
                 }
             }

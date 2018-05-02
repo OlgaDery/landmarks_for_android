@@ -148,8 +148,7 @@ public class MapFragment extends Fragment implements
     private View.OnClickListener checkBoxListener;
     private View.OnClickListener filterButtonsListener;
     private Set <ImageButton> buttons = new HashSet<>();
-    //TODO to create the infrastracture to update selectedByUser
-    private Set <String> selectedByUser = new HashSet<>();
+   // private Set <String> selectedByUser = new HashSet<>();
 
     private BroadcastReceiver receiver;
     private MapViewModel viewModel;
@@ -674,9 +673,9 @@ public class MapFragment extends Fragment implements
 
                 } else if (newFilter.containsKey(LOVED)) {
                     //  receivedFilters
-                    if (selectedByUser.size()>0) {
+                    if (viewModel.getLoved().getValue().size()>0) {
                         for (Place p : places) {
-                            if (selectedByUser.contains(p.getName())) {
+                            if (viewModel.getLoved().getValue().contains(p.getName())) {
                                 receivedFilters.add(p.getName());
                             }
                         }
@@ -733,7 +732,7 @@ public class MapFragment extends Fragment implements
                 } else if (newFilter.containsKey(LOVED)) {
                     //  receivedFilters
                     for (Place p : places) {
-                        if (selectedByUser.contains(p.getName()))
+                        if (viewModel.getLoved().getValue().contains(p.getName()))
                             receivedFilters.add(p.getName());
                     }
 
