@@ -138,7 +138,7 @@ public class PointFragment extends Fragment {
         });
 
         final ImageButton likeButton = (ImageButton) v.findViewById(R.id.like);
-        if (point.isLoved()==true) {
+        if (viewModel.getLoved().getValue().contains(point.getName())) {
             likeButton.setColorFilter(new PorterDuffColorFilter(Color.RED, PorterDuff.Mode.SRC_IN));
         }
         likeButton.setOnClickListener(new View.OnClickListener() {
@@ -149,7 +149,7 @@ public class PointFragment extends Fragment {
                 SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
                 if (prefs.getBoolean(UiUtils.LOGGED_IN, true)==true) {
                     String id =((ImageButton) view).getTag().toString();
-                    if (point.isLoved()==false) {
+                    if (!viewModel.getLoved().getValue().contains(point.getName())) {
                         Intent writeToFile = new Intent(getActivity(), DBIntentService.class);
                         writeToFile.setAction(UiUtils.ADD_POINT_TO_LOVED);
                         writeToFile.putExtra(UiUtils.POINT_ID, id);

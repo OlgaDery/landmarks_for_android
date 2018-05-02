@@ -6,6 +6,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -17,6 +20,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -114,7 +118,7 @@ public class MapFragment extends Fragment implements
     private ArrayList<String> receivedFilters = new ArrayList<>();
     //to store markerIDs to track the photo loading, if the photo of the marker has once been loaded, it`s Id should be removed
     //TODO to store the name of current filter using for points
-    private String current_filter;
+    private String current_filter = "";
     private String selectedMarkerID = "";
 
     //TODO place them in ModelView???
@@ -311,6 +315,7 @@ public class MapFragment extends Fragment implements
         showFilterSection = (ImageButton) v.findViewById(R.id.imageB);
         showFilterSection.setImageResource(R.drawable.expand_more);
         showFilterSection.getBackground().setAlpha(0);
+        showFilterSection.setColorFilter(new PorterDuffColorFilter(Color.BLACK, PorterDuff.Mode.SRC_IN));
 
         showFilters = (ImageButton) v.findViewById(R.id.showFiltersOnly);
         showFilters.setImageResource(R.drawable.filters);
@@ -328,16 +333,19 @@ public class MapFragment extends Fragment implements
         showAll.setTag(ALL);
 
         clearAll = (ImageButton) v.findViewById(R.id.clearMap);
-        clearAll.setImageResource(R.drawable.clear);
+        clearAll.setImageResource(R.drawable.close_trimmed);
         clearAll.getBackground().setAlpha(0);
         clearAll.setTag(CLEAR_MAP);
+        clearAll.setColorFilter(new PorterDuffColorFilter(Color.BLACK, PorterDuff.Mode.SRC_IN));
 
         //temporary remove buttons from the top
         showFilterSection.setAlpha(0.0f);
-        topWrapper.removeView(showAll);
-        topWrapper.removeView(clearAll);
-        topWrapper.removeView(showLoved);
-        topWrapper.removeView(showFilters);
+        clearAll.setAlpha(0.0f);
+  //      topWrapper.removeView(showFilterSection);
+//        topWrapper.removeView(showAll);
+//        topWrapper.removeView(clearAll);
+//        topWrapper.removeView(showLoved);
+//        topWrapper.removeView(showFilters);
 
         filter = (LinearLayout) v.findViewById(R.id.filters);
 
@@ -401,6 +409,8 @@ public class MapFragment extends Fragment implements
             public void onClick(View v) {
                 Log.d(TAG, "enter onClick imageButtons(View view) ");
                 String button =((ImageButton) v).getTag().toString();
+                showFilterSection.setAlpha(1.0f);
+                clearAll.setAlpha(1.0f);
 
                 if (current_filter.equals(button)) {
                     return;
@@ -635,23 +645,17 @@ public class MapFragment extends Fragment implements
         Log.d(TAG, "enter updateLocationUI");
 
 // set visibility for buttons
-        if (places.size()>0) { //&& selectPointsToShow==true
-            showFilterSection.setAlpha(1.0f);
-        }
+//        if (places.size()>0) { //&& selectPointsToShow==true
+//            showFilterSection.setAlpha(1.0f);
+//        }
         //TODO WHY FALSE ???????
         Log.d(TAG, "show sidebar: " + newFilter.values().contains(Boolean.TRUE));
 
         // logic to process filters (add/remove element with filters, change the list of filters, change the buttons color)
         if (!newFilter.isEmpty()) {
 
-           try {
-               topWrapper.addView(showFilters);
-               topWrapper.addView(showLoved);
-               topWrapper.addView(showAll);
-               topWrapper.addView(clearAll);
-           } catch (Exception e) {
-               Log.d(TAG, "buttons alreay added");
-           }
+            showFilterSection.setAlpha(1.0f);
+            clearAll.setAlpha(1.0f);
             ArrayList<String> temp = new ArrayList<String>(0);
             temp.addAll(newFilter.keySet());
             receivedFilters.clear();
@@ -688,11 +692,8 @@ public class MapFragment extends Fragment implements
 
                 } else if (newFilter.containsKey(CLEAR_MAP)) {
                     // TODO!!!!!!!!!!!!!!
-
-                    topWrapper.removeView(showAll);
-                    topWrapper.removeView(showFilters);
-                    topWrapper.removeView(showLoved);
-                    topWrapper.removeView(clearAll);
+                    showFilterSection.setAlpha(0.0f);
+                    clearAll.setAlpha(0.0f);
 
                     filter.removeAllViews();
                     filter.getLayoutParams().height = 0;
@@ -701,6 +702,12 @@ public class MapFragment extends Fragment implements
                     LinkedList<String> lst = new LinkedList<>();
                     for (Place p : places) {
                         lst.add(p.getName());
+                    }
+                    for (ImageButton b : buttons) {
+                        if (b.getTag().equals(current_filter)) {
+                            b.setColorFilter(new PorterDuffColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN));
+                            break;
+                        }
                     }
                     viewModel.updatePointsToShow(lst);
                     filters.clear();
@@ -755,7 +762,7 @@ public class MapFragment extends Fragment implements
             //resetting the values of class variables for later usage
             current_filter = temp.get(0);
             showFiltersSidebar = newFilter.get(current_filter);
-            if (current_filter!=null) {
+            if (current_filter.length()>1) {
                 UiUtils.modifyButtons(buttons, current_filter);
             }
             filterSidebarModified = false;

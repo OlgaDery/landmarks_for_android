@@ -221,6 +221,7 @@ public class DBIntentService extends IntentService {
             i.putExtra(UiUtils.LOGGED_IN, true);
             SharedPreferences.Editor editor = UiUtils.getEditor(this);
             editor.putBoolean(UiUtils.LOGGED_IN, true);
+            editor.commit();
             User user = new User (email, password);
             user.setRole(prefs.getString(UiUtils.ROLE, "user"));
             user.setFirstName(prefs.getString(UiUtils.FIRST_NAME, "Dear friend"));

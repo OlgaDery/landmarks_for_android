@@ -51,6 +51,7 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
             LinkedList <String> lst = new LinkedList<>();
             lst.addAll(prefs.getStringSet(UiUtils.SELECTED_POINTS, new HashSet<String>()));
             viewModel.updateLoved(lst);
+            Log.i(TAG, "selected points added: "+ viewModel.getLoved().getValue().size());
         }
 
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();

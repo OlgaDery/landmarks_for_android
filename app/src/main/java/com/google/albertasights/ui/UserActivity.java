@@ -39,8 +39,17 @@ public class UserActivity extends MenuActivity implements NoUserFragment.OnButto
         modifYUserDataFragment = new EnterUserFragment();
         statusFragment = new StatusBarFragment();
         viewModel = ViewModelProviders.of(this).get(UserViewModel.class);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        if (prefs.getBoolean(UiUtils.LOGGED_IN, true)==false) {
+            User u = viewModel.getUser().getValue();
+            u.setLoggedIn(false);
+            viewModel.updateUser(u);
+            transaction.add(R.id.user_container, logInFragment).commit();
+            return;
+        }
 
         if (viewModel.getUser().getValue()!=null) {
+
             if (viewModel.getCurrentAction().getValue()!=null) {
                 //current action has already ben set, selecting the fragment
                 switch (viewModel.getCurrentAction().getValue()) {

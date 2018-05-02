@@ -10,6 +10,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
+import com.google.albertasights.DBIntentService;
 import com.google.albertasights.R;
 import com.google.albertasights.models.User;
 
@@ -90,13 +91,14 @@ public class MenuActivity extends AppCompatActivity {
                 return true;
 
             case R.id.log_out:
-//                final Intent intent_logOut = new Intent(this, DbIntentService.class);
-//                intent_logOut.setAction(DbIntentService.USER_LOGGING_OUT);
-//                //    ((User)RuneNames.getUser()).setLoggedIn(false);
-//
-//                //TODO call the async service to set the user isLoggedIn attribute in DB as FALSE
-//                item.setChecked(true);
-//                startService(intent_logOut);
+                //Right now user is logging out only on the device level
+                SharedPreferences.Editor editor = UiUtils.getEditor(this);
+                editor.putBoolean(UiUtils.LOGGED_IN, false);
+                editor.commit();
+                item.setChecked(true);
+                if (this.getClass().getCanonicalName().contains("User")) {
+                    this.recreate();
+                }
                 return true;
 
             default:

@@ -10,6 +10,7 @@ import android.util.Log;
 
 import com.google.albertasights.models.Place;
 
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -68,7 +69,7 @@ public class MapViewModel extends ViewModel {
     }
 
     public LiveData<LinkedList<String>>  getLoved () {
-        Log.d(TAG, "enter getLoved");
+     //   Log.d(TAG, "enter getLoved");
         return loved;
     }
 

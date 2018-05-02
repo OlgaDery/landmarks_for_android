@@ -24,6 +24,7 @@ import com.google.albertasights.R;
 import com.google.albertasights.ui.MapsActivity;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -188,6 +189,7 @@ public class UiUtils {
 
         ArrayList<String> lst = new ArrayList<>(receivedFilters.size());
         lst.addAll(receivedFilters);
+        Collections.sort(lst);
         // adding checkboxes dynamically
         //    filter.removeAllViews();
         ColorStateList colorStateList = new ColorStateList(
