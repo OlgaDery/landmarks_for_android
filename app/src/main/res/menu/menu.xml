@@ -12,12 +12,4 @@
         app:showAsAction="never"
         android:title="profile"/>
 
-    <item android:id="@+id/log_in"
-        app:showAsAction="never"
-        android:title="log in"/>
-
-    <item android:id="@+id/log_out"
-        app:showAsAction="never"
-        android:title="log out"/>
-
 </menu>

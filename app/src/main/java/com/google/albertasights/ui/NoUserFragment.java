@@ -31,12 +31,6 @@ import com.google.albertasights.R;
 public class NoUserFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
     private TextView text;
     private ImageView image;
     private Button regBtn;
@@ -60,10 +54,7 @@ public class NoUserFragment extends Fragment {
     // TODO: Rename and change types and number of parameters
     public static NoUserFragment newInstance(String param1, String param2) {
         NoUserFragment fragment = new NoUserFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
+
         return fragment;
     }
 
@@ -71,10 +62,6 @@ public class NoUserFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
     }
 
     @Override
@@ -108,19 +95,20 @@ public class NoUserFragment extends Fragment {
             public void onClick(View view) {
                 //   Log.d(TAG, "enter showFilters(View view)");
               Intent intent = new Intent(getActivity().getApplicationContext(), DBIntentService.class);
+              intent.putExtra(UiUtils.EMAIL, email.getText().toString());
+              intent.putExtra(UiUtils.PASSWORD, password.getText().toString());
+
               if (view.getTag().equals(UiUtils.LOG_IN)) {
                   Log.d(NoUserFragment.class.getCanonicalName(), "Log in event");
 
                   intent.setAction(UiUtils.LOG_IN);
-                  intent.putExtra(UiUtils.EMAIL, email.getText().toString());
-                  intent.putExtra(UiUtils.PASSWORD, password.getText().toString());
-                  getActivity().startService(intent);
               } else {
-                 // intent.setAction(UiUtils.CREATE_USER);
+                  intent.setAction(UiUtils.CREATE_USER);
                   Log.d(NoUserFragment.class.getCanonicalName(), "Create event");
               }
 
-                mListener.onLogInOrRegisterButtonClickedListener((String)view.getTag());
+              getActivity().startService(intent);
+              mListener.onLogInOrRegisterButtonClickedListener((String)view.getTag());
 
                 //    Log.d(TAG, "exit showFilters(View view)");
             }
@@ -158,7 +146,7 @@ public class NoUserFragment extends Fragment {
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnButtonClickedListener {
-        // TODO: Update argument type and name
+        // TODO: the action string should be formatted: actionName&&email&&passord
         void onLogInOrRegisterButtonClickedListener(String action);
     }
 }

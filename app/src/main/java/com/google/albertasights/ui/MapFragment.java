@@ -85,9 +85,10 @@ public class MapFragment extends Fragment implements
     //it helps to make the cluster more stable
     private boolean zoomingOut = true;
     private LinearLayout filter;
-    private RelativeLayout rr;
-    private RelativeLayout mapWrapper;
+  //  private RelativeLayout rr;
+  //  private RelativeLayout mapWrapper;
     private LinearLayout topWrapper;
+    private RelativeLayout bottomWr;
 
     private ImageButton showFilterSection;
     private ImageButton showFilters;
@@ -139,7 +140,6 @@ public class MapFragment extends Fragment implements
     private static final String KEY_SELECTED_FILTERS = "selected_fltrs";
     private static final String KEY_SELECT_POINTS_TO_SHOW = "select_points_to_show";
     //  private static final String KEY_PLACES = "places";
-    private static final String SPINNER_POSIT = "spinner_posit";
     private static final String SAVE_INFO_WINDOW = "save_i_w";
     private static final String STARTED_ANIMATION = "animation";
 
@@ -244,7 +244,6 @@ public class MapFragment extends Fragment implements
         viewModel.getPointsNamesToShow().observe(this, pointsToShowObserver);
 
         places.addAll(viewModel.getRecievedPoints().getValue());
-        Log.d(TAG, "places: "+places.size());
         Log.d(TAG, "exit onCreate(Bundle savedInstanceState)");
 
     }
@@ -309,16 +308,18 @@ public class MapFragment extends Fragment implements
         mMapFragment.getMapAsync(this);
         orientation = UiUtils.getOrientation(getActivity());
         deviceType = UiUtils.findScreenSize(getActivity());
-        rr = (RelativeLayout) v.findViewById(R.id.rr);
-        mapWrapper = (RelativeLayout) v.findViewById(R.id.mapWrapper);
+  //      rr = (RelativeLayout) v.findViewById(R.id.rr);
+    //    mapWrapper = (RelativeLayout) v.findViewById(R.id.mapWrapper);
+        bottomWr = (RelativeLayout) v.findViewById(R.id.wrapperBottom);
         topWrapper = (LinearLayout) v.findViewById(R.id.wrapperTop);
+
         showFilterSection = (ImageButton) v.findViewById(R.id.imageB);
-        showFilterSection.setImageResource(R.drawable.expand_more);
-        showFilterSection.getBackground().setAlpha(0);
-        showFilterSection.setColorFilter(new PorterDuffColorFilter(Color.BLACK, PorterDuff.Mode.SRC_IN));
+        showFilterSection.setImageResource(R.drawable.less);
+     //   showFilterSection.getBackground().setAlpha(0);
+        showFilterSection.setColorFilter(new PorterDuffColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN));
 
         showFilters = (ImageButton) v.findViewById(R.id.showFiltersOnly);
-        showFilters.setImageResource(R.drawable.filters);
+        showFilters.setImageResource(R.drawable.filter_new);
         showFilters.getBackground().setAlpha(0);
         showFilters.setTag(FILTERS);
 
@@ -334,18 +335,12 @@ public class MapFragment extends Fragment implements
 
         clearAll = (ImageButton) v.findViewById(R.id.clearMap);
         clearAll.setImageResource(R.drawable.close_trimmed);
-        clearAll.getBackground().setAlpha(0);
+       // clearAll.getBackground().setAlpha(0);
         clearAll.setTag(CLEAR_MAP);
-        clearAll.setColorFilter(new PorterDuffColorFilter(Color.BLACK, PorterDuff.Mode.SRC_IN));
+        clearAll.setColorFilter(new PorterDuffColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN));
 
-        //temporary remove buttons from the top
-        showFilterSection.setAlpha(0.0f);
-        clearAll.setAlpha(0.0f);
-  //      topWrapper.removeView(showFilterSection);
-//        topWrapper.removeView(showAll);
-//        topWrapper.removeView(clearAll);
-//        topWrapper.removeView(showLoved);
-//        topWrapper.removeView(showFilters);
+        //TODO temporary remove buttons from the bottom
+        bottomWr.removeAllViews();
 
         filter = (LinearLayout) v.findViewById(R.id.filters);
 
@@ -409,8 +404,6 @@ public class MapFragment extends Fragment implements
             public void onClick(View v) {
                 Log.d(TAG, "enter onClick imageButtons(View view) ");
                 String button =((ImageButton) v).getTag().toString();
-                showFilterSection.setAlpha(1.0f);
-                clearAll.setAlpha(1.0f);
 
                 if (current_filter.equals(button)) {
                     return;
@@ -428,14 +421,19 @@ public class MapFragment extends Fragment implements
                     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
                     if (prefs.contains(UiUtils.LOGGED_IN)) {
                         Log.i(TAG, "user logged in: "+ prefs.getBoolean(UiUtils.LOGGED_IN, true));
+                        Log.i(TAG, "email: "+ prefs.getString(UiUtils.EMAIL, "email"));
+                        Log.i(TAG, "password: "+ prefs.getString(UiUtils.PASSWORD, "psw"));
                         if (prefs.getBoolean(UiUtils.LOGGED_IN, true)==true) {
                             filters.clear();
                             filters.put(LOVED, true);
                             viewModel.updatePointsToShow(new LinkedList<String>());
+                        } else {
+                            onInfoViewExpanded(UiUtils.LOG_IN, "");
+                            return;
                         }
                     } else {
                         //UiUtils.showToast(getActivity(), "To use this option, please log in or create an account");
-                        onInfoViewExpanded(UiUtils.LOG_IN, "");
+                        onInfoViewExpanded(UiUtils.CREATE_USER, "");
                         return;
                     }
 
@@ -449,6 +447,14 @@ public class MapFragment extends Fragment implements
                     filters.clear();
                     filters.put(CLEAR_MAP, showFiltersSidebar);
                 }
+
+                try{
+                    bottomWr.addView(showFilterSection);
+                    bottomWr.addView(clearAll);
+                } catch(Exception e) {
+                    Log.d(TAG, "buttons already there");
+                }
+
                 filtersModified = true;
                 selectedFilters.clear();
                 viewModel.updateFilterMap(filters);
@@ -481,6 +487,7 @@ public class MapFragment extends Fragment implements
                     filters.clear();
                     filters.put(current_filter, !showFiltersSidebar);
                 }
+
                 viewModel.updateFilterMap(filters);
 
                 //    Log.d(TAG, "exit showFilters(View view)");
@@ -644,27 +651,26 @@ public class MapFragment extends Fragment implements
 
         Log.d(TAG, "enter updateLocationUI");
 
-// set visibility for buttons
-//        if (places.size()>0) { //&& selectPointsToShow==true
-//            showFilterSection.setAlpha(1.0f);
-//        }
-        //TODO WHY FALSE ???????
-        Log.d(TAG, "show sidebar: " + newFilter.values().contains(Boolean.TRUE));
-
-        // logic to process filters (add/remove element with filters, change the list of filters, change the buttons color)
         if (!newFilter.isEmpty()) {
 
-            showFilterSection.setAlpha(1.0f);
-            clearAll.setAlpha(1.0f);
+            try {
+                bottomWr.addView(showFilterSection);
+                bottomWr.addView(clearAll);
+            } catch (Exception e ) {
+
+            }
+
+            if (newFilter.values().contains(true)) {
+                showFilterSection.setImageResource(R.drawable.less);
+            } else {
+                showFilterSection.setImageResource(R.drawable.more);
+            }
+
             ArrayList<String> temp = new ArrayList<String>(0);
             temp.addAll(newFilter.keySet());
             receivedFilters.clear();
             Log.d(TAG, "current filter: " + temp.get(0));
-//           Log.d(TAG, "sidebar modified: "+filterSidebarModified);
-//           Log.d(TAG, "active filters modified: "+filtersModified);
-         //   SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
-         //   Log.i(TAG, "selected points: "+prefs.getStringSet
-          //          (UiUtils.SELECTED_POINTS, new HashSet<String>()).size());
+
 
             if (filtersModified==true) {
 
@@ -692,8 +698,7 @@ public class MapFragment extends Fragment implements
 
                 } else if (newFilter.containsKey(CLEAR_MAP)) {
                     // TODO!!!!!!!!!!!!!!
-                    showFilterSection.setAlpha(0.0f);
-                    clearAll.setAlpha(0.0f);
+                    bottomWr.removeAllViews();
 
                     filter.removeAllViews();
                     filter.getLayoutParams().height = 0;
@@ -712,6 +717,7 @@ public class MapFragment extends Fragment implements
                     viewModel.updatePointsToShow(lst);
                     filters.clear();
                     showFiltersSidebar = false;
+                    current_filter="";
                     filterSidebarModified = false;
                     filtersModified = false;
                     return;

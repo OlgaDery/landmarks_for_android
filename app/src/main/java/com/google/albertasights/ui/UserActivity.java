@@ -15,14 +15,13 @@ import android.util.Log;
 import com.google.albertasights.R;
 import com.google.albertasights.models.User;
 
-public class UserActivity extends MenuActivity implements NoUserFragment.OnButtonClickedListener,
-        UserFragment.OnUserUpdateListener, EnterUserFragment.OnSubmitUserListener{
+public class UserActivity extends MenuActivity implements NoUserFragment.OnButtonClickedListener, UserFragment.OnUserUpdateOrLogoutListener, EnterUserFragment.OnSubmitUserListener{
 
 
     private Fragment logInFragment;
     private Fragment userDataFragment;
     private Fragment modifYUserDataFragment;
-    private Fragment statusFragment;
+    private Fragment progressFragment;
     private User user;
     private BroadcastReceiver receiver;
     private UserViewModel viewModel;
@@ -37,10 +36,10 @@ public class UserActivity extends MenuActivity implements NoUserFragment.OnButto
         logInFragment = new NoUserFragment();
         userDataFragment = new UserFragment();
         modifYUserDataFragment = new EnterUserFragment();
-        statusFragment = new StatusBarFragment();
+        progressFragment = new StatusBarFragment();
         viewModel = ViewModelProviders.of(this).get(UserViewModel.class);
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        if (prefs.getBoolean(UiUtils.LOGGED_IN, true)==false) {
+        if (viewModel.getUser().getValue()!=null && prefs.getBoolean(UiUtils.LOGGED_IN, true)==false) {
             User u = viewModel.getUser().getValue();
             u.setLoggedIn(false);
             viewModel.updateUser(u);
@@ -76,35 +75,38 @@ public class UserActivity extends MenuActivity implements NoUserFragment.OnButto
         } else {
             //activity created the first time, no data exist in the ModelView
             //TODO
-            if (getIntent().getExtras().getSerializable(UiUtils.USER)!= null) {
+            if (getIntent().getExtras()!= null) {
                 //If user exists in SharedPreferences
-                user = (User) getIntent().getExtras().getSerializable(UiUtils.USER);
-                viewModel.updateUser(user);
-                if (user.getLoggedIn()==true) {
-                    //User logged in, adding UserFragment
+                if ((User) getIntent().getExtras().getSerializable(UiUtils.USER)!=null)  {
+                    user = (User) getIntent().getExtras().getSerializable(UiUtils.USER);
+                    viewModel.updateUser(user);
+                    if (user.getLoggedIn()==true) {
+                        //User logged in, adding UserFragment
 //                    Log.d(TAG, user.getEmail());
 //                    Log.d(TAG, user.getFirstName());
 //                    Log.d(TAG, user.getLastName());
 //                    Log.d(TAG, user.getRole());
-                    Log.d(TAG, "user logged in, adding the User Fragment");
-                    //   userDataFragment = new UserFragment();
-                    //   userDataFragment.setArguments(getIntent().getExtras());
+                        Log.d(TAG, "user logged in, adding the User Fragment");
+                        //   userDataFragment = new UserFragment();
+                        //   userDataFragment.setArguments(getIntent().getExtras());
 
-                    transaction.add(R.id.user_container, userDataFragment).commit();
-                } else {
-                    Log.d(TAG, "user exists but not logged in");
-                 //   logInFragment = new NoUserFragment();
-                    //    logInFragment.setArguments(getIntent().getExtras());
-                    transaction.add(R.id.user_container, logInFragment).commit();
-                }
-            } else if (getIntent().getAction().equals(UiUtils.CREATE_USER)) {
-                if (getIntent().getExtras().getBoolean(UiUtils.BACK_TO_MAP)==true) {
-                    viewModel.updateDestination(UiUtils.BACK_TO_MAP);
+                        transaction.add(R.id.user_container, userDataFragment).commit();
+                    } else {
+                        Log.d(TAG, "user exists but not logged in");
+                        //   logInFragment = new NoUserFragment();
+                        //    logInFragment.setArguments(getIntent().getExtras());
+                        transaction.add(R.id.user_container, logInFragment).commit();
+                    }
+                } else if (getIntent().getAction()!=null) {
+                    if (getIntent().getExtras().getBoolean(UiUtils.BACK_TO_MAP)==true) {
+                        viewModel.updateDestination(UiUtils.BACK_TO_MAP);
 
-                } else if (getIntent().getExtras().getBoolean(UiUtils.BACK_TO_POINT)==true) {
-                    viewModel.updateDestination(UiUtils.BACK_TO_POINT);
+                    } else if (getIntent().getExtras().getBoolean(UiUtils.BACK_TO_POINT)==true) {
+                        viewModel.updateDestination(UiUtils.BACK_TO_POINT);
+                    }
+                    transaction.add(R.id.user_container, modifYUserDataFragment).commit();
                 }
-                transaction.add(R.id.user_container, modifYUserDataFragment).commit();
+
 
             } else {
                     //User does not exist and has to be set
@@ -126,18 +128,18 @@ public class UserActivity extends MenuActivity implements NoUserFragment.OnButto
 
                 Log.d(TAG, "enter onReceive(Context context, Intent intent)");
                 if (intent.getAction().equals(UiUtils.USER_CREATED)||intent.getAction().equals(UiUtils.LOG_IN)) {
-                    Log.i(TAG, "destination: "+ viewModel.getDestination().getValue());
-                    if (viewModel.getDestination().getValue()!=null && viewModel.getDestination().getValue().length()>2) {
-
-                        if (viewModel.getDestination().getValue().equals(UiUtils.BACK_TO_MAP)) {
-                            Intent i = new Intent(getApplicationContext(), MapsActivity.class);
-                            startActivity(i);
-
-                        } else if (viewModel.getDestination().getValue().equals(UiUtils.BACK_TO_POINT)) {
-
-                        }
-                        viewModel.updateDestination(new String());
-                    } else {
+//                    Log.i(TAG, "destination: "+ viewModel.getDestination().getValue());
+//                    if (viewModel.getDestination().getValue()!=null && viewModel.getDestination().getValue().length()>2) {
+//
+//                        if (viewModel.getDestination().getValue().equals(UiUtils.BACK_TO_MAP)) {
+//                            Intent i = new Intent(getApplicationContext(), MapsActivity.class);
+//                            startActivity(i);
+//
+//                        } else if (viewModel.getDestination().getValue().equals(UiUtils.BACK_TO_POINT)) {
+//
+//                        }
+//                        viewModel.updateDestination(new String());
+//                    } else {
                         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
                         //TODO the broadcast may receive the User data
                         if (intent.getSerializableExtra(UiUtils.USER)!=null) {
@@ -163,7 +165,7 @@ public class UserActivity extends MenuActivity implements NoUserFragment.OnButto
 
                     Log.d(TAG, "exit onReceive(Context context, Intent intent)");
                 }
-            }
+          //  }
 
         };
 
@@ -198,14 +200,15 @@ public class UserActivity extends MenuActivity implements NoUserFragment.OnButto
         Log.i(TAG, "enter onLogInOrRegisterButtonClickedListener()");
         viewModel.updateAction(action);
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        if (action.equals(UiUtils.LOG_IN)) {
-            //show the fragment with user data
-            transaction.replace(R.id.user_container, statusFragment);
-        } else if (action.equals(UiUtils.CREATE_USER)) {
-            //TODO show the 3d fragment with forms
-         //   modifYUserDataFragment = new EnterUserFragment();
-            transaction.replace(R.id.user_container, modifYUserDataFragment);
-        }
+        transaction.replace(R.id.user_container, progressFragment);
+//        if (action.equals(UiUtils.LOG_IN)) {
+//            //show the fragment with user data
+//
+//        } else if (action.equals(UiUtils.CREATE_USER)) {
+//            //TODO show the 3d fragment with forms
+//         //   modifYUserDataFragment = new EnterUserFragment();
+//            transaction.replace(R.id.user_container, modifYUserDataFragment);
+//        }
         transaction.addToBackStack(null);
 // Commit the transaction
         transaction.commit();
@@ -214,15 +217,27 @@ public class UserActivity extends MenuActivity implements NoUserFragment.OnButto
     }
 
     @Override
-    public void onUserUpdateListener() {
+    public void onUserUpdateListener(String action) {
         //here is the listener from UserFragment
-        Log.i(TAG, "enter onUserUpdateListener()");
-        viewModel.updateAction(UiUtils.UPDATE_USER);
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.user_container, modifYUserDataFragment);
-        transaction.addToBackStack(null);
+        Log.i(TAG, "enter onUserUpdateListener(String action)");
+        if (action.equals(UiUtils.LOG_OUT)) {
+            SharedPreferences.Editor editor = UiUtils.getEditor(this);
+            editor.putBoolean(UiUtils.LOGGED_IN, false);
+            editor.commit();
+            viewModel.updateAction(null);
+            viewModel.updateUser(null);
+            Intent i = new Intent(this, MapsActivity.class);
+            startActivity(i);
+
+        } else {
+            viewModel.updateAction(UiUtils.UPDATE_USER);
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            transaction.replace(R.id.user_container, modifYUserDataFragment);
+            transaction.addToBackStack(null);
 // Commit the transaction
-        transaction.commit();
+            transaction.commit();
+        }
+
         Log.i(TAG, "exit onUserUpdateListener()");
 
     }
@@ -233,7 +248,7 @@ public class UserActivity extends MenuActivity implements NoUserFragment.OnButto
         Log.i(TAG, "enter onSubmitUser()");
         viewModel.updateAction(UiUtils.USER_CREATED);
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.user_container, statusFragment);
+        transaction.replace(R.id.user_container, progressFragment);
         transaction.addToBackStack(null);
 // Commit the transaction
         transaction.commit();

@@ -2,12 +2,7 @@ package com.google.albertasights.ui;
 
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.SharedPreferences;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -16,22 +11,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.google.albertasights.R;
 import com.google.albertasights.models.User;
 
-import java.io.Serializable;
-import java.util.Map;
-
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link UserFragment.OnUserUpdateListener} interface
+ * {@link OnUserUpdateOrLogoutListener} interface
  * to handle interaction events.
  * Use the {@link UserFragment#newInstance} factory method to
  * create an instance of this fragment.
@@ -51,10 +39,9 @@ public class UserFragment extends Fragment {
     private TextView lastName;
     private TextView role;
     private Button button1;
-    private LinearLayout layout;
-    private ProgressBar prBar;
+    private Button button2;
 
-    private OnUserUpdateListener mListener;
+    private OnUserUpdateOrLogoutListener mListener;
 
     public UserFragment() {
         // Required empty public constructor
@@ -99,41 +86,36 @@ public class UserFragment extends Fragment {
         // Inflate the layout for this fragment
         Log.d(TAG, "enter onCreateView");
         View view = inflater.inflate(R.layout.fragment_user, container, false);
-        layout = (LinearLayout) view.findViewById(R.id.user_data);
+      //  layout = (LinearLayout) view.findViewById(R.id.user_data);
         email = (TextView) view.findViewById(R.id.email_data);
         lastName = (TextView) view.findViewById(R.id.last_name_data);
         firstName = (TextView) view.findViewById(R.id.first_name_data);
         role = (TextView) view.findViewById(R.id.role_data);
         button1 = (Button)view.findViewById(R.id.updt_button);
+        button2 = (Button)view.findViewById(R.id.log_out);
         if (viewModel.getUser().getValue()!=null) {
             updateUI(viewModel.getUser().getValue());
         }
-        else {
-          //  prBar = new ProgressBar(getActivity());
-            RelativeLayout.LayoutParams lp1 = new RelativeLayout.LayoutParams
-                    (RelativeLayout.LayoutParams.WRAP_CONTENT,
-                            RelativeLayout.LayoutParams.WRAP_CONTENT);
 
-            lp1.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
-         //   prBar.setLayoutParams(lp1);
-         //   layout.addView(prBar);
-        }
         View.OnClickListener lstn = new View.OnClickListener() {
             public void onClick(View view) {
-                onUpdateUserButtonPressed();
+                onUpdateUserButtonPressed(view.getTag().toString());
             }
         };
         button1.setOnClickListener(lstn);
+        button1.setTag(UiUtils.UPDATE_USER);
+        button2.setOnClickListener(lstn);
+        button2.setTag(UiUtils.LOG_OUT);
 
         Log.d(TAG, "exit onCreateView");
         return view;
     }
 
     // TODO: Rename method, update argument and hook method into UI event
-    public void onUpdateUserButtonPressed() {
+    public void onUpdateUserButtonPressed(String tag) {
         Log.d(TAG, "enter onUpdateUserButtonPressed");
         if (mListener != null) {
-            mListener.onUserUpdateListener();
+            mListener.onUserUpdateListener(tag);
         }
     }
 
@@ -141,8 +123,8 @@ public class UserFragment extends Fragment {
     public void onAttach(Context context) {
         Log.d(TAG, "enter onAttach(Context context)");
         super.onAttach(context);
-        if (context instanceof OnUserUpdateListener) {
-            mListener = (OnUserUpdateListener) context;
+        if (context instanceof OnUserUpdateOrLogoutListener) {
+            mListener = (OnUserUpdateOrLogoutListener) context;
 
         } else {
             throw new RuntimeException(context.toString()
@@ -160,9 +142,9 @@ public class UserFragment extends Fragment {
         Log.d(TAG, "enter onDetach(Context context)");
     }
 
-    public interface OnUserUpdateListener {
+    public interface OnUserUpdateOrLogoutListener {
         // TODO: Update argument type and name
-        void onUserUpdateListener();
+        void onUserUpdateListener(String action);
     }
 
     private void updateUI (User user) {

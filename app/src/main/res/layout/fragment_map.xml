@@ -22,13 +22,6 @@
             android:id="@+id/wrapperTop"
             android:layout_alignParentTop="true"
             >
-
-            <ImageButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/imageB"
-                />
-
             <Space
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
@@ -60,16 +53,11 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/showAll"
                 />
+
             <Space
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
                 android:layout_width="wrap_content"/>
-
-            <ImageButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/clearMap"
-                />
 
         </LinearLayout>
 
@@ -111,6 +99,40 @@
 
         </RelativeLayout>
 
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:id="@+id/wrapperBottom"
+            android:layout_alignParentBottom="true"
+            >
+
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/imageB"
+                android:background="@drawable/button_background"
+                android:layout_alignParentRight="true"
+                android:layout_marginRight="16dp"
+                android:elevation="5dp"
+                />
+
+
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="16dp"
+                android:background="@drawable/button_background"
+                android:layout_alignParentRight="true"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp"
+                android:layout_below="@+id/imageB"
+                android:elevation="5dp"
+                android:id="@+id/clearMap"
+                />
+
+        </RelativeLayout>
 
 
     </RelativeLayout>

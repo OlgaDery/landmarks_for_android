@@ -69,6 +69,8 @@ public class DBIntentService extends IntentService {
             } else if (UiUtils.REMOVE_POINT.equals(action)) {
                 final String param1 = intent.getStringExtra(UiUtils.POINT_ID);
                 removeFromSelectedPoint(param1);
+            } else if (UiUtils.LOG_IN.equals(action)) {
+                logIn(intent.getStringExtra(UiUtils.EMAIL), intent.getStringExtra(UiUtils.PASSWORD));
             }
         }
         Log.d(TAG, "exit onHandleIntent(Intent intent)");
