@@ -77,7 +77,7 @@ public class PointFragment extends Fragment {
 //            mParam2 = getArguments().getString(ARG_PARAM2);
 //        }
         viewModel = ViewModelProviders.of(getActivity()).get(MapViewModel.class);
-        point = viewModel.getPointToSee().getValue();
+        viewModel.updateCurrentFragment(this.getClass().getSimpleName());
         Log.d(TAG, "exit onCreate(Bundle savedInstanceState)");
     }
 
@@ -87,6 +87,7 @@ public class PointFragment extends Fragment {
         //getting the type and the orientation of device
 
         Log.d(TAG, "enter  onCreateView");
+        point = viewModel.getPointToSee().getValue();
         View v = inflater.inflate(R.layout.activity_point, container, false);
         orientation = UiUtils.getOrientation(getActivity());
         deviceType = UiUtils.findScreenSize(getActivity());
@@ -105,14 +106,14 @@ public class PointFragment extends Fragment {
         } else {
             if (deviceType.equals("tablet")) {
                 Picasso.with(getActivity())
-                        .load(R.raw.banner)
+                        .load(R.raw.mallorn1)
                         .resize(300, metrics.heightPixels)
                         //    .onlyScaleDown()
                         .centerCrop()
                         .into(banner);
             } else {
                 Picasso.with(getActivity())
-                        .load(R.raw.banner)
+                        .load(R.raw.mallorn1)
                         .resize(300, metrics.heightPixels)
                         //    .onlyScaleDown()
                         .centerCrop()

@@ -9,6 +9,7 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import com.google.albertasights.R;
@@ -20,6 +21,7 @@ import com.google.android.gms.maps.model.LatLng;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 
 public class MapsActivity extends MenuActivity implements MapFragment.OnPointDataExtendedListener,
         PointFragment.OnPointFragmentInteractionListener, NoUserFragment.OnButtonClickedListener {
@@ -45,8 +47,27 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
         //there may be two options: the activity created the first time whan the app just started, or it is recreated. The behaviour
         //will be different.
         Log.d(TAG, "enter onCreate");
+
+        Log.i(TAG, "fragments: " + getSupportFragmentManager().getFragments().size());
+//        Fragment f = getSupportFragmentManager ().findFragmentByTag("MAP");
+//        try {
+//            if (f==null) {
+//                f = new MapFragment();
+//
+//                Log.i(TAG, "new fr");
+//            } else {
+//                Log.i(TAG, "fragment existed");
+//            };
+//        } catch (Exception e) {
+//            Log.i(TAG, "fragment is null");
+//            mapFragment = new MapFragment();
+//            Log.i(TAG, "new fr ");
+//        }
+//
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
 
         //TODO check the shared preferences
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -56,11 +77,11 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
             LinkedList <String> lst = new LinkedList<>();
             lst.addAll(prefs.getStringSet(UiUtils.SELECTED_POINTS, new HashSet<String>()));
             viewModel.updateLoved(lst);
-            Log.i(TAG, "selected points added: "+ viewModel.getLoved().getValue().size());
+          //  Log.i(TAG, "selected points added: "+ viewModel.getLoved().getValue().size());
         }
         if (prefs.contains(UiUtils.LOGGED_IN)) {
 
-            Log.i(TAG, "user logged in: "+ prefs.getBoolean(UiUtils.LOGGED_IN, true));
+          //  Log.i(TAG, "user logged in: "+ prefs.getBoolean(UiUtils.LOGGED_IN, true));
         }
 
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
@@ -74,9 +95,9 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
             startService(intent);
             // start the animation for the period of data loading
             transaction.add(R.id.map_container, progressFr).commit();
-        } else if (viewModel.getPointToSee().getValue()!=null){
-            transaction.add(R.id.map_container, pointFr).commit();
-        }
+       } //else if (viewModel.getPointToSee().getValue()!=null){
+//            transaction.add(R.id.map_container, pointFr).commit();
+//        }
 
         // Retrieve the content view that renders the map.
 
@@ -159,6 +180,10 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
                         Log.d(TAG, "user added");
                         UiUtils.showToast(getApplicationContext(), "Success!");
                         getSupportFragmentManager().beginTransaction().replace(R.id.map_container, mapFragment).commit();
+                    //    getSupportFragmentManager().beginTransaction().detach(mapFragment).commit();
+                     //   getSupportFragmentManager().beginTransaction().attach(mapFragment).commit();
+
+                                //replace(R.id.map_container, mapFragment).commit();
 
                     } else {
                         //no User data received from the service, the reason may be either an error or the lack of user data
@@ -233,7 +258,7 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
         intentFilter.addAction(UiUtils.POINT_ADDED);
         intentFilter.addAction(UiUtils.POINT_REMOVED);
         intentFilter.addAction(UiUtils.LOG_IN);
-        intentFilter.addAction(UiUtils.CREATE_USER);
+        intentFilter.addAction(UiUtils.USER_CREATED);
 
         // Register the receiver and the intent filter.
         registerReceiver(receiver,
@@ -253,6 +278,10 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
     @Override
     protected void onPause () {
         Log.d(TAG, "enter onPause ()");
+        Log.i(TAG, "fragments: " + getSupportFragmentManager().getFragments().size());
+        for (Fragment f : getSupportFragmentManager().getFragments()) {
+            Log.i(TAG, "id"+ f.getId());
+        }
         super.onPause();
         this.unregisterReceiver(this.receiver);
         Log.d(TAG, "exit onPause()");
@@ -271,7 +300,7 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
     @Override
     protected void onDestroy() {
         Log.d(TAG, "enter onDestroy()");
-        viewModel.updatePoint(null);
+      //  viewModel.updatePoint(null);
         super.onDestroy();
         Log.d(TAG, "exit onDestroy()");
     }
@@ -300,7 +329,9 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
 
     @Override
     public void onLogInOrRegisterButtonClickedListener(String action) {
+        Log.i(TAG, "enter onLogInOrRegisterButtonClickedListener(String action)");
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.map_container, new StatusBarFragment()).commit();
+        transaction.replace(R.id.map_container, progressFr).commit();
+        Log.i(TAG, "exit onLogInOrRegisterButtonClickedListener(String action)");
     }
 }

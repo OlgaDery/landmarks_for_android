@@ -244,6 +244,7 @@ public class MapFragment extends Fragment implements
         viewModel.getPointsNamesToShow().observe(this, pointsToShowObserver);
 
         places.addAll(viewModel.getRecievedPoints().getValue());
+        viewModel.updateCurrentFragment(this.getClass().getSimpleName());
         Log.d(TAG, "exit onCreate(Bundle savedInstanceState)");
 
     }
@@ -798,8 +799,8 @@ public class MapFragment extends Fragment implements
             }
 
         }
-        saveInfoWindow=false;
-        selectedMarkerID = "";
+    //    saveInfoWindow=false;
+    //    selectedMarkerID = "";
         stabilizeVieWithZoom();
         Log.d(TAG, "exit showClusters()");
 
@@ -878,8 +879,10 @@ public class MapFragment extends Fragment implements
             super.onClusterItemRendered(item, marker);
             if (saveInfoWindow==true) {
                 if (selectedMarkerID.equals(marker.getTitle())) {
-                    //    Log.i(TAG, "got it!");
+                    Log.i(TAG, "got it!");
                     marker.showInfoWindow();
+                    selectedMarkerID = "";
+                    saveInfoWindow=false;
 
                 }
             }

@@ -39,40 +39,40 @@ public class UserActivity extends MenuActivity implements NoUserFragment.OnButto
         progressFragment = new StatusBarFragment();
         viewModel = ViewModelProviders.of(this).get(UserViewModel.class);
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        if (viewModel.getUser().getValue()!=null && prefs.getBoolean(UiUtils.LOGGED_IN, true)==false) {
-            User u = viewModel.getUser().getValue();
-            u.setLoggedIn(false);
-            viewModel.updateUser(u);
-            transaction.add(R.id.user_container, logInFragment).commit();
-            return;
-        }
+//        if (viewModel.getUser().getValue()!=null && prefs.getBoolean(UiUtils.LOGGED_IN, true)==false) {
+//            User u = viewModel.getUser().getValue();
+//            u.setLoggedIn(false);
+//            viewModel.updateUser(u);
+//            transaction.add(R.id.user_container, logInFragment).commit();
+//            return;
+//        }
 
-        if (viewModel.getUser().getValue()!=null) {
-
-            if (viewModel.getCurrentAction().getValue()!=null) {
-                //current action has already ben set, selecting the fragment
-                switch (viewModel.getCurrentAction().getValue()) {
-                    case UiUtils.LOG_IN:
-                        transaction.add(R.id.user_container, userDataFragment).commit();
-                        break;
-
-                    case UiUtils.UPDATE_USER:
-                        transaction.add(R.id.user_container, modifYUserDataFragment).commit();
-                       break;
-
-                    case UiUtils.LOG_OUT:
-                        //TODO redirect to map
-                        break;
-
-                    default:
-                        transaction.add(R.id.user_container, userDataFragment).commit();
-                        break;
-                }
-            } else {
-                //TODO action has not been set but user exists, so we likely have to show user`s data
-                transaction.add(R.id.user_container, userDataFragment).commit();
-            }
-        } else {
+//        if (viewModel.getUser().getValue()!=null) {
+//
+//            if (viewModel.getCurrentAction().getValue()!=null) {
+//                //current action has already ben set, selecting the fragment
+//                switch (viewModel.getCurrentAction().getValue()) {
+//                    case UiUtils.LOG_IN:
+//                        transaction.add(R.id.user_container, userDataFragment).commit();
+//                        break;
+//
+//                    case UiUtils.UPDATE_USER:
+//                        transaction.add(R.id.user_container, modifYUserDataFragment).commit();
+//                       break;
+//
+//                    case UiUtils.LOG_OUT:
+//                        //TODO redirect to map
+//                        break;
+//
+//                    default:
+//                        transaction.add(R.id.user_container, userDataFragment).commit();
+//                        break;
+//                }
+//            } else {
+//                //TODO action has not been set but user exists, so we likely have to show user`s data
+//                transaction.add(R.id.user_container, userDataFragment).commit();
+//            }
+//        } else {
             //activity created the first time, no data exist in the ModelView
             //TODO
             if (getIntent().getExtras()!= null) {
@@ -97,16 +97,7 @@ public class UserActivity extends MenuActivity implements NoUserFragment.OnButto
                         //    logInFragment.setArguments(getIntent().getExtras());
                         transaction.add(R.id.user_container, logInFragment).commit();
                     }
-                } else if (getIntent().getAction()!=null) {
-                    if (getIntent().getExtras().getBoolean(UiUtils.BACK_TO_MAP)==true) {
-                        viewModel.updateDestination(UiUtils.BACK_TO_MAP);
-
-                    } else if (getIntent().getExtras().getBoolean(UiUtils.BACK_TO_POINT)==true) {
-                        viewModel.updateDestination(UiUtils.BACK_TO_POINT);
-                    }
-                    transaction.add(R.id.user_container, modifYUserDataFragment).commit();
                 }
-
 
             } else {
                     //User does not exist and has to be set
@@ -116,7 +107,7 @@ public class UserActivity extends MenuActivity implements NoUserFragment.OnButto
                     // Add the fragment to the 'fragment_container' FrameLayout
                     transaction.add(R.id.user_container, logInFragment).commit();
                 }
-        }
+//        }
 
 //        if (savedInstanceState != null) {
 //            return;
@@ -209,7 +200,7 @@ public class UserActivity extends MenuActivity implements NoUserFragment.OnButto
 //         //   modifYUserDataFragment = new EnterUserFragment();
 //            transaction.replace(R.id.user_container, modifYUserDataFragment);
 //        }
-        transaction.addToBackStack(null);
+      //  transaction.addToBackStack(null);
 // Commit the transaction
         transaction.commit();
         Log.i(TAG, "exit onLogInOrRegisterButtonClickedListener()");

@@ -38,6 +38,7 @@ public class NoUserFragment extends Fragment {
     private String deviceType;
 
     private OnButtonClickedListener mListener;
+    private static final String TAG = NoUserFragment.class.getSimpleName();
 
     public NoUserFragment() {
         // Required empty public constructor
@@ -60,7 +61,9 @@ public class NoUserFragment extends Fragment {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        Log.d(TAG, "enter onCreate(Bundle savedInstanceState)");
         super.onCreate(savedInstanceState);
+        Log.d(TAG, "exit onCreate(Bundle savedInstanceState)");
 
     }
 
@@ -68,6 +71,7 @@ public class NoUserFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
+        Log.d(TAG, "enter onCreateView");
         View view = inflater.inflate(R.layout.fragment_no_user, container, false);
         final EditText email = (EditText) view.findViewById(R.id.email);
         final EditText password = (EditText) view.findViewById(R.id.password);
@@ -115,12 +119,14 @@ public class NoUserFragment extends Fragment {
         };
         regBtn.setOnClickListener(lstn);
         logInButton.setOnClickListener(lstn);
+        Log.d(TAG, "exit onCreateView");
         return view;
     }
 
 
     @Override
     public void onAttach(Context context) {
+        Log.d(TAG, "enter onAttach");
         super.onAttach(context);
         if (context instanceof OnButtonClickedListener) {
             mListener = (OnButtonClickedListener) context;
@@ -128,12 +134,15 @@ public class NoUserFragment extends Fragment {
             throw new RuntimeException(context.toString()
                     + " must implement onLogInOrRegisterButtonClickedListener");
         }
+        Log.d(TAG, "exit onAttach");
     }
 
     @Override
     public void onDetach() {
+        Log.d(TAG, "enter onDetach");
         super.onDetach();
         mListener = null;
+        Log.d(TAG, "exit onDetach");
     }
     /**
      * This interface must be implemented by activities that contain this
