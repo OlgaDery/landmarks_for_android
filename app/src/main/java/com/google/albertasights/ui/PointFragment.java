@@ -107,14 +107,14 @@ public class PointFragment extends Fragment {
             if (deviceType.equals("tablet")) {
                 Picasso.with(getActivity())
                         .load(R.raw.mallorn1)
-                        .resize(300, metrics.heightPixels)
+                        .resize(400, metrics.heightPixels)
                         //    .onlyScaleDown()
                         .centerCrop()
                         .into(banner);
             } else {
                 Picasso.with(getActivity())
                         .load(R.raw.mallorn1)
-                        .resize(300, metrics.heightPixels)
+                        .resize(380, metrics.heightPixels)
                         //    .onlyScaleDown()
                         .centerCrop()
                         .into(banner);

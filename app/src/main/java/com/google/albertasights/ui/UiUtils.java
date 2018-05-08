@@ -7,6 +7,9 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.preference.PreferenceManager;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.CompoundButtonCompat;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -252,6 +255,30 @@ public class UiUtils {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor editor = sharedPref.edit();
         return editor;
+    }
+
+    public static void manageFragments (Fragment fragmemt, FragmentManager fManager, boolean addToBackStack,
+                                        int containerID, String action) {
+        Log.d(TAG, "enter manageFragments");
+        Fragment newFr = fragmemt;
+        for (Fragment f: fManager.getFragments()) {
+            if (f.getClass().getName().equals(fragmemt.getClass().getName())) {
+                newFr = f;
+                Log.i(TAG, "the same fragm exists");
+                break;
+            }
+        }
+        FragmentTransaction transaction = fManager.beginTransaction();
+        if (action.equals("ADD")) {
+            transaction.add(containerID, newFr);
+        } else if (action.equals("REPLACE")) {
+            transaction.replace(containerID, newFr);
+        }
+        if (addToBackStack == true) {
+            transaction.addToBackStack(null);
+        }
+        transaction.commit();
+        Log.d(TAG, "exit manageFragments");
     }
 
 }

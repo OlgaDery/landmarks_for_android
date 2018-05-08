@@ -192,6 +192,7 @@ public class MapFragment extends Fragment implements
             currentZoom = savedInstanceState.getFloat(CURRENT_ZOOM);
             Log.i(TAG, "zoom: " + currentZoom);
             selectedMarkerID = savedInstanceState.getString("SELECTED_MARKER_ID");
+            current_filter = savedInstanceState.getString("CURRENT_FILTER");
             mCameraPosition = savedInstanceState.getParcelable(KEY_CAMERA_POSITION);
             Log.i(TAG, mCameraPosition.target.toString());
         //    places = (HashSet)savedInstanceState.getSerializable(UiUtils.PLACES);
@@ -266,6 +267,7 @@ public class MapFragment extends Fragment implements
         outState.putBoolean(KEY_SELECT_POINTS_TO_SHOW, selectPointsToShow);
         outState.putFloat(CURRENT_ZOOM, mMap.getCameraPosition().zoom);
         zoomIfRestarted = mMap.getCameraPosition().zoom;
+        outState.putString("CURRENT_FILTER", current_filter);
         //   outState.putBoolean(API_WAS_CALLED, apiNotCalled);
         outState.putBoolean(STARTED_ANIMATION, animationStarted);
 
@@ -709,7 +711,9 @@ public class MapFragment extends Fragment implements
                     for (Place p : places) {
                         lst.add(p.getName());
                     }
+                    Log.i(TAG, "current filter: "+ current_filter);
                     for (ImageButton b : buttons) {
+
                         if (b.getTag().equals(current_filter)) {
                             b.setColorFilter(new PorterDuffColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN));
                             break;

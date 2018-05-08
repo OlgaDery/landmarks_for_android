@@ -47,24 +47,6 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
         //there may be two options: the activity created the first time whan the app just started, or it is recreated. The behaviour
         //will be different.
         Log.d(TAG, "enter onCreate");
-
-        Log.i(TAG, "fragments: " + getSupportFragmentManager().getFragments().size());
-//        Fragment f = getSupportFragmentManager ().findFragmentByTag("MAP");
-//        try {
-//            if (f==null) {
-//                f = new MapFragment();
-//
-//                Log.i(TAG, "new fr");
-//            } else {
-//                Log.i(TAG, "fragment existed");
-//            };
-//        } catch (Exception e) {
-//            Log.i(TAG, "fragment is null");
-//            mapFragment = new MapFragment();
-//            Log.i(TAG, "new fr ");
-//        }
-//
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
@@ -84,7 +66,6 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
           //  Log.i(TAG, "user logged in: "+ prefs.getBoolean(UiUtils.LOGGED_IN, true));
         }
 
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         if (viewModel.getRecievedPoints().getValue()==null) {
             Intent intent = new Intent(this, RestIntentServer.class);
             intent.setAction(UiUtils.SUBMIT);
@@ -94,10 +75,12 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
             intent.putExtra(UiUtils.DISTANCE, String.valueOf(30));
             startService(intent);
             // start the animation for the period of data loading
-            transaction.add(R.id.map_container, progressFr).commit();
-       } //else if (viewModel.getPointToSee().getValue()!=null){
-//            transaction.add(R.id.map_container, pointFr).commit();
-//        }
+            //TODO fragment test
+            UiUtils.manageFragments(progressFr, getSupportFragmentManager(), false,
+                    R.id.map_container, "ADD");
+//            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+//            transaction.add(R.id.map_container, progressFr).commit();
+       }
 
         // Retrieve the content view that renders the map.
 
@@ -119,11 +102,12 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
                             lst1.add(p.getName());
                         }
                         viewModel.updatePointsToShow(lst1);
-                        getSupportFragmentManager().beginTransaction().replace(R.id.map_container,
-                                mapFragment).commit();
-                        // show toast if the service failed
-//                        UiUtils.showToast(getApplicationContext(),
-//                                "got the data");
+//                        getSupportFragmentManager().beginTransaction().replace(R.id.map_container,
+//                                mapFragment).commit();
+                        //TODO fragments
+                        UiUtils.manageFragments(mapFragment, getSupportFragmentManager(), false,
+                                R.id.map_container, "REPLACE");
+
 
                     } else {
                         UiUtils.showToast(getApplicationContext(),
@@ -175,13 +159,16 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
                     }
                 } else if (intent.getAction().equals(UiUtils.LOG_IN)||intent.getAction().equals(UiUtils.USER_CREATED)) {
 
-                    //TODO the broadcast may receive the User data
+                    // the broadcast may receive the User data
                     if (intent.getSerializableExtra(UiUtils.USER)!=null) {
                         Log.d(TAG, "user added");
                         UiUtils.showToast(getApplicationContext(), "Success!");
-                        getSupportFragmentManager().beginTransaction().replace(R.id.map_container, mapFragment).commit();
-                    //    getSupportFragmentManager().beginTransaction().detach(mapFragment).commit();
-                     //   getSupportFragmentManager().beginTransaction().attach(mapFragment).commit();
+                    //    getSupportFragmentManager().beginTransaction().replace(R.id.map_container, mapFragment).commit();
+
+                        //TODO fragment
+                        UiUtils.manageFragments(mapFragment, getSupportFragmentManager(), false,
+                                R.id.map_container, "REPLACE");
+
 
                                 //replace(R.id.map_container, mapFragment).commit();
 
@@ -280,7 +267,7 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
         Log.d(TAG, "enter onPause ()");
         Log.i(TAG, "fragments: " + getSupportFragmentManager().getFragments().size());
         for (Fragment f : getSupportFragmentManager().getFragments()) {
-            Log.i(TAG, "id"+ f.getId());
+            Log.i(TAG, "fragm"+ f.getClass().getName());
         }
         super.onPause();
         this.unregisterReceiver(this.receiver);
@@ -310,12 +297,17 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
     public void onPointDetailsSelected(String action) {
         Log.d(TAG, "enter onPointDetailsSelected(String name)");
         Log.i(TAG, "act: "+action);
+        //TODO fragments
         if (action.equals(UiUtils.LOG_IN) || action.equals(UiUtils.CREATE_USER)) {
-            getSupportFragmentManager().beginTransaction().replace(R.id.map_container,
-                    loginFragment).addToBackStack(null).commit();
+//            getSupportFragmentManager().beginTransaction().replace(R.id.map_container,
+//                    loginFragment).addToBackStack(null).commit();
+            UiUtils.manageFragments(loginFragment, getSupportFragmentManager(), true,
+                    R.id.map_container, "REPLACE");
         } else {
-            getSupportFragmentManager().beginTransaction().replace(R.id.map_container,
-                   pointFr).addToBackStack(null).commit();
+          //  getSupportFragmentManager().beginTransaction().replace(R.id.map_container,
+          //         pointFr).addToBackStack(null).commit();
+            UiUtils.manageFragments(pointFr, getSupportFragmentManager(), true,
+                    R.id.map_container, "REPLACE");
         }
 
         Log.d(TAG, "exit onPointDetailsSelected(String name)");
@@ -330,8 +322,11 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
     @Override
     public void onLogInOrRegisterButtonClickedListener(String action) {
         Log.i(TAG, "enter onLogInOrRegisterButtonClickedListener(String action)");
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.map_container, progressFr).commit();
+        //TODO fragments
+        UiUtils.manageFragments(progressFr, getSupportFragmentManager(), false,
+                R.id.map_container, "REPLACE");
+//        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+//        transaction.replace(R.id.map_container, progressFr).commit();
         Log.i(TAG, "exit onLogInOrRegisterButtonClickedListener(String action)");
     }
 }
