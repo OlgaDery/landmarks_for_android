@@ -88,13 +88,14 @@ public class MapFragment extends Fragment implements
   //  private RelativeLayout rr;
   //  private RelativeLayout mapWrapper;
     private LinearLayout topWrapper;
-    private RelativeLayout bottomWr;
+//    private RelativeLayout bottomWr;
 
-    private ImageButton showFilterSection;
+   // private ImageButton showFilterSection;
+  //  private ImageButton clearAll;
     private ImageButton showFilters;
     private ImageButton showLoved;
     private ImageButton showAll;
-    private ImageButton clearAll;
+
     private Map<String, Boolean> filters = new HashMap<String, Boolean>(1);
 
 
@@ -151,6 +152,7 @@ public class MapFragment extends Fragment implements
 
     private View.OnClickListener checkBoxListener;
     private View.OnClickListener filterButtonsListener;
+    private View.OnClickListener showMoreButtonsListener;
     private Set <ImageButton> buttons = new HashSet<>();
    // private Set <String> selectedByUser = new HashSet<>();
 
@@ -313,13 +315,8 @@ public class MapFragment extends Fragment implements
         deviceType = UiUtils.findScreenSize(getActivity());
   //      rr = (RelativeLayout) v.findViewById(R.id.rr);
     //    mapWrapper = (RelativeLayout) v.findViewById(R.id.mapWrapper);
-        bottomWr = (RelativeLayout) v.findViewById(R.id.wrapperBottom);
+    //    bottomWr = (RelativeLayout) v.findViewById(R.id.wrapperBottom);
         topWrapper = (LinearLayout) v.findViewById(R.id.wrapperTop);
-
-        showFilterSection = (ImageButton) v.findViewById(R.id.imageB);
-        showFilterSection.setImageResource(R.drawable.less);
-     //   showFilterSection.getBackground().setAlpha(0);
-        showFilterSection.setColorFilter(new PorterDuffColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN));
 
         showFilters = (ImageButton) v.findViewById(R.id.showFiltersOnly);
         showFilters.setImageResource(R.drawable.filter_new);
@@ -336,14 +333,10 @@ public class MapFragment extends Fragment implements
         showAll.getBackground().setAlpha(0);
         showAll.setTag(ALL);
 
-        clearAll = (ImageButton) v.findViewById(R.id.clearMap);
-        clearAll.setImageResource(R.drawable.close_trimmed);
-       // clearAll.getBackground().setAlpha(0);
-        clearAll.setTag(CLEAR_MAP);
-        clearAll.setColorFilter(new PorterDuffColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN));
+  //      clearAll.setColorFilter(new PorterDuffColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN));
 
         //TODO temporary remove buttons from the bottom
-        bottomWr.removeAllViews();
+  //      bottomWr.removeAllViews();
 
         filter = (LinearLayout) v.findViewById(R.id.filters);
 
@@ -451,12 +444,12 @@ public class MapFragment extends Fragment implements
                     filters.put(CLEAR_MAP, showFiltersSidebar);
                 }
 
-                try{
-                    bottomWr.addView(showFilterSection);
-                    bottomWr.addView(clearAll);
-                } catch(Exception e) {
-                    Log.d(TAG, "buttons already there");
-                }
+//                try{
+//                //    bottomWr.addView(showFilterSection);
+//                    bottomWr.addView(clearAll);
+//                } catch(Exception e) {
+//                    Log.d(TAG, "buttons already there");
+//                }
 
                 filtersModified = true;
                 selectedFilters.clear();
@@ -470,12 +463,12 @@ public class MapFragment extends Fragment implements
         showLoved.setOnClickListener(filterButtonsListener);
         showAll.setOnClickListener(filterButtonsListener);
         showFilters.setOnClickListener(filterButtonsListener);
-        clearAll.setOnClickListener(filterButtonsListener);
+      //  clearAll.setOnClickListener(filterButtonsListener);
         buttons.add(showAll);
         buttons.add(showFilters);
         buttons.add(showLoved);
 
-        View.OnClickListener showMoreButtonsListener = new View.OnClickListener() {
+        showMoreButtonsListener = new View.OnClickListener() {
             public void onClick(View view) {
                 //   Log.d(TAG, "enter showFilters(View view)");
 
@@ -497,7 +490,7 @@ public class MapFragment extends Fragment implements
             }
         };
 
-        showFilterSection.setOnClickListener(showMoreButtonsListener);
+     //   showFilterSection.setOnClickListener(showMoreButtonsListener);
         Log.d(TAG, "exit onCreateView");
         return v;
     }
@@ -656,18 +649,18 @@ public class MapFragment extends Fragment implements
 
         if (!newFilter.isEmpty()) {
 
-            try {
-                bottomWr.addView(showFilterSection);
-                bottomWr.addView(clearAll);
-            } catch (Exception e ) {
+//            try {
+//                bottomWr.addView(showFilterSection);
+//                bottomWr.addView(clearAll);
+//            } catch (Exception e ) {
+//
+//            }
 
-            }
-
-            if (newFilter.values().contains(true)) {
-                showFilterSection.setImageResource(R.drawable.less);
-            } else {
-                showFilterSection.setImageResource(R.drawable.more);
-            }
+//            if (newFilter.values().contains(true)) {
+//                showFilterSection.setImageResource(R.drawable.less);
+//            } else {
+//                showFilterSection.setImageResource(R.drawable.more);
+//            }
 
             ArrayList<String> temp = new ArrayList<String>(0);
             temp.addAll(newFilter.keySet());
@@ -700,8 +693,7 @@ public class MapFragment extends Fragment implements
                     }
 
                 } else if (newFilter.containsKey(CLEAR_MAP)) {
-                    // TODO!!!!!!!!!!!!!!
-                    bottomWr.removeAllViews();
+//                    bottomWr.removeAllViews();
 
                     filter.removeAllViews();
                     filter.getLayoutParams().height = 0;
@@ -711,13 +703,10 @@ public class MapFragment extends Fragment implements
                     for (Place p : places) {
                         lst.add(p.getName());
                     }
-                    Log.i(TAG, "current filter: "+ current_filter);
                     for (ImageButton b : buttons) {
 
-                        if (b.getTag().equals(current_filter)) {
-                            b.setColorFilter(new PorterDuffColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN));
-                            break;
-                        }
+                        // TODO!!!!!!!!!!!!!! Change
+                        b.setColorFilter(new PorterDuffColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN));
                     }
                     viewModel.updatePointsToShow(lst);
                     filters.clear();
@@ -730,7 +719,7 @@ public class MapFragment extends Fragment implements
 
                 if (newFilter.get(temp.get(0))==true) {
                     UiUtils.configureFilters(getActivity(), filter, deviceType,
-                            receivedFilters, selectedFilters, checkBoxListener, temp.get(0));
+                            receivedFilters, selectedFilters, checkBoxListener, temp.get(0), filterButtonsListener, showMoreButtonsListener);
                     Log.d(TAG, "1");
                 } else {
                     //new filter set, but filter sidebar is hidden
@@ -760,7 +749,8 @@ public class MapFragment extends Fragment implements
                     }
                 }
                 UiUtils.configureFilters(getActivity(), filter, deviceType,
-                        receivedFilters, selectedFilters, checkBoxListener, temp.get(0));
+                        receivedFilters, selectedFilters, checkBoxListener, temp.get(0), filterButtonsListener,
+                        showMoreButtonsListener);
 
             } else if (filtersModified==false && newFilter.get(temp.get(0))==false) {
                 //using the same filter, closing the sidebar

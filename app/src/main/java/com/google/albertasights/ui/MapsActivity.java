@@ -180,6 +180,9 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
                         } else {
                             UiUtils.showToast(getApplicationContext(), "Error with data submittion");
                         }
+                        //TODO fragment
+                        UiUtils.manageFragments(loginFragment, getSupportFragmentManager(), false,
+                                R.id.map_container, "REPLACE");
 
                     }
 

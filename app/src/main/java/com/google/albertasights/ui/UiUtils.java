@@ -129,11 +129,25 @@ public class UiUtils {
     public static void configureFilters (Context context, LinearLayout filter, String deviceType,
                                          ArrayList<String> receivedFilters,
                                          ArrayList<String> selectedFilters,
-                                         View.OnClickListener checkBoxListener, String currentFilter) {
+                                         View.OnClickListener checkBoxListener, String currentFilter,
+                                         View.OnClickListener clearButtonList,
+                                         View.OnClickListener seeMoreBList) {
         Log.d(TAG, "enter configureFilters");
      //   Log.d(TAG, "received filters: "+receivedFilters.size());
 
         filter.removeAllViews();
+        ImageButton showFilterSection = new ImageButton(context);//(ImageButton) v.findViewById(R.id.imageB);
+        showFilterSection.setImageResource(R.drawable.show_more_up);
+        showFilterSection.getBackground().setAlpha(0);
+        showFilterSection.setOnClickListener(seeMoreBList);
+     //   showFilterSection.setColorFilter(new PorterDuffColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN));
+
+        ImageButton clearAll = new ImageButton(context);//(ImageButton) v.findViewById(R.id.clearMap);
+        clearAll.setImageResource(R.drawable.close_trimmed);
+        clearAll.getBackground().setAlpha(0);
+        clearAll.setTag("CLEAR_MAP");
+        clearAll.setOnClickListener(clearButtonList);
+
         WindowManager wm = (WindowManager)context.getSystemService(Context.WINDOW_SERVICE);
         Display display = wm.getDefaultDisplay();
         DisplayMetrics metrics = new DisplayMetrics();
@@ -182,6 +196,12 @@ public class UiUtils {
         }
 
         filter.setLayoutParams(new FrameLayout.LayoutParams(elementWight, FrameLayout.LayoutParams.WRAP_CONTENT));
+        LinearLayout bottomsLayout = new LinearLayout(context);
+        bottomsLayout.setOrientation(LinearLayout.HORIZONTAL);
+
+        bottomsLayout.addView(showFilterSection);
+        bottomsLayout.addView(clearAll);
+        filter.addView(bottomsLayout);
 
         if (currentFilter.equals(MapFragment.LOVED)&& receivedFilters.size()==0) {
             TextView text1 = new TextView(context);
