@@ -11,6 +11,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.CompoundButtonCompat;
+import android.support.v4.widget.Space;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
@@ -133,7 +134,8 @@ public class UiUtils {
                                          View.OnClickListener clearButtonList,
                                          View.OnClickListener seeMoreBList) {
         Log.d(TAG, "enter configureFilters");
-     //   Log.d(TAG, "received filters: "+receivedFilters.size());
+        Log.d(TAG, "received filters: "+receivedFilters.size());
+        Log.d(TAG, "current filter: "+currentFilter);
 
         filter.removeAllViews();
         ImageButton showFilterSection = new ImageButton(context);//(ImageButton) v.findViewById(R.id.imageB);
@@ -155,23 +157,42 @@ public class UiUtils {
         int screen_width = metrics.widthPixels;
         int elementWight = 0;
 
+        LinearLayout bottomsLayout = new LinearLayout(context);
+        bottomsLayout.setOrientation(LinearLayout.HORIZONTAL);
+        LinearLayout.LayoutParams param = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT, 1);
+        Space space = new Space(context);
+        Space space1 = new Space(context);
+        Space space2 = new Space(context);
+        space.setLayoutParams(param);
+        space1.setLayoutParams(param);
+        space2.setLayoutParams(param);
+
+        bottomsLayout.addView(space, 0);
+        bottomsLayout.addView(showFilterSection, 1);
+        bottomsLayout.addView(space1, 2);
+        bottomsLayout.addView(clearAll, 3);
+        bottomsLayout.addView(space2, 4);
+        filter.addView(bottomsLayout, 0);
+
         TextView text = new TextView(context);
         text.setPadding(20,20,20,20);
         if (getOrientation(context).equals("Portrait")) {
             switch (currentFilter) {
                 case MapFragment.FILTERS:
                     text.setText("Categories:");
-                    filter.addView(text, 0);
+                    filter.addView(text, 1);
                     elementWight = screen_width - 300;
                     break;
                 case MapFragment.ALL:
                     text.setText("All points:");
-                    filter.addView(text, 0);
+                    filter.addView(text, 1);
                     elementWight = screen_width - 200;
                     break;
                 case MapFragment.LOVED:
                     text.setText("Selected points:");
-                    filter.addView(text, 0);
+                    filter.addView(text, 1);
                     elementWight = screen_width - 200;
                     break;
             }
@@ -179,29 +200,22 @@ public class UiUtils {
             switch (currentFilter) {
                 case MapFragment.FILTERS:
                     text.setText("Categories:");
-                    filter.addView(text, 0);
+                    filter.addView(text, 1);
                     elementWight = screen_width - 550;
                     break;
                 case MapFragment.ALL:
                     text.setText("All points:");
-                    filter.addView(text, 0);
+                    filter.addView(text, 1);
                     elementWight = screen_width - 450;
                     break;
                 case MapFragment.LOVED:
                     text.setText("Selected points:");
-                    filter.addView(text, 0);
+                    filter.addView(text, 1);
                     elementWight = screen_width - 450;
                     break;
             }
         }
-
         filter.setLayoutParams(new FrameLayout.LayoutParams(elementWight, FrameLayout.LayoutParams.WRAP_CONTENT));
-        LinearLayout bottomsLayout = new LinearLayout(context);
-        bottomsLayout.setOrientation(LinearLayout.HORIZONTAL);
-
-        bottomsLayout.addView(showFilterSection);
-        bottomsLayout.addView(clearAll);
-        filter.addView(bottomsLayout);
 
         if (currentFilter.equals(MapFragment.LOVED)&& receivedFilters.size()==0) {
             TextView text1 = new TextView(context);
@@ -233,6 +247,7 @@ public class UiUtils {
 
             // set the text size depending on the device type
             checkBox.setText(lst.get(i));
+         //   Log.i(TAG, lst.get(i));
             if (deviceType.equals("tablet")) {
                 checkBox.setTextSize(context.getResources().getDimension(R.dimen.avg_textsize));
             }
@@ -240,6 +255,7 @@ public class UiUtils {
             if (selectedFilters.contains(lst.get(i))) {
                 // set checked checkbox
                 checkBox.setChecked(true);
+                Log.i(TAG, "should be checked: " + lst.get(i));
             }
             checkBox.setPadding(20,20,20,20);
             checkBox.setTag(lst.get(i));
@@ -248,7 +264,7 @@ public class UiUtils {
             checkBox.setTextColor(Color.BLACK);
             CompoundButtonCompat.setButtonTintList(checkBox,colorStateList);
             checkBox.setOnClickListener(checkBoxListener);
-            filter.addView(checkBox, i+1);
+            filter.addView(checkBox, i+2);
         }
 
     }

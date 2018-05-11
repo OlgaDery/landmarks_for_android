@@ -355,36 +355,44 @@ public class MapFragment extends Fragment implements
                 }
                 //TODO create the logic to modify the list of points to show
                 LinkedList <String> list = new LinkedList<>();
-                switch (current_filter) {
-                    case FILTERS:
-                        //TODO move this to separate activities start methods
-                        for (Place p :places) {
-                            if (selectedFilters.contains(p.getCategory())) {
-                                list.add(p.getName());
-                                Log.i(TAG, p.getName());
-                            }
-                        }
 
-                        break;
-                    case LOVED:
-                        for (Place p :places) {
-                            if (selectedFilters.contains(p.getName())) {
-                                list.add(p.getName());
+                if (selectedFilters.size()==0) {
+                    for (Place p : places) {
+                        list.add(p.getName());
+                    }
+                } else {
+                    switch (current_filter) {
+                        case FILTERS:
+                            //TODO move this to separate activities start methods
+                            for (Place p :places) {
+                                if (selectedFilters.contains(p.getCategory())) {
+                                    list.add(p.getName());
+                                    //   Log.i(TAG, p.getName());
+                                }
                             }
-                        }
-                        break;
-                    case ALL:
-                        for (Place p :places) {
-                            if (selectedFilters.contains(p.getName())) {
-                                list.add(p.getName());
+
+                            break;
+                        case LOVED:
+                            for (Place p :places) {
+                                if (selectedFilters.contains(p.getName())) {
+                                    list.add(p.getName());
+                                }
                             }
-                        }
-                        break;
+                            break;
+                        case ALL:
+                            for (Place p :places) {
+                                if (selectedFilters.contains(p.getName())) {
+                                    list.add(p.getName());
+                                }
+                            }
+                            break;
 
 
-                    default:
-                        break;
+                        default:
+                            break;
+                    }
                 }
+
                 //TODO TEST THIS SECTION
                 viewModel.updatePointsToShow(list);
                 Log.d(TAG, "exit onClick checkBox(View view) ");
@@ -401,16 +409,24 @@ public class MapFragment extends Fragment implements
                 Log.d(TAG, "enter onClick imageButtons(View view) ");
                 String button =((ImageButton) v).getTag().toString();
 
-                if (current_filter.equals(button)) {
+                if (current_filter.equals(button)&&showFiltersSidebar==true) {
                     return;
+                } else {
+                    if (!current_filter.equals(button)) {
+                        receivedFilters.clear();
+                        selectedFilters.clear();
+                        LinkedList<String> lst = new LinkedList<>();
+                        for (Place p : places) {
+                            lst.add(p.getName());
+                        }
+                        viewModel.updatePointsToShow(lst);
+                        stabilizeVieWithZoom();
+                    }
                 }
-                receivedFilters.clear();
-                selectedFilters.clear();
                 //  current_filter = button;
                 if (button.equals(FILTERS)) {
                     filters.clear();
                     filters.put(FILTERS, true);
-                    viewModel.updatePointsToShow(new LinkedList<String>());
 
                 } else if (button.equals(LOVED)) {
                     //TODO user has to be logged in, otherwise to show tost and return;
@@ -422,7 +438,7 @@ public class MapFragment extends Fragment implements
                         if (prefs.getBoolean(UiUtils.LOGGED_IN, true)==true) {
                             filters.clear();
                             filters.put(LOVED, true);
-                            viewModel.updatePointsToShow(new LinkedList<String>());
+                         //   viewModel.updatePointsToShow(new LinkedList<String>());
                         } else {
                             onInfoViewExpanded(UiUtils.LOG_IN, "");
                             return;
@@ -436,25 +452,17 @@ public class MapFragment extends Fragment implements
                 } else if (button.equals(ALL)) {
                     filters.clear();
                     filters.put(ALL, true);
-                    viewModel.updatePointsToShow(new LinkedList<String>());
 
                 } else {
                     //clear all
                     filters.clear();
+                    selectedFilters.clear();
                     filters.put(CLEAR_MAP, showFiltersSidebar);
                 }
 
-//                try{
-//                //    bottomWr.addView(showFilterSection);
-//                    bottomWr.addView(clearAll);
-//                } catch(Exception e) {
-//                    Log.d(TAG, "buttons already there");
-//                }
-
                 filtersModified = true;
-                selectedFilters.clear();
                 viewModel.updateFilterMap(filters);
-             //   stabilizeVieWithZoom();
+             //
 
                 Log.d(TAG, "exit onClick imageButtons(View view) ");
             }
@@ -473,16 +481,8 @@ public class MapFragment extends Fragment implements
                 //   Log.d(TAG, "enter showFilters(View view)");
 
                 filterSidebarModified = true;
-
-                if (filters.isEmpty()) {
-                    filters.put(FILTERS, !showFiltersSidebar);
-                    viewModel.updatePointsToShow(new LinkedList<String>());
-                    filtersModified = true;
-                    //    current_filter = FILTERS;
-                } else {
-                    filters.clear();
-                    filters.put(current_filter, !showFiltersSidebar);
-                }
+                filters.clear();
+                filters.put(current_filter, false);
 
                 viewModel.updateFilterMap(filters);
 
@@ -719,7 +719,8 @@ public class MapFragment extends Fragment implements
 
                 if (newFilter.get(temp.get(0))==true) {
                     UiUtils.configureFilters(getActivity(), filter, deviceType,
-                            receivedFilters, selectedFilters, checkBoxListener, temp.get(0), filterButtonsListener, showMoreButtonsListener);
+                            receivedFilters, selectedFilters, checkBoxListener, temp.get(0), filterButtonsListener,
+                            showMoreButtonsListener);
                     Log.d(TAG, "1");
                 } else {
                     //new filter set, but filter sidebar is hidden
@@ -763,9 +764,7 @@ public class MapFragment extends Fragment implements
             //resetting the values of class variables for later usage
             current_filter = temp.get(0);
             showFiltersSidebar = newFilter.get(current_filter);
-            if (current_filter.length()>1) {
-                UiUtils.modifyButtons(buttons, current_filter);
-            }
+
             filterSidebarModified = false;
             filtersModified = false;
 
@@ -777,6 +776,12 @@ public class MapFragment extends Fragment implements
     private void showClusters () {
         Log.d(TAG, "enter showClusters()");
         //    Log.i(TAG, "marker to show up: "+Place.selectedMarkerID);
+        if (selectedFilters.size()==0) {
+            UiUtils.modifyButtons(buttons, "");
+        } else {
+            UiUtils.modifyButtons(buttons, current_filter);
+        }
+
         mClusterManager.clearItems();
         mClusterManager.getClusterMarkerCollection().clear();
         mClusterManager.getMarkerCollection().clear();
@@ -924,5 +929,9 @@ public class MapFragment extends Fragment implements
     public void onStop() {
         Log.d(TAG, "enter onStop()");
         super.onStop();
+        if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
+            mGoogleApiClient.stopAutoManage(getActivity());
+            mGoogleApiClient.disconnect();
+        }
     }
 }
