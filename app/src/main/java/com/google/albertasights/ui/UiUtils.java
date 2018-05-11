@@ -17,6 +17,7 @@ import android.util.Log;
 import android.view.Display;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -69,9 +70,9 @@ public class UiUtils {
     public static final String USER_ID = "USER_ID";
     public static final String FIRST_NAME = "FIRST_NAME";
     public static final String LAST_NAME = "LAST_NAME";
-
-    public static final String BACK_TO_MAP = "BACK_TO_MAP";
-    public static final String BACK_TO_POINT = "BACK_TO_POINT";
+    public static final String SORTED_BY = "SORTED_BY";
+    public static final String BY_RATING = "BY_RATING";
+    public static final String BY_NAME = "BY_NAME";
 
 
     private static final String TAG = MapsActivity.class.getSimpleName();
@@ -132,7 +133,8 @@ public class UiUtils {
                                          ArrayList<String> selectedFilters,
                                          View.OnClickListener checkBoxListener, String currentFilter,
                                          View.OnClickListener clearButtonList,
-                                         View.OnClickListener seeMoreBList) {
+                                         View.OnClickListener seeMoreBList, View.OnClickListener sortPointsButtListenet,
+                                         String actionTag) {
         Log.d(TAG, "enter configureFilters");
         Log.d(TAG, "received filters: "+receivedFilters.size());
         Log.d(TAG, "current filter: "+currentFilter);
@@ -186,8 +188,20 @@ public class UiUtils {
                     elementWight = screen_width - 300;
                     break;
                 case MapFragment.ALL:
-                    text.setText("All points:");
+                    Button b = new Button(context);
+
+                    if (actionTag.equals(BY_RATING)) {
+                        text.setText("Sorted by rating:");
+                        b.setTag(BY_NAME);
+                        b.setText("Sort by name");
+                    } else {
+                        text.setText("Sorted be name:");
+                        b.setTag(BY_RATING);
+                        b.setText("Sort by rating");
+                    }
+                    b.setOnClickListener(sortPointsButtListenet);
                     filter.addView(text, 1);
+                    filter.addView(b, 2);
                     elementWight = screen_width - 200;
                     break;
                 case MapFragment.LOVED:
@@ -204,8 +218,20 @@ public class UiUtils {
                     elementWight = screen_width - 550;
                     break;
                 case MapFragment.ALL:
-                    text.setText("All points:");
+                    Button b = new Button(context);
+
+                    if (actionTag.equals(BY_RATING)) {
+                        text.setText("Sorted by rating:");
+                        b.setTag(BY_NAME);
+                        b.setText("Sort by name");
+                    } else {
+                        text.setText("Sorted be name:");
+                        b.setTag(BY_RATING);
+                        b.setText("Sort by rating");
+                    }
+                    b.setOnClickListener(sortPointsButtListenet);
                     filter.addView(text, 1);
+                    filter.addView(b, 2);
                     elementWight = screen_width - 450;
                     break;
                 case MapFragment.LOVED:
@@ -226,9 +252,13 @@ public class UiUtils {
 
         ArrayList<String> lst = new ArrayList<>(receivedFilters.size());
         lst.addAll(receivedFilters);
-        Collections.sort(lst);
+        if (currentFilter.equals(MapFragment.ALL) && actionTag.equals(BY_RATING)) {
+
+        } else {
+            Collections.sort(lst);
+        }
         // adding checkboxes dynamically
-        //    filter.removeAllViews();
+
         ColorStateList colorStateList = new ColorStateList(
                 new int[][]{
                         new int[]{-android.R.attr.state_checked}, // unchecked
@@ -264,7 +294,11 @@ public class UiUtils {
             checkBox.setTextColor(Color.BLACK);
             CompoundButtonCompat.setButtonTintList(checkBox,colorStateList);
             checkBox.setOnClickListener(checkBoxListener);
-            filter.addView(checkBox, i+2);
+            if (currentFilter.equals(MapFragment.ALL)) {
+                filter.addView(checkBox, i+3);
+            } else {
+                filter.addView(checkBox, i+2);
+            }
         }
 
     }

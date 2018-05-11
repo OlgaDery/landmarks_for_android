@@ -26,6 +26,7 @@ public class MapViewModel extends ViewModel {
     public final MutableLiveData<Map<String, Boolean>> filtersToApply = new MutableLiveData<Map<String, Boolean>>();
     public final MutableLiveData<LinkedList<String>> pointsToShow = new MutableLiveData<LinkedList<String>>();
     public final MutableLiveData<LinkedList<String>> loved = new MutableLiveData<LinkedList<String>>();
+    public final MutableLiveData<LinkedList<String>> namesSortedByRating = new MutableLiveData<LinkedList<String>>();
     public final MutableLiveData<LinkedList<Place>> receivedPoints = new MutableLiveData<LinkedList<Place>>();
     public final MutableLiveData<Place> pointToSee = new MutableLiveData<>();
     public final MutableLiveData<String> currentFragment = new MutableLiveData<>();
@@ -50,6 +51,17 @@ public class MapViewModel extends ViewModel {
     public LiveData<LinkedList<String>> getPointsNamesToShow () {
       //  Log.d(TAG, "enter getPointsNamesToShow");
         return pointsToShow;
+    }
+
+    public LiveData<LinkedList<String>> getNamesSortedByRating () {
+        //  Log.d(TAG, "enter getPointsNamesToShow");
+        return namesSortedByRating;
+    }
+
+    public void updateNamesSortedByRating (LinkedList <String> pointNames) {
+        Log.d(TAG, "enter updateNamesSortedByRating");
+        namesSortedByRating.setValue(pointNames);
+        Log.d(TAG, "exit updateNamesSortedByRating");
     }
 
     public LiveData<String> getCurrentFragment() {

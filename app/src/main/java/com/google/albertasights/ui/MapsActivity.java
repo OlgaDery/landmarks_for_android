@@ -94,14 +94,30 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
                     if (intent.getSerializableExtra(UiUtils.PLACES)!=null) {
                         ArrayList<Place> placesLst = (ArrayList)intent.getSerializableExtra(UiUtils.PLACES);
                         //         Log.i(TAG, "places: "+ placesLst.size());
-                        LinkedList <Place> lst = new LinkedList<>();
-                        lst.addAll(placesLst);
-                        viewModel.updatePoints(lst);
+                        LinkedList <Place> temp = new LinkedList<>();
+
+                        LinkedList <String> rating1 = new LinkedList<>();
+                        LinkedList <String> rating2 = new LinkedList<>();
+                        LinkedList <String> rating3 = new LinkedList<>();
+                        LinkedList <String> all = new LinkedList<>();
+                        temp.addAll(placesLst);
+                        viewModel.updatePoints(temp);
                         LinkedList <String> lst1 = new LinkedList<>();
                         for (Place p : placesLst) {
                             lst1.add(p.getName());
+                            if (p.getRating()==1||p.getRating()==2) {
+                                rating1.add(p.getName());
+                            } else if (p.getRating()==3) {
+                                rating2.add(p.getName());
+                            } else {
+                                rating3.add(p.getName());
+                            }
                         }
+                        all.addAll(rating3);
+                        all.addAll(rating2);
+                        all.addAll(rating1);
                         viewModel.updatePointsToShow(lst1);
+                        viewModel.updateNamesSortedByRating(all);
 //                        getSupportFragmentManager().beginTransaction().replace(R.id.map_container,
 //                                mapFragment).commit();
                         //TODO fragments

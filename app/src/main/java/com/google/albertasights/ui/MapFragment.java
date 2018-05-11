@@ -122,6 +122,7 @@ public class MapFragment extends Fragment implements
     //TODO to store the name of current filter using for points
     private String current_filter = "";
     private String selectedMarkerID = "";
+    private String sortedBy = "";
 
     //TODO place them in ModelView???
     public static Set<String> markerIds = new HashSet<>();
@@ -153,6 +154,7 @@ public class MapFragment extends Fragment implements
     private View.OnClickListener checkBoxListener;
     private View.OnClickListener filterButtonsListener;
     private View.OnClickListener showMoreButtonsListener;
+    private View.OnClickListener changeSortingListener;
     private Set <ImageButton> buttons = new HashSet<>();
    // private Set <String> selectedByUser = new HashSet<>();
 
@@ -200,6 +202,7 @@ public class MapFragment extends Fragment implements
         //    places = (HashSet)savedInstanceState.getSerializable(UiUtils.PLACES);
             saveInfoWindow = savedInstanceState.getBoolean(SAVE_INFO_WINDOW);
             animationStarted = savedInstanceState.getBoolean(STARTED_ANIMATION);
+            sortedBy = savedInstanceState.getString(UiUtils.SORTED_BY);
             markerIds.addAll(ids);
         }
 
@@ -272,6 +275,7 @@ public class MapFragment extends Fragment implements
         outState.putString("CURRENT_FILTER", current_filter);
         //   outState.putBoolean(API_WAS_CALLED, apiNotCalled);
         outState.putBoolean(STARTED_ANIMATION, animationStarted);
+        outState.putString(UiUtils.SORTED_BY, sortedBy);
 
         // save info window
         for (Marker m: mClusterManager.getMarkerCollection().getMarkers()) {
@@ -478,15 +482,30 @@ public class MapFragment extends Fragment implements
 
         showMoreButtonsListener = new View.OnClickListener() {
             public void onClick(View view) {
-                //   Log.d(TAG, "enter showFilters(View view)");
+                Log.d(TAG, "enter showFilters(View view)");
 
                 filterSidebarModified = true;
                 filters.clear();
                 filters.put(current_filter, false);
 
                 viewModel.updateFilterMap(filters);
+                stabilizeVieWithZoom();
 
-                //    Log.d(TAG, "exit showFilters(View view)");
+                Log.d(TAG, "exit showFilters(View view)");
+            }
+        };
+
+        changeSortingListener = new View.OnClickListener() {
+            public void onClick(View view) {
+                Log.d(TAG, "enter changeSortingListener(View view)");
+                sortedBy =((Button) view).getTag().toString();
+                receivedFilters.clear();
+                receivedFilters.addAll(viewModel.getNamesSortedByRating().getValue());
+                selectedFilters.clear();
+                updateLocationUI(filters);
+                viewModel.updatePointsToShow(viewModel.getNamesSortedByRating().getValue());
+
+                Log.d(TAG, "exit changeSortingListener(View view)");
             }
         };
 
@@ -680,17 +699,11 @@ public class MapFragment extends Fragment implements
                 } else if (newFilter.containsKey(LOVED)) {
                     //  receivedFilters
                     if (viewModel.getLoved().getValue().size()>0) {
-                        for (Place p : places) {
-                            if (viewModel.getLoved().getValue().contains(p.getName())) {
-                                receivedFilters.add(p.getName());
-                            }
-                        }
+                        receivedFilters.addAll(viewModel.getLoved().getValue());
                     }
 
                 } else if (newFilter.containsKey(ALL)) {
-                    for (Place p : places) {
-                        receivedFilters.add(p.getName());
-                    }
+                    receivedFilters.addAll(viewModel.getNamesSortedByRating().getValue());
 
                 } else if (newFilter.containsKey(CLEAR_MAP)) {
 //                    bottomWr.removeAllViews();
@@ -720,7 +733,7 @@ public class MapFragment extends Fragment implements
                 if (newFilter.get(temp.get(0))==true) {
                     UiUtils.configureFilters(getActivity(), filter, deviceType,
                             receivedFilters, selectedFilters, checkBoxListener, temp.get(0), filterButtonsListener,
-                            showMoreButtonsListener);
+                            showMoreButtonsListener, changeSortingListener, sortedBy);
                     Log.d(TAG, "1");
                 } else {
                     //new filter set, but filter sidebar is hidden
@@ -745,13 +758,11 @@ public class MapFragment extends Fragment implements
                     }
 
                 } else if (newFilter.containsKey(ALL)) {
-                    for (Place p : places) {
-                        receivedFilters.add(p.getName());
-                    }
+                    receivedFilters.addAll(viewModel.getNamesSortedByRating().getValue());
                 }
                 UiUtils.configureFilters(getActivity(), filter, deviceType,
                         receivedFilters, selectedFilters, checkBoxListener, temp.get(0), filterButtonsListener,
-                        showMoreButtonsListener);
+                        showMoreButtonsListener, changeSortingListener, sortedBy);
 
             } else if (filtersModified==false && newFilter.get(temp.get(0))==false) {
                 //using the same filter, closing the sidebar
