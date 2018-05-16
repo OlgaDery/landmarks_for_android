@@ -20,7 +20,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -107,9 +106,8 @@ public class MapFragment extends Fragment implements
     private boolean filterSidebarModified = false;
     private boolean filtersModified = false;
     private boolean showFiltersSidebar = false;
-    private int posit=0;
+    private ArrayList<String> ratings=new ArrayList<>(3);
     int count;
-
     // Declare a variable for the cluster manager.
     private ClusterManager<MyClusterItem> mClusterManager;
 
@@ -155,7 +153,7 @@ public class MapFragment extends Fragment implements
     private View.OnClickListener checkBoxListener;
     private View.OnClickListener filterButtonsListener;
     private View.OnClickListener showMoreButtonsListener;
-    private View.OnClickListener changeSortingListener;
+    private View.OnClickListener applyRatingListener;
     private Set <ImageButton> buttons = new HashSet<>();
    // private Set <String> selectedByUser = new HashSet<>();
 
@@ -192,6 +190,7 @@ public class MapFragment extends Fragment implements
             Log.d(TAG, "savedInstanceState not null");
             receivedFilters = savedInstanceState.getStringArrayList(KEY_RECEIVED_FILTERS);
             selectedFilters = savedInstanceState.getStringArrayList(KEY_SELECTED_FILTERS);
+            ratings = savedInstanceState.getStringArrayList("RATINGS");
             selectPointsToShow = savedInstanceState.getBoolean(KEY_SELECT_POINTS_TO_SHOW);
             ArrayList<String> ids = savedInstanceState.getStringArrayList(KEY_MARKER_IDS);
             currentZoom = savedInstanceState.getFloat(CURRENT_ZOOM);
@@ -268,6 +267,7 @@ public class MapFragment extends Fragment implements
         outState.putStringArrayList(KEY_MARKER_IDS, ids);
      //   outState.putSerializable(UiUtils.PLACES, places);
         outState.putStringArrayList(KEY_RECEIVED_FILTERS, receivedFilters);
+        outState.putStringArrayList("RATINGS", ratings);
         outState.putStringArrayList(KEY_SELECTED_FILTERS, selectedFilters);
         outState.putBoolean(KEY_SELECT_POINTS_TO_SHOW, selectPointsToShow);
         outState.putFloat(CURRENT_ZOOM, mMap.getCameraPosition().zoom);
@@ -360,7 +360,8 @@ public class MapFragment extends Fragment implements
                 //TODO create the logic to modify the list of points to show
                 LinkedList <String> list = new LinkedList<>();
 
-                if (selectedFilters.size()==0) {
+                if (selectedFilters.size()==0 &&
+                        ratings.size()==0) {
                     for (Place p : places) {
                         list.add(p.getName());
                     }
@@ -368,10 +369,25 @@ public class MapFragment extends Fragment implements
                     switch (current_filter) {
                         case FILTERS:
                             //TODO move this to separate activities start methods
-                            for (Place p :places) {
-                                if (selectedFilters.contains(p.getCategory())) {
-                                    list.add(p.getName());
-                                    //   Log.i(TAG, p.getName());
+                            if (ratings.size()>0&& selectedFilters.size()>0) {
+                                for (Place p : places) {
+                                    if (selectedFilters.contains(p.getCategory())
+                                            && ratings.contains(String.valueOf(p.getRating()))) {
+                                        list.add(p.getName());
+                                    }
+                                }
+                            } else if (ratings.size()>0 && selectedFilters.size()==0){
+                                for (Place p : places) {
+                                    if (ratings.contains(String.valueOf(p.getRating()))) {
+                                        list.add(p.getName());
+                                    }
+                                }
+
+                            } else if (ratings.size()==0 && selectedFilters.size()>0) {
+                                for (Place p : places) {
+                                    if (selectedFilters.contains(p.getCategory())) {
+                                        list.add(p.getName());
+                                    }
                                 }
                             }
 
@@ -456,6 +472,7 @@ public class MapFragment extends Fragment implements
                     //clear all
                     filters.clear();
                     selectedFilters.clear();
+                    ratings.clear();
                     viewModel.updatePointsToShow(viewModel.getNamesSortedByRating().getValue());
                     filters.put(CLEAR_MAP, showFiltersSidebar);
                 }
@@ -489,20 +506,45 @@ public class MapFragment extends Fragment implements
             }
         };
 
-        changeSortingListener = new View.OnClickListener() {
+        applyRatingListener = new View.OnClickListener() {
             public void onClick(View view) {
-                Log.d(TAG, "enter changeSortingListener(View view)");
+                Log.d(TAG, "enter applyRatingListener(View view)");
                 sortedBy =((CheckBox) view).getTag().toString();
+                Log.i(TAG, "rating selected: "+ sortedBy);
+                if (ratings.contains(sortedBy)) {
+                    ratings.remove(sortedBy);
+                } else {
+                    ratings.add(sortedBy);
+                }
                 LinkedList<String> tmp = new LinkedList<>();
-                for (Place p : places) {
-                    if (viewModel.getPointsNamesToShow().getValue().contains(p.getName())
-                            && String.valueOf(p.getRating()).equals(sortedBy)) {
-                        tmp.add(p.getName());
+                if (ratings.size()==0 && selectedFilters.size()==0) {
+                   tmp.addAll(
+                           viewModel.getNamesSortedByRating().getValue());
+                }
+                else if (selectedFilters.size()>0 && ratings.size()>0) {
+                    for (Place p : places) {
+                        if (selectedFilters.contains(p.getCategory())
+                                && ratings.contains(String.valueOf(p.getRating()))) {
+                            tmp.add(p.getName());
+                        }
+                    }
+                } else if (ratings.size()==0 && selectedFilters.size()>0){
+                    for (Place p : places) {
+                        if (selectedFilters.contains(p.getCategory())) {
+                            tmp.add(p.getName());
+                        }
+                    }
+
+                } else if (ratings.size()>0 && selectedFilters.size()==0) {
+                    for (Place p : places) {
+                        if (ratings.contains(String.valueOf(p.getRating()))) {
+                            tmp.add(p.getName());
+                        }
                     }
                 }
                 viewModel.updatePointsToShow(tmp);
 
-                Log.d(TAG, "exit changeSortingListener(View view)");
+                Log.d(TAG, "exit applyRatingListener(View view)");
             }
         };
 
@@ -692,10 +734,6 @@ public class MapFragment extends Fragment implements
                     filter.getLayoutParams().height = 0;
                     filter.getLayoutParams().width = 0;
                     viewModel.updateFilterMap(new HashMap<String, Boolean>());
-                    LinkedList<String> lst = new LinkedList<>();
-//                    for (Place p : places) {
-//                        lst.add(p.getName());
-//                    }
                     for (ImageButton b : buttons) {
 
                         // TODO!!!!!!!!!!!!!! Change
@@ -706,13 +744,15 @@ public class MapFragment extends Fragment implements
                     current_filter="";
                     filterSidebarModified = false;
                     filtersModified = false;
+                    stabilizeViewWithZoom();
                     return;
                 }
 
                 if (newFilter.get(temp.get(0))==true) {
                     UiUtils.configureFilters(getActivity(), filter, deviceType,
                             receivedFilters, selectedFilters, checkBoxListener, temp.get(0), filterButtonsListener,
-                            showMoreButtonsListener, changeSortingListener, sortedBy);
+                            showMoreButtonsListener, applyRatingListener,
+                            ratings);
                     Log.d(TAG, "1");
                 } else {
                     //new filter set, but filter sidebar is hidden
@@ -741,7 +781,7 @@ public class MapFragment extends Fragment implements
                 }
                 UiUtils.configureFilters(getActivity(), filter, deviceType,
                         receivedFilters, selectedFilters, checkBoxListener, temp.get(0), filterButtonsListener,
-                        showMoreButtonsListener, changeSortingListener, sortedBy);
+                        showMoreButtonsListener, applyRatingListener, ratings);
 
             } else if (filtersModified==false && newFilter.get(temp.get(0))==false) {
                 //using the same filter, closing the sidebar
@@ -766,7 +806,7 @@ public class MapFragment extends Fragment implements
     private void showClusters () {
         Log.d(TAG, "enter showClusters()");
         //    Log.i(TAG, "marker to show up: "+Place.selectedMarkerID);
-        if (selectedFilters.size()==0) {
+        if (selectedFilters.size()==0&& ratings.size()==0) {
             UiUtils.modifyButtons(buttons, "");
         } else {
             UiUtils.modifyButtons(buttons, current_filter);

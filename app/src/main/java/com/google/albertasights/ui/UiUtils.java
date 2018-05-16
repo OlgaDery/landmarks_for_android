@@ -133,13 +133,15 @@ public class UiUtils {
                                          ArrayList<String> selectedFilters,
                                          View.OnClickListener checkBoxListener, String currentFilter,
                                          View.OnClickListener clearButtonList,
-                                         View.OnClickListener seeMoreBList, View.OnClickListener sortPointsButtListenet,
-                                         String actionTag) {
+                                         View.OnClickListener seeMoreBList,
+                                         View.OnClickListener sortPointsButtListenet,
+                                         ArrayList<String> ratings) {
         Log.d(TAG, "enter configureFilters");
         Log.d(TAG, "received filters: "+receivedFilters.size());
         Log.d(TAG, "current filter: "+currentFilter);
 
         filter.removeAllViews();
+        int globalIndex=-1;
         ImageButton showFilterSection = new ImageButton(context);//(ImageButton) v.findViewById(R.id.imageB);
         showFilterSection.setImageResource(R.drawable.show_more_up);
         showFilterSection.getBackground().setAlpha(0);
@@ -176,69 +178,46 @@ public class UiUtils {
         bottomsLayout.addView(space1, 2);
         bottomsLayout.addView(clearAll, 3);
         bottomsLayout.addView(space2, 4);
-        filter.addView(bottomsLayout, 0);
+        filter.addView(bottomsLayout, globalIndex++);
 
         TextView text = new TextView(context);
         text.setPadding(20,20,20,20);
         if (getOrientation(context).equals("Portrait")) {
             switch (currentFilter) {
                 case MapFragment.FILTERS:
-                    text.setText("Categories:");
-                    filter.addView(text, 1);
+                    text.setText("Rating:");
+                    filter.addView(text, globalIndex++);
                     elementWight = screen_width - 300;
                     break;
                 case MapFragment.ALL:
-                    Button b = new Button(context);
 
-//                    if (actionTag.equals(BY_RATING)) {
-//                        text.setText("Sorted by rating:");
-//                        b.setTag(BY_NAME);
-//                        b.setText("Sort by name");
-//                    } else {
-//                        text.setText("Sorted be name:");
-//                        b.setTag(BY_RATING);
-//                        b.setText("Sort by rating");
-//                    }
-//                    b.setOnClickListener(sortPointsButtListenet);
                     text.setText("Sorted be name:");
-                    filter.addView(text, 1);
+                    filter.addView(text, globalIndex++);
                   //  filter.addView(b, 2);
                     elementWight = screen_width - 200;
                     break;
                 case MapFragment.LOVED:
                     text.setText("Selected points:");
-                    filter.addView(text, 1);
+                    filter.addView(text, globalIndex++);
                     elementWight = screen_width - 200;
                     break;
             }
         } else {
             switch (currentFilter) {
                 case MapFragment.FILTERS:
-                    text.setText("Categories:");
-                    filter.addView(text, 1);
+                    text.setText("Rating:");
+                    filter.addView(text, globalIndex++);
                     elementWight = screen_width - 550;
                     break;
                 case MapFragment.ALL:
-//                    Button b = new Button(context);
-//
-//                    if (actionTag.equals(BY_RATING)) {
-//                        text.setText("Sorted by rating:");
-//                        b.setTag(BY_NAME);
-//                        b.setText("Sort by name");
-//                    } else {
-//                        text.setText("Sorted be name:");
-//                        b.setTag(BY_RATING);
-//                        b.setText("Sort by rating");
-//                    }
-//                    b.setOnClickListener(sortPointsButtListenet);
                     text.setText("Sorted be name:");
-                    filter.addView(text, 1);
+                    filter.addView(text, globalIndex);
                   //  filter.addView(b, 2);
                     elementWight = screen_width - 450;
                     break;
                 case MapFragment.LOVED:
                     text.setText("Selected points:");
-                    filter.addView(text, 1);
+                    filter.addView(text, globalIndex++);
                     elementWight = screen_width - 450;
                     break;
             }
@@ -255,11 +234,6 @@ public class UiUtils {
         ArrayList<String> lst = new ArrayList<>(receivedFilters.size());
         lst.addAll(receivedFilters);
         Collections.sort(lst);
-//        if (currentFilter.equals(MapFragment.ALL) && actionTag.equals(BY_RATING)) {
-//
-//        } else {
-//
-//        }
         // adding checkboxes dynamically
 
         ColorStateList colorStateList = new ColorStateList(
@@ -272,6 +246,42 @@ public class UiUtils {
                         Color.parseColor("#40b6ff"),
                 }
         );
+
+        if (currentFilter.equals(MapFragment.FILTERS)){
+
+            CheckBox checkBox1 = new CheckBox(context);
+            checkBox1.setText("*****");
+            checkBox1.setTag("5");
+            if (ratings.contains("5")) {
+                checkBox1.setChecked(true);
+            }
+            checkBox1.setPadding(20,20,20,20);
+            checkBox1.setOnClickListener(sortPointsButtListenet);
+            filter.addView(checkBox1, globalIndex++);
+            CheckBox checkBox2 = new CheckBox(context);
+            checkBox2.setText("****");
+            if (ratings.contains("4")) {
+                checkBox2.setChecked(true);
+            }
+            checkBox2.setTag("4");
+            checkBox2.setPadding(20,20,20,20);
+            checkBox2.setOnClickListener(sortPointsButtListenet);
+            filter.addView(checkBox2, globalIndex++);
+            CheckBox checkBox3 = new CheckBox(context);
+            checkBox3.setTag("3");
+            checkBox3.setPadding(20,20,20,20);
+            if (ratings.contains("3")) {
+                checkBox3.setChecked(true);
+            }
+            checkBox3.setOnClickListener(sortPointsButtListenet);
+            checkBox3.setText("***");
+            filter.addView(checkBox3, globalIndex++);
+        }
+
+        TextView text1 = new TextView(context);
+        text1.setText("Categories:");
+        text1.setPadding(20,20,20,20);
+        filter.addView(text1, globalIndex++);
 
 //set the space between checkboxes
         for (int i = 0; i < receivedFilters.size(); i++) {
@@ -294,31 +304,12 @@ public class UiUtils {
             checkBox.setTag(lst.get(i));
 
             //setting the color of text and the box of check box
-            checkBox.setTextColor(Color.BLACK);
+          //  checkBox.setTextColor(Color.BLACK);
             CompoundButtonCompat.setButtonTintList(checkBox,colorStateList);
             checkBox.setOnClickListener(checkBoxListener);
-            filter.addView(checkBox, i+2);
+            filter.addView(checkBox, globalIndex++);
         }
-        if (currentFilter.equals(MapFragment.FILTERS)){
-            TextView text1 = new TextView(context);
-            text1.setText("Rating:");
-            filter.addView(text1);
-            CheckBox checkBox1 = new CheckBox(context);
-            checkBox1.setText("5");
-            checkBox1.setTag("5");
-            checkBox1.setOnClickListener(sortPointsButtListenet);
-            filter.addView(checkBox1);
-            CheckBox checkBox2 = new CheckBox(context);
-            checkBox2.setText("4");
-            checkBox2.setTag("4");
-            checkBox2.setOnClickListener(sortPointsButtListenet);
-            filter.addView(checkBox2);
-            CheckBox checkBox3 = new CheckBox(context);
-            checkBox3.setTag("3");
-            checkBox3.setOnClickListener(sortPointsButtListenet);
-            checkBox3.setText("3");
-            filter.addView(checkBox3);
-        }
+
 
     }
 
