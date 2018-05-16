@@ -24,7 +24,6 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 
 import com.google.albertasights.R;
 import com.google.albertasights.models.Place;
@@ -45,6 +44,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -108,6 +108,7 @@ public class MapFragment extends Fragment implements
     private boolean filtersModified = false;
     private boolean showFiltersSidebar = false;
     private int posit=0;
+    int count;
 
     // Declare a variable for the cluster manager.
     private ClusterManager<MyClusterItem> mClusterManager;
@@ -240,7 +241,6 @@ public class MapFragment extends Fragment implements
                 if (mMap!=null) {
                     Log.d(TAG, "map is not null");
                     showClusters();
-                   // stabilizeVieWithZoom();
                 } else {
                     Log.d(TAG, "map is null");
                 }
@@ -419,12 +419,7 @@ public class MapFragment extends Fragment implements
                     if (!current_filter.equals(button)) {
                         receivedFilters.clear();
                         selectedFilters.clear();
-                        LinkedList<String> lst = new LinkedList<>();
-                        for (Place p : places) {
-                            lst.add(p.getName());
-                        }
-                        viewModel.updatePointsToShow(lst);
-                        stabilizeVieWithZoom();
+                        viewModel.updatePointsToShow(viewModel.getNamesSortedByRating().getValue());
                     }
                 }
                 //  current_filter = button;
@@ -461,12 +456,12 @@ public class MapFragment extends Fragment implements
                     //clear all
                     filters.clear();
                     selectedFilters.clear();
+                    viewModel.updatePointsToShow(viewModel.getNamesSortedByRating().getValue());
                     filters.put(CLEAR_MAP, showFiltersSidebar);
                 }
 
                 filtersModified = true;
                 viewModel.updateFilterMap(filters);
-             //
 
                 Log.d(TAG, "exit onClick imageButtons(View view) ");
             }
@@ -489,8 +484,7 @@ public class MapFragment extends Fragment implements
                 filters.put(current_filter, false);
 
                 viewModel.updateFilterMap(filters);
-                stabilizeVieWithZoom();
-
+                stabilizeViewWithZoom();
                 Log.d(TAG, "exit showFilters(View view)");
             }
         };
@@ -498,12 +492,15 @@ public class MapFragment extends Fragment implements
         changeSortingListener = new View.OnClickListener() {
             public void onClick(View view) {
                 Log.d(TAG, "enter changeSortingListener(View view)");
-                sortedBy =((Button) view).getTag().toString();
-                receivedFilters.clear();
-                receivedFilters.addAll(viewModel.getNamesSortedByRating().getValue());
-                selectedFilters.clear();
-                updateLocationUI(filters);
-                viewModel.updatePointsToShow(viewModel.getNamesSortedByRating().getValue());
+                sortedBy =((CheckBox) view).getTag().toString();
+                LinkedList<String> tmp = new LinkedList<>();
+                for (Place p : places) {
+                    if (viewModel.getPointsNamesToShow().getValue().contains(p.getName())
+                            && String.valueOf(p.getRating()).equals(sortedBy)) {
+                        tmp.add(p.getName());
+                    }
+                }
+                viewModel.updatePointsToShow(tmp);
 
                 Log.d(TAG, "exit changeSortingListener(View view)");
             }
@@ -533,7 +530,6 @@ public class MapFragment extends Fragment implements
 
                     if (places.size()>0) {
                         showClusters();
-                      //  stabilizeVieWithZoom ();
                     }
                 }
             }
@@ -577,10 +573,6 @@ public class MapFragment extends Fragment implements
             //TODO show the toast that permiss not granted
             mMap.getUiSettings().setMyLocationButtonEnabled(false);
         }
-
-        //    mySpinner.setSelection(posit);//Arrays.asList(Place.distances).indexOf(Place.distance)
-        //    mySpinner.setOnItemSelectedEvenIfUnchangedListener(
-        //            this);
 
         if (isRestarted == false) {
             //that means that the activity is created the first time or recreated
@@ -646,6 +638,7 @@ public class MapFragment extends Fragment implements
                             longIfRestarted))
                     .build();//mMap.getCameraPosition();
             currentZoom = zoomIfRestarted;
+            UiUtils.modifyButtons(buttons, current_filter);
 
             isRestarted=false;
         }
@@ -667,19 +660,6 @@ public class MapFragment extends Fragment implements
         Log.d(TAG, "enter updateLocationUI");
 
         if (!newFilter.isEmpty()) {
-
-//            try {
-//                bottomWr.addView(showFilterSection);
-//                bottomWr.addView(clearAll);
-//            } catch (Exception e ) {
-//
-//            }
-
-//            if (newFilter.values().contains(true)) {
-//                showFilterSection.setImageResource(R.drawable.less);
-//            } else {
-//                showFilterSection.setImageResource(R.drawable.more);
-//            }
 
             ArrayList<String> temp = new ArrayList<String>(0);
             temp.addAll(newFilter.keySet());
@@ -713,15 +693,14 @@ public class MapFragment extends Fragment implements
                     filter.getLayoutParams().width = 0;
                     viewModel.updateFilterMap(new HashMap<String, Boolean>());
                     LinkedList<String> lst = new LinkedList<>();
-                    for (Place p : places) {
-                        lst.add(p.getName());
-                    }
+//                    for (Place p : places) {
+//                        lst.add(p.getName());
+//                    }
                     for (ImageButton b : buttons) {
 
                         // TODO!!!!!!!!!!!!!! Change
                         b.setColorFilter(new PorterDuffColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN));
                     }
-                    viewModel.updatePointsToShow(lst);
                     filters.clear();
                     showFiltersSidebar = false;
                     current_filter="";
@@ -800,7 +779,7 @@ public class MapFragment extends Fragment implements
         mClusterManager.cluster();
         Log.i(TAG, "to show: "+viewModel.getPointsNamesToShow().getValue().size());
 
-        //  int i = 0;
+        count = 0;
         for (Place p : places) {
             if (viewModel.getPointsNamesToShow().getValue().contains(p.getName())) {
                 MyClusterItem offsetItem = new MyClusterItem(p.getLat(), p.getLng(), p.getName(), p.getCategory());
@@ -809,9 +788,7 @@ public class MapFragment extends Fragment implements
             }
 
         }
-    //    saveInfoWindow=false;
-    //    selectedMarkerID = "";
-        stabilizeVieWithZoom();
+        stabilizeViewWithZoom();
         Log.d(TAG, "exit showClusters()");
 
     }
@@ -838,8 +815,8 @@ public class MapFragment extends Fragment implements
         Log.d(TAG, "exit onDetach()");
     }
 
-    private void stabilizeVieWithZoom () {
-        Log.d(TAG, "enter stabilizeVieWithZoom ()");
+    private void stabilizeViewWithZoom() {
+        Log.d(TAG, "enter stabilizeViewWithZoom ()");
         if (zoomingOut==false) {
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mMap.getCameraPosition().target,
                     mMap.getCameraPosition().zoom-0.005f));
@@ -848,7 +825,7 @@ public class MapFragment extends Fragment implements
                     mMap.getCameraPosition().zoom+0.005f));
         }
         zoomingOut=!zoomingOut;
-        Log.d(TAG, "exit stabilizeVieWithZoom ()");
+        Log.d(TAG, "exit stabilizeViewWithZoom ()");
     }
 
 
@@ -887,17 +864,22 @@ public class MapFragment extends Fragment implements
         @Override
         protected void onClusterItemRendered(MyClusterItem item, Marker marker) {
             super.onClusterItemRendered(item, marker);
+            count++;
             if (saveInfoWindow==true) {
                 if (selectedMarkerID.equals(marker.getTitle())) {
                     Log.i(TAG, "got it!");
                     marker.showInfoWindow();
                     selectedMarkerID = "";
                     saveInfoWindow=false;
-
                 }
+            }
+            if (count==viewModel.getPointsNamesToShow().getValue().size()-1) {
+                stabilizeViewWithZoom();
             }
 
         }
+
+
 
     }
 

@@ -190,18 +190,19 @@ public class UiUtils {
                 case MapFragment.ALL:
                     Button b = new Button(context);
 
-                    if (actionTag.equals(BY_RATING)) {
-                        text.setText("Sorted by rating:");
-                        b.setTag(BY_NAME);
-                        b.setText("Sort by name");
-                    } else {
-                        text.setText("Sorted be name:");
-                        b.setTag(BY_RATING);
-                        b.setText("Sort by rating");
-                    }
-                    b.setOnClickListener(sortPointsButtListenet);
+//                    if (actionTag.equals(BY_RATING)) {
+//                        text.setText("Sorted by rating:");
+//                        b.setTag(BY_NAME);
+//                        b.setText("Sort by name");
+//                    } else {
+//                        text.setText("Sorted be name:");
+//                        b.setTag(BY_RATING);
+//                        b.setText("Sort by rating");
+//                    }
+//                    b.setOnClickListener(sortPointsButtListenet);
+                    text.setText("Sorted be name:");
                     filter.addView(text, 1);
-                    filter.addView(b, 2);
+                  //  filter.addView(b, 2);
                     elementWight = screen_width - 200;
                     break;
                 case MapFragment.LOVED:
@@ -218,20 +219,21 @@ public class UiUtils {
                     elementWight = screen_width - 550;
                     break;
                 case MapFragment.ALL:
-                    Button b = new Button(context);
-
-                    if (actionTag.equals(BY_RATING)) {
-                        text.setText("Sorted by rating:");
-                        b.setTag(BY_NAME);
-                        b.setText("Sort by name");
-                    } else {
-                        text.setText("Sorted be name:");
-                        b.setTag(BY_RATING);
-                        b.setText("Sort by rating");
-                    }
-                    b.setOnClickListener(sortPointsButtListenet);
+//                    Button b = new Button(context);
+//
+//                    if (actionTag.equals(BY_RATING)) {
+//                        text.setText("Sorted by rating:");
+//                        b.setTag(BY_NAME);
+//                        b.setText("Sort by name");
+//                    } else {
+//                        text.setText("Sorted be name:");
+//                        b.setTag(BY_RATING);
+//                        b.setText("Sort by rating");
+//                    }
+//                    b.setOnClickListener(sortPointsButtListenet);
+                    text.setText("Sorted be name:");
                     filter.addView(text, 1);
-                    filter.addView(b, 2);
+                  //  filter.addView(b, 2);
                     elementWight = screen_width - 450;
                     break;
                 case MapFragment.LOVED:
@@ -252,11 +254,12 @@ public class UiUtils {
 
         ArrayList<String> lst = new ArrayList<>(receivedFilters.size());
         lst.addAll(receivedFilters);
-        if (currentFilter.equals(MapFragment.ALL) && actionTag.equals(BY_RATING)) {
-
-        } else {
-            Collections.sort(lst);
-        }
+        Collections.sort(lst);
+//        if (currentFilter.equals(MapFragment.ALL) && actionTag.equals(BY_RATING)) {
+//
+//        } else {
+//
+//        }
         // adding checkboxes dynamically
 
         ColorStateList colorStateList = new ColorStateList(
@@ -294,11 +297,27 @@ public class UiUtils {
             checkBox.setTextColor(Color.BLACK);
             CompoundButtonCompat.setButtonTintList(checkBox,colorStateList);
             checkBox.setOnClickListener(checkBoxListener);
-            if (currentFilter.equals(MapFragment.ALL)) {
-                filter.addView(checkBox, i+3);
-            } else {
-                filter.addView(checkBox, i+2);
-            }
+            filter.addView(checkBox, i+2);
+        }
+        if (currentFilter.equals(MapFragment.FILTERS)){
+            TextView text1 = new TextView(context);
+            text1.setText("Rating:");
+            filter.addView(text1);
+            CheckBox checkBox1 = new CheckBox(context);
+            checkBox1.setText("5");
+            checkBox1.setTag("5");
+            checkBox1.setOnClickListener(sortPointsButtListenet);
+            filter.addView(checkBox1);
+            CheckBox checkBox2 = new CheckBox(context);
+            checkBox2.setText("4");
+            checkBox2.setTag("4");
+            checkBox2.setOnClickListener(sortPointsButtListenet);
+            filter.addView(checkBox2);
+            CheckBox checkBox3 = new CheckBox(context);
+            checkBox3.setTag("3");
+            checkBox3.setOnClickListener(sortPointsButtListenet);
+            checkBox3.setText("3");
+            filter.addView(checkBox3);
         }
 
     }
@@ -315,7 +334,7 @@ public class UiUtils {
             if (b.getTag().equals(activeButtonTag)) {
                 b.setColorFilter(new PorterDuffColorFilter(Color.BLUE, PorterDuff.Mode.SRC_IN));
             } else {
-                b.setColorFilter(new PorterDuffColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN));
+                b.setColorFilter(new PorterDuffColorFilter(Color.LTGRAY, PorterDuff.Mode.SRC_IN));
             }
         }
     }

@@ -125,6 +125,7 @@ public class PointFragment extends Fragment {
         //initializing the buttons
 
         ImageButton fab = (ImageButton) v.findViewById(R.id.fab);
+        fab.getBackground().setAlpha(0);
         fab.setImageResource(R.drawable.directions);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -139,6 +140,7 @@ public class PointFragment extends Fragment {
         });
 
         final ImageButton likeButton = (ImageButton) v.findViewById(R.id.like);
+        likeButton.getBackground().setAlpha(0);
         if (viewModel.getLoved().getValue().contains(point.getName())) {
             likeButton.setColorFilter(new PorterDuffColorFilter(Color.RED, PorterDuff.Mode.SRC_IN));
         }
