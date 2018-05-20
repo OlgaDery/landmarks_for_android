@@ -16,6 +16,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.widget.Space;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,6 +24,7 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 
 import com.google.albertasights.R;
 import com.google.albertasights.models.Place;
@@ -84,13 +86,13 @@ public class MapFragment extends Fragment implements
     //it helps to make the cluster more stable
     private boolean zoomingOut = true;
     private LinearLayout filter;
-  //  private RelativeLayout rr;
-  //  private RelativeLayout mapWrapper;
+    private RelativeLayout rr;
+    //  private RelativeLayout mapWrapper;
     private LinearLayout topWrapper;
-//    private RelativeLayout bottomWr;
+    private LinearLayout bottomWr;
 
-   // private ImageButton showFilterSection;
-  //  private ImageButton clearAll;
+    private ImageButton showFilterSection;
+    private ImageButton clearAll;
     private ImageButton showFilters;
     private ImageButton showLoved;
     private ImageButton showAll;
@@ -106,20 +108,16 @@ public class MapFragment extends Fragment implements
     private boolean filterSidebarModified = false;
     private boolean filtersModified = false;
     private boolean showFiltersSidebar = false;
-    private ArrayList<String> ratings=new ArrayList<>(3);
+
     int count;
     // Declare a variable for the cluster manager.
     private ClusterManager<MyClusterItem> mClusterManager;
 
     //has to be saved as the SavedInstance
     private HashSet<Place> places = new HashSet<>();
-    //filters selected by user
-    private ArrayList<String> selectedFilters = new ArrayList<>();
-    //filters received from APIs
-    private ArrayList<String> receivedFilters = new ArrayList<>();
     //to store markerIDs to track the photo loading, if the photo of the marker has once been loaded, it`s Id should be removed
     //TODO to store the name of current filter using for points
-    private String current_filter = "";
+  //  private String current_filter = "";
     private String selectedMarkerID = "";
     private String sortedBy = "";
 
@@ -134,12 +132,12 @@ public class MapFragment extends Fragment implements
     //  private Location mLastKnownLocation;
 
     // Keys for storing activity state.
-    private static final String KEY_CAMERA_POSITION = "camera_position";
-    private static final String CURRENT_ZOOM = "zoom";
-    private static final String KEY_MARKER_IDS = "marker_ids";
-    private static final String KEY_RECEIVED_FILTERS = "received_fltrs";
-    private static final String KEY_SELECTED_FILTERS = "selected_fltrs";
-    private static final String KEY_SELECT_POINTS_TO_SHOW = "select_points_to_show";
+    public static final String KEY_CAMERA_POSITION = "camera_position";
+    public static final String CURRENT_ZOOM = "zoom";
+    public static final String KEY_MARKER_IDS = "marker_ids";
+    public static final String KEY_RECEIVED_FILTERS = "received_fltrs";
+    public static final String KEY_SELECTED_FILTERS = "selected_fltrs";
+    public static final String KEY_SELECT_POINTS_TO_SHOW = "select_points_to_show";
     //  private static final String KEY_PLACES = "places";
     private static final String SAVE_INFO_WINDOW = "save_i_w";
     private static final String STARTED_ANIMATION = "animation";
@@ -148,14 +146,14 @@ public class MapFragment extends Fragment implements
     public static final String FILTERS = "filters";
     public static final String LOVED = "loved";
     public static final String ALL = "all";
-    private static final String CLEAR_MAP = "clear_map";
+    public static final String CLEAR_MAP = "clear_map";
 
     private View.OnClickListener checkBoxListener;
     private View.OnClickListener filterButtonsListener;
     private View.OnClickListener showMoreButtonsListener;
     private View.OnClickListener applyRatingListener;
     private Set <ImageButton> buttons = new HashSet<>();
-   // private Set <String> selectedByUser = new HashSet<>();
+    // private Set <String> selectedByUser = new HashSet<>();
 
     private BroadcastReceiver receiver;
     private MapViewModel viewModel;
@@ -188,18 +186,16 @@ public class MapFragment extends Fragment implements
         super.onCreate(savedInstanceState);
         if (savedInstanceState != null) {
             Log.d(TAG, "savedInstanceState not null");
-            receivedFilters = savedInstanceState.getStringArrayList(KEY_RECEIVED_FILTERS);
-            selectedFilters = savedInstanceState.getStringArrayList(KEY_SELECTED_FILTERS);
-            ratings = savedInstanceState.getStringArrayList("RATINGS");
+
             selectPointsToShow = savedInstanceState.getBoolean(KEY_SELECT_POINTS_TO_SHOW);
             ArrayList<String> ids = savedInstanceState.getStringArrayList(KEY_MARKER_IDS);
             currentZoom = savedInstanceState.getFloat(CURRENT_ZOOM);
             Log.i(TAG, "zoom: " + currentZoom);
             selectedMarkerID = savedInstanceState.getString("SELECTED_MARKER_ID");
-            current_filter = savedInstanceState.getString("CURRENT_FILTER");
+       //     current_filter = savedInstanceState.getString("CURRENT_FILTER");
             mCameraPosition = savedInstanceState.getParcelable(KEY_CAMERA_POSITION);
             Log.i(TAG, mCameraPosition.target.toString());
-        //    places = (HashSet)savedInstanceState.getSerializable(UiUtils.PLACES);
+            //    places = (HashSet)savedInstanceState.getSerializable(UiUtils.PLACES);
             saveInfoWindow = savedInstanceState.getBoolean(SAVE_INFO_WINDOW);
             animationStarted = savedInstanceState.getBoolean(STARTED_ANIMATION);
             sortedBy = savedInstanceState.getString(UiUtils.SORTED_BY);
@@ -220,17 +216,6 @@ public class MapFragment extends Fragment implements
         mGoogleApiClient.connect();
 
         viewModel = ViewModelProviders.of(getActivity()).get(MapViewModel.class);
-
-        //observes the map with selected points filters to apply
-        final Observer<Map<String, Boolean>> filtersObserver = new Observer<Map<String, Boolean>>() {
-            @Override
-            public void onChanged(@Nullable final Map<String, Boolean> newFilter) {
-                Log.i(TAG, "enter onChanged(@Nullable final Map<String, Boolean> newFilter)");
-                // Update the UI, in this case, a TextView.
-                updateLocationUI(newFilter);
-            }
-        };
-        viewModel.filtersToApply.observe(this, filtersObserver);
 
         //observes the list with points names to show on the map
         final Observer<LinkedList<String>> pointsToShowObserver = new Observer<LinkedList<String>>() {
@@ -265,14 +250,14 @@ public class MapFragment extends Fragment implements
         ArrayList <String> ids = new  ArrayList <String>(markerIds.size());
         ids.addAll(markerIds);
         outState.putStringArrayList(KEY_MARKER_IDS, ids);
-     //   outState.putSerializable(UiUtils.PLACES, places);
-        outState.putStringArrayList(KEY_RECEIVED_FILTERS, receivedFilters);
-        outState.putStringArrayList("RATINGS", ratings);
-        outState.putStringArrayList(KEY_SELECTED_FILTERS, selectedFilters);
+        //   outState.putSerializable(UiUtils.PLACES, places);
+//        outState.putStringArrayList(KEY_RECEIVED_FILTERS, receivedFilters);
+//        outState.putStringArrayList("RATINGS", ratings);
+//        outState.putStringArrayList(KEY_SELECTED_FILTERS, selectedFilters);
         outState.putBoolean(KEY_SELECT_POINTS_TO_SHOW, selectPointsToShow);
         outState.putFloat(CURRENT_ZOOM, mMap.getCameraPosition().zoom);
         zoomIfRestarted = mMap.getCameraPosition().zoom;
-        outState.putString("CURRENT_FILTER", current_filter);
+     //   outState.putString("CURRENT_FILTER", current_filter);
         //   outState.putBoolean(API_WAS_CALLED, apiNotCalled);
         outState.putBoolean(STARTED_ANIMATION, animationStarted);
         outState.putString(UiUtils.SORTED_BY, sortedBy);
@@ -317,9 +302,9 @@ public class MapFragment extends Fragment implements
         mMapFragment.getMapAsync(this);
         orientation = UiUtils.getOrientation(getActivity());
         deviceType = UiUtils.findScreenSize(getActivity());
-  //      rr = (RelativeLayout) v.findViewById(R.id.rr);
-    //    mapWrapper = (RelativeLayout) v.findViewById(R.id.mapWrapper);
-    //    bottomWr = (RelativeLayout) v.findViewById(R.id.wrapperBottom);
+        //      rr = (RelativeLayout) v.findViewById(R.id.rr);
+        //    mapWrapper = (RelativeLayout) v.findViewById(R.id.mapWrapper);
+        //    bottomWr = (RelativeLayout) v.findViewById(R.id.wrapperBottom);
         topWrapper = (LinearLayout) v.findViewById(R.id.wrapperTop);
 
         showFilters = (ImageButton) v.findViewById(R.id.showFiltersOnly);
@@ -337,87 +322,15 @@ public class MapFragment extends Fragment implements
         showAll.getBackground().setAlpha(0);
         showAll.setTag(ALL);
 
-  //      clearAll.setColorFilter(new PorterDuffColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN));
+        clearAll = new ImageButton(getActivity());//(ImageButton) v.findViewById(R.id.clearMap);
+        clearAll.setImageResource(R.drawable.close_trimmed);
+        clearAll.getBackground().setAlpha(0);
+        clearAll.setTag("CLEAR_MAP");
+//        showFilterSection.setOnClickListener(showMoreButtonsListener);
+        clearAll.setOnClickListener(filterButtonsListener);
 
-        //TODO temporary remove buttons from the bottom
-  //      bottomWr.removeAllViews();
-
-        filter = (LinearLayout) v.findViewById(R.id.filters);
-
-        //this listener starts when the user check the checkbox in
-        checkBoxListener = new View.OnClickListener() {
-
-            public void onClick(View v) {
-                Log.d(TAG, "enter onClick checkBox(View view) ");
-                String checked =((CheckBox) v).getTag().toString();
-                if (selectedFilters.contains(checked)) {
-                    selectedFilters.remove(checked);
-                    Log.i(TAG, "removing: "+checked);
-                } else {
-                    selectedFilters.add(checked);
-                    Log.i(TAG, "adding: "+checked);
-                }
-                //TODO create the logic to modify the list of points to show
-                LinkedList <String> list = new LinkedList<>();
-
-                if (selectedFilters.size()==0 &&
-                        ratings.size()==0) {
-                    for (Place p : places) {
-                        list.add(p.getName());
-                    }
-                } else {
-                    switch (current_filter) {
-                        case FILTERS:
-                            //TODO move this to separate activities start methods
-                            if (ratings.size()>0&& selectedFilters.size()>0) {
-                                for (Place p : places) {
-                                    if (selectedFilters.contains(p.getCategory())
-                                            && ratings.contains(String.valueOf(p.getRating()))) {
-                                        list.add(p.getName());
-                                    }
-                                }
-                            } else if (ratings.size()>0 && selectedFilters.size()==0){
-                                for (Place p : places) {
-                                    if (ratings.contains(String.valueOf(p.getRating()))) {
-                                        list.add(p.getName());
-                                    }
-                                }
-
-                            } else if (ratings.size()==0 && selectedFilters.size()>0) {
-                                for (Place p : places) {
-                                    if (selectedFilters.contains(p.getCategory())) {
-                                        list.add(p.getName());
-                                    }
-                                }
-                            }
-
-                            break;
-                        case LOVED:
-                            for (Place p :places) {
-                                if (selectedFilters.contains(p.getName())) {
-                                    list.add(p.getName());
-                                }
-                            }
-                            break;
-                        case ALL:
-                            for (Place p :places) {
-                                if (selectedFilters.contains(p.getName())) {
-                                    list.add(p.getName());
-                                }
-                            }
-                            break;
-
-
-                        default:
-                            break;
-                    }
-                }
-
-                //TODO TEST THIS SECTION
-                viewModel.updatePointsToShow(list);
-                Log.d(TAG, "exit onClick checkBox(View view) ");
-            }
-        };
+        //TODO
+  //      filter = (LinearLayout) v.findViewById(R.id.filters);
 
         // declare listeners for imagebuttons
         // set the listener for all the functional buttons. It has to change the filters map depending on the selected button.
@@ -428,20 +341,32 @@ public class MapFragment extends Fragment implements
             public void onClick(View v) {
                 Log.d(TAG, "enter onClick imageButtons(View view) ");
                 String button =((ImageButton) v).getTag().toString();
+                //TODO filter has already been set
+                if (viewModel.getCurrentFilter().getValue()!=null) {
 
-                if (current_filter.equals(button)&&showFiltersSidebar==true) {
-                    return;
-                } else {
-                    if (!current_filter.equals(button)) {
-                        receivedFilters.clear();
-                        selectedFilters.clear();
+                    //TODO user has selected the same filter, upgating isSidebarReguested only
+                    if (viewModel.getCurrentFilter().getValue().equals(button)) {
+                        if (viewModel.isSidebarReguested().getValue()!=null) {
+                            viewModel.upateShowSidebar(!viewModel.isSidebarReguested().getValue());
+                        } else {
+                            viewModel.upateShowSidebar(true);
+                        }
+                        return;
+                    } else {
+                        //TODO user has selected a new filter, need to show all the points
                         viewModel.updatePointsToShow(viewModel.getNamesSortedByRating().getValue());
                     }
+                } else {
+                    //TODO user has selected a filter first time, need to show all the points
+                    viewModel.updatePointsToShow(viewModel.getNamesSortedByRating().getValue());
                 }
+
                 //  current_filter = button;
                 if (button.equals(FILTERS)) {
-                    filters.clear();
-                    filters.put(FILTERS, true);
+                   // filters.clear();
+                   // filters.put(FILTERS, true);
+                    viewModel.updateCurrentFilter(button);
+                    viewModel.upateShowSidebar(true);
 
                 } else if (button.equals(LOVED)) {
                     //TODO user has to be logged in, otherwise to show tost and return;
@@ -451,9 +376,11 @@ public class MapFragment extends Fragment implements
                         Log.i(TAG, "email: "+ prefs.getString(UiUtils.EMAIL, "email"));
                         Log.i(TAG, "password: "+ prefs.getString(UiUtils.PASSWORD, "psw"));
                         if (prefs.getBoolean(UiUtils.LOGGED_IN, true)==true) {
-                            filters.clear();
-                            filters.put(LOVED, true);
-                         //   viewModel.updatePointsToShow(new LinkedList<String>());
+//                            filters.clear();
+//                            filters.put(LOVED, true);
+                            viewModel.updateCurrentFilter(button);
+                            viewModel.upateShowSidebar(true);
+
                         } else {
                             onInfoViewExpanded(UiUtils.LOG_IN, "");
                             return;
@@ -465,20 +392,22 @@ public class MapFragment extends Fragment implements
                     }
 
                 } else if (button.equals(ALL)) {
-                    filters.clear();
-                    filters.put(ALL, true);
+//                    filters.clear();
+//                    filters.put(ALL, true);
+                    viewModel.updateCurrentFilter(button);
+                    viewModel.upateShowSidebar(true);
 
                 } else {
                     //clear all
-                    filters.clear();
-                    selectedFilters.clear();
-                    ratings.clear();
+                  //  filters.clear();
                     viewModel.updatePointsToShow(viewModel.getNamesSortedByRating().getValue());
-                    filters.put(CLEAR_MAP, showFiltersSidebar);
+                    viewModel.updateCurrentFilter(button);
+                    viewModel.upateShowSidebar(false);
+                  //  filters.put(CLEAR_MAP, showFiltersSidebar);
                 }
 
-                filtersModified = true;
-                viewModel.updateFilterMap(filters);
+              //  filtersModified = true;
+               // viewModel.updateFilterMap(filters);
 
                 Log.d(TAG, "exit onClick imageButtons(View view) ");
             }
@@ -487,68 +416,12 @@ public class MapFragment extends Fragment implements
         showLoved.setOnClickListener(filterButtonsListener);
         showAll.setOnClickListener(filterButtonsListener);
         showFilters.setOnClickListener(filterButtonsListener);
-      //  clearAll.setOnClickListener(filterButtonsListener);
+        //  clearAll.setOnClickListener(filterButtonsListener);
         buttons.add(showAll);
         buttons.add(showFilters);
         buttons.add(showLoved);
 
-        showMoreButtonsListener = new View.OnClickListener() {
-            public void onClick(View view) {
-                Log.d(TAG, "enter showFilters(View view)");
-
-                filterSidebarModified = true;
-                filters.clear();
-                filters.put(current_filter, false);
-
-                viewModel.updateFilterMap(filters);
-                stabilizeViewWithZoom();
-                Log.d(TAG, "exit showFilters(View view)");
-            }
-        };
-
-        applyRatingListener = new View.OnClickListener() {
-            public void onClick(View view) {
-                Log.d(TAG, "enter applyRatingListener(View view)");
-                sortedBy =((CheckBox) view).getTag().toString();
-                Log.i(TAG, "rating selected: "+ sortedBy);
-                if (ratings.contains(sortedBy)) {
-                    ratings.remove(sortedBy);
-                } else {
-                    ratings.add(sortedBy);
-                }
-                LinkedList<String> tmp = new LinkedList<>();
-                if (ratings.size()==0 && selectedFilters.size()==0) {
-                   tmp.addAll(
-                           viewModel.getNamesSortedByRating().getValue());
-                }
-                else if (selectedFilters.size()>0 && ratings.size()>0) {
-                    for (Place p : places) {
-                        if (selectedFilters.contains(p.getCategory())
-                                && ratings.contains(String.valueOf(p.getRating()))) {
-                            tmp.add(p.getName());
-                        }
-                    }
-                } else if (ratings.size()==0 && selectedFilters.size()>0){
-                    for (Place p : places) {
-                        if (selectedFilters.contains(p.getCategory())) {
-                            tmp.add(p.getName());
-                        }
-                    }
-
-                } else if (ratings.size()>0 && selectedFilters.size()==0) {
-                    for (Place p : places) {
-                        if (ratings.contains(String.valueOf(p.getRating()))) {
-                            tmp.add(p.getName());
-                        }
-                    }
-                }
-                viewModel.updatePointsToShow(tmp);
-
-                Log.d(TAG, "exit applyRatingListener(View view)");
-            }
-        };
-
-     //   showFilterSection.setOnClickListener(showMoreButtonsListener);
+        //   showFilterSection.setOnClickListener(showMoreButtonsListener);
         Log.d(TAG, "exit onCreateView");
         return v;
     }
@@ -642,13 +515,13 @@ public class MapFragment extends Fragment implements
                         return true;
                     } else {
 
-                        if (showFiltersSidebar==true) {
-                            //  UiUtils.showFilters=!UiUtils.showFilters;
-                            //TODO update filters in ViewModel
-                            filters.clear();
-                            filters.put(current_filter, !showFiltersSidebar);
-                            viewModel.updateFilterMap(filters);
-                        }
+//                        if (showFiltersSidebar==true) {
+//                            //  UiUtils.showFilters=!UiUtils.showFilters;
+//                            //TODO update filters in ViewModel
+//                            filters.clear();
+//                            filters.put(current_filter, !showFiltersSidebar);
+//                            viewModel.updateFilterMap(filters);
+//                        }
 
                         m.showInfoWindow();
 
@@ -680,137 +553,159 @@ public class MapFragment extends Fragment implements
                             longIfRestarted))
                     .build();//mMap.getCameraPosition();
             currentZoom = zoomIfRestarted;
-            UiUtils.modifyButtons(buttons, current_filter);
+          //  UiUtils.modifyButtons(buttons, current_filter);
 
             isRestarted=false;
         }
 
         //TODO in the activity has been recreation or reset the ViewModel data has to be used
-        if (viewModel.filtersToApply.getValue()!=null) {
-            Log.i (TAG, "not null");
-            filters = viewModel.filtersToApply.getValue();
-        }
-        updateLocationUI(filters);
+//        if (viewModel.filtersToApply.getValue()!=null) {
+//            Log.i (TAG, "not null");
+//            filters = viewModel.filtersToApply.getValue();
+//        }
+//        updateLocationUI(filters);
 
         Log.d(TAG, "exit onMapReady");
 
     }
 
-
     private void updateLocationUI(Map <String, Boolean> newFilter) {
 
         Log.d(TAG, "enter updateLocationUI");
-
-        if (!newFilter.isEmpty()) {
-
-            ArrayList<String> temp = new ArrayList<String>(0);
-            temp.addAll(newFilter.keySet());
-            receivedFilters.clear();
-            Log.d(TAG, "current filter: " + temp.get(0));
-
-
-            if (filtersModified==true) {
-
-                //new filter set and the sidebar is open, new checkboxes have to get loaded
-                if (newFilter.containsKey(FILTERS)) {
-                    for (Place p : places) {
-                        if (!receivedFilters.contains(p.getCategory()))
-                            receivedFilters.add(p.getCategory());
-                    }
-
-                } else if (newFilter.containsKey(LOVED)) {
-                    //  receivedFilters
-                    if (viewModel.getLoved().getValue().size()>0) {
-                        receivedFilters.addAll(viewModel.getLoved().getValue());
-                    }
-
-                } else if (newFilter.containsKey(ALL)) {
-                    receivedFilters.addAll(viewModel.getNamesSortedByRating().getValue());
-
-                } else if (newFilter.containsKey(CLEAR_MAP)) {
-//                    bottomWr.removeAllViews();
-
-                    filter.removeAllViews();
-                    filter.getLayoutParams().height = 0;
-                    filter.getLayoutParams().width = 0;
-                    viewModel.updateFilterMap(new HashMap<String, Boolean>());
-                    for (ImageButton b : buttons) {
-
-                        // TODO!!!!!!!!!!!!!! Change
-                        b.setColorFilter(new PorterDuffColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN));
-                    }
-                    filters.clear();
-                    showFiltersSidebar = false;
-                    current_filter="";
-                    filterSidebarModified = false;
-                    filtersModified = false;
-                    stabilizeViewWithZoom();
-                    return;
-                }
-
-                if (newFilter.get(temp.get(0))==true) {
-                    UiUtils.configureFilters(getActivity(), filter, deviceType,
-                            receivedFilters, selectedFilters, checkBoxListener, temp.get(0), filterButtonsListener,
-                            showMoreButtonsListener, applyRatingListener,
-                            ratings);
-                    Log.d(TAG, "1");
-                } else {
-                    //new filter set, but filter sidebar is hidden
-                    //   filter.removeAllViews();
-                    Log.d(TAG, "2");
-                }
-
-            } else if (filtersModified==false && newFilter.get(temp.get(0))==true) {
-                //using the same filter, opening the filter sidebar
-                Log.d(TAG, "3");
-                if (newFilter.containsKey(FILTERS)) {
-                    for (Place p : places) {
-                        if (!receivedFilters.contains(p.getCategory()))
-                            receivedFilters.add(p.getCategory());
-                    }
-
-                } else if (newFilter.containsKey(LOVED)) {
-                    //  receivedFilters
-                    for (Place p : places) {
-                        if (viewModel.getLoved().getValue().contains(p.getName()))
-                            receivedFilters.add(p.getName());
-                    }
-
-                } else if (newFilter.containsKey(ALL)) {
-                    receivedFilters.addAll(viewModel.getNamesSortedByRating().getValue());
-                }
-                UiUtils.configureFilters(getActivity(), filter, deviceType,
-                        receivedFilters, selectedFilters, checkBoxListener, temp.get(0), filterButtonsListener,
-                        showMoreButtonsListener, applyRatingListener, ratings);
-
-            } else if (filtersModified==false && newFilter.get(temp.get(0))==false) {
-                //using the same filter, closing the sidebar
-                filter.removeAllViews();
-                filter.getLayoutParams().height = 0;
-                filter.getLayoutParams().width = 0;
-                Log.d(TAG, "4");
-            }
-
-            //resetting the values of class variables for later usage
-            current_filter = temp.get(0);
-            showFiltersSidebar = newFilter.get(current_filter);
-
-            filterSidebarModified = false;
-            filtersModified = false;
-
-        }
+//
+//        if (!newFilter.isEmpty()) {
+//
+//            ArrayList<String> temp = new ArrayList<String>(0);
+//            temp.addAll(newFilter.keySet());
+//         //   receivedFilters.clear();
+//            Log.d(TAG, "current filter: " + temp.get(0));
+//
+//
+//            if (filtersModified==true) {
+//
+//                //new filter set and the sidebar is open, new checkboxes have to get loaded
+//                if (newFilter.containsKey(FILTERS)) {
+//                    for (Place p : places) {
+//                        if (!receivedFilters.contains(p.getCategory()))
+//                            receivedFilters.add(p.getCategory());
+//                    }
+//
+//                } else if (newFilter.containsKey(LOVED)) {
+//                    //  receivedFilters
+//                    if (viewModel.getLoved().getValue().size()>0) {
+//                        receivedFilters.addAll(viewModel.getLoved().getValue());
+//                    }
+//
+//                } else if (newFilter.containsKey(ALL)) {
+//                    receivedFilters.addAll(viewModel.getNamesSortedByRating().getValue());
+//
+//                } else if (newFilter.containsKey(CLEAR_MAP)) {
+////                    bottomWr.removeAllViews();
+//
+//                    filter.removeAllViews();
+//                    filter.getLayoutParams().height = 0;
+//                    filter.getLayoutParams().width = 0;
+//                    viewModel.updateFilterMap(new HashMap<String, Boolean>());
+//                    for (ImageButton b : buttons) {
+//
+//                        // TODO!!!!!!!!!!!!!! Change
+//                        b.setColorFilter(new PorterDuffColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN));
+//                    }
+//                    filters.clear();
+//                    try {
+//                        rr.removeView(bottomWr);
+//                    } catch (Exception e) {
+//
+//                    }
+//                    showFiltersSidebar = false;
+//                    current_filter="";
+//                    filterSidebarModified = false;
+//                    filtersModified = false;
+//                    stabilizeViewWithZoom();
+//                    return;
+//                }
+//
+//                if (newFilter.get(temp.get(0))==true) {
+////                    UiUtils.configureFilters(getActivity(), filter, deviceType,
+////                            receivedFilters, selectedFilters, checkBoxListener, temp.get(0), filterButtonsListener,
+////                            showMoreButtonsListener, applyRatingListener,
+////                            ratings);
+//                    try {
+////                        bottomWr.getLayoutParams().height = filter.getHeight();
+////                        bottomWr.getLayoutParams().width = filter.getWidth();
+//                        rr.addView(bottomWr);
+//                    } catch (Exception e) {
+//                        Log.d(TAG, "already added");
+//                    }
+//                    Log.d(TAG, "1");
+//                } else {
+//                    //new filter set, but filter sidebar is hidden
+//                    //   filter.removeAllViews();
+//                    Log.d(TAG, "2");
+//                }
+//
+//            } else if (filtersModified==false && newFilter.get(temp.get(0))==true) {
+//                //using the same filter, opening the filter sidebar
+//                Log.d(TAG, "3");
+//                if (newFilter.containsKey(FILTERS)) {
+//                    for (Place p : places) {
+//                        if (!receivedFilters.contains(p.getCategory()))
+//                            receivedFilters.add(p.getCategory());
+//                    }
+//
+//                } else if (newFilter.containsKey(LOVED)) {
+//                    //  receivedFilters
+//                    for (Place p : places) {
+//                        if (viewModel.getLoved().getValue().contains(p.getName()))
+//                            receivedFilters.add(p.getName());
+//                    }
+//
+//                } else if (newFilter.containsKey(ALL)) {
+//                    receivedFilters.addAll(viewModel.getNamesSortedByRating().getValue());
+//                }
+////                UiUtils.configureFilters(getActivity(), filter, deviceType,
+////                        receivedFilters, selectedFilters, checkBoxListener, temp.get(0), filterButtonsListener,
+////                        showMoreButtonsListener, applyRatingListener, ratings);
+//                try {
+//                    rr.addView(bottomWr);
+//                } catch (Exception e) {
+//                    Log.d(TAG, "already added");
+//                }
+//
+//
+//            } else if (filtersModified==false && newFilter.get(temp.get(0))==false) {
+//                //using the same filter, closing the sidebar
+//                filter.removeAllViews();
+//                filter.getLayoutParams().height = 0;
+//                filter.getLayoutParams().width = 0;
+//                try {
+//                    rr.removeView(bottomWr);
+//                } catch (Exception e) {
+//
+//                }
+//                Log.d(TAG, "4");
+//            }
+//
+//            //resetting the values of class variables for later usage
+//            current_filter = temp.get(0);
+//            showFiltersSidebar = newFilter.get(current_filter);
+//
+//            filterSidebarModified = false;
+//            filtersModified = false;
+//
+//        }
         Log.d(TAG, "exit updateUI");
 
     }
 
     private void showClusters () {
         Log.d(TAG, "enter showClusters()");
-        //    Log.i(TAG, "marker to show up: "+Place.selectedMarkerID);
-        if (selectedFilters.size()==0&& ratings.size()==0) {
-            UiUtils.modifyButtons(buttons, "");
-        } else {
-            UiUtils.modifyButtons(buttons, current_filter);
-        }
+//        //    Log.i(TAG, "marker to show up: "+Place.selectedMarkerID);
+//        if (selectedFilters.size()==0&& ratings.size()==0) {
+//            UiUtils.modifyButtons(buttons, "");
+//        } else {
+//            UiUtils.modifyButtons(buttons, current_filter);
+//        }
 
         mClusterManager.clearItems();
         mClusterManager.getClusterMarkerCollection().clear();
@@ -918,8 +813,6 @@ public class MapFragment extends Fragment implements
             }
 
         }
-
-
 
     }
 

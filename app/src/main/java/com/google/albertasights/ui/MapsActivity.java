@@ -1,5 +1,6 @@
 package com.google.albertasights.ui;
 
+import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -9,7 +10,9 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import com.google.albertasights.R;
@@ -22,6 +25,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 public class MapsActivity extends MenuActivity implements MapFragment.OnPointDataExtendedListener,
         PointFragment.OnPointFragmentInteractionListener, NoUserFragment.OnButtonClickedListener {
@@ -40,6 +44,7 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
     private PointFragment pointFr = new PointFragment();
     private NoUserFragment loginFragment = new NoUserFragment();
     private StatusBarFragment progressFr = new StatusBarFragment();
+    private FiltersSidebarFragment sideBar= new FiltersSidebarFragment();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,10 +55,54 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
-
-        //TODO check the shared preferences
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         viewModel = ViewModelProviders.of(this).get(MapViewModel.class);
+
+        //TODO check the shared preferences
+        //observes the map with selected points filters to apply
+        final Observer<String> filtersObserver = new Observer<String>() {
+            @Override
+            public void onChanged(@Nullable final String newFilter) {
+                Log.i(TAG, "enter onChanged(String newFilter)");
+                Log.i(TAG, "filter: "+newFilter);
+                //if string = FILTER, putting categories as arguments
+                if (newFilter.equals(MapFragment.ALL)) {
+                    viewModel.updateDataToFilter(viewModel.getNamesSortedByRating().getValue());
+                } else if (newFilter.equals(MapFragment.FILTERS)) {
+                    LinkedList<String> tmp = new LinkedList<>();
+                    for (Place p : viewModel.getRecievedPoints().getValue()) {
+                        if (!tmp.contains(p.getCategory())) {
+                            tmp.add(p.getCategory());
+                        }
+                    }
+                    viewModel.updateDataToFilter(tmp);
+                } else if (newFilter.equals(MapFragment.LOVED)) {
+                    viewModel.updateDataToFilter(viewModel.getLoved().getValue());
+                }
+                //TODO declare the listener in sidebar to change the content
+
+                if (UiUtils.checkIfFragmentAdded("progr1", getSupportFragmentManager())==false)  {
+                    UiUtils.manageFragments(new SideBarFragment1(), getSupportFragmentManager(), false,
+                            R.id.map_container, "ADD", "progr1");
+                }
+            }
+        };
+        viewModel.getCurrentFilter().observe(this, filtersObserver);
+
+        final Observer<Boolean> sideBarObserver = new Observer<Boolean>() {
+            @Override
+            public void onChanged(@Nullable final Boolean newStatus) {
+                Log.i(TAG, "enter onChanged(@Nullable final Boolean newStatus)");
+                //
+                //if string = FILTER, putting categories as arguments
+                if (newStatus==false) {
+                    UiUtils.manageFragments(new SideBarFragment1(), getSupportFragmentManager(), false,
+                            R.id.map_container, "REMOVE", "progr1");
+                }
+                //TODO declare the listener in sidebar to change the content
+            }
+        };
+        viewModel.isSidebarReguested().observe(this, sideBarObserver);
 
         if (prefs.getStringSet(UiUtils.SELECTED_POINTS, new HashSet<String>())!=null) {
             LinkedList <String> lst = new LinkedList<>();
@@ -77,7 +126,7 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
             // start the animation for the period of data loading
             //TODO fragment test
             UiUtils.manageFragments(progressFr, getSupportFragmentManager(), false,
-                    R.id.map_container, "ADD");
+                    R.id.map_container, "ADD", "progr1");
 //            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
 //            transaction.add(R.id.map_container, progressFr).commit();
        }
@@ -122,7 +171,7 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
 //                                mapFragment).commit();
                         //TODO fragments
                         UiUtils.manageFragments(mapFragment, getSupportFragmentManager(), false,
-                                R.id.map_container, "REPLACE");
+                                R.id.map_container, "REPLACE", "map");
 
 
                     } else {
@@ -183,7 +232,7 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
 
                         //TODO fragment
                         UiUtils.manageFragments(mapFragment, getSupportFragmentManager(), false,
-                                R.id.map_container, "REPLACE");
+                                R.id.map_container, "REPLACE", "map");
 
 
                                 //replace(R.id.map_container, mapFragment).commit();
@@ -198,7 +247,7 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
                         }
                         //TODO fragment
                         UiUtils.manageFragments(loginFragment, getSupportFragmentManager(), false,
-                                R.id.map_container, "REPLACE");
+                                R.id.map_container, "REPLACE", "login");
 
                     }
 
@@ -321,12 +370,12 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
 //            getSupportFragmentManager().beginTransaction().replace(R.id.map_container,
 //                    loginFragment).addToBackStack(null).commit();
             UiUtils.manageFragments(loginFragment, getSupportFragmentManager(), true,
-                    R.id.map_container, "REPLACE");
+                    R.id.map_container, "REPLACE", "login");
         } else {
           //  getSupportFragmentManager().beginTransaction().replace(R.id.map_container,
           //         pointFr).addToBackStack(null).commit();
             UiUtils.manageFragments(pointFr, getSupportFragmentManager(), true,
-                    R.id.map_container, "REPLACE");
+                    R.id.map_container, "REPLACE", "point");
         }
 
         Log.d(TAG, "exit onPointDetailsSelected(String name)");
@@ -343,7 +392,7 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
         Log.i(TAG, "enter onLogInOrRegisterButtonClickedListener(String action)");
         //TODO fragments
         UiUtils.manageFragments(progressFr, getSupportFragmentManager(), false,
-                R.id.map_container, "REPLACE");
+                R.id.map_container, "REPLACE", "progr1");
 //        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
 //        transaction.replace(R.id.map_container, progressFr).commit();
         Log.i(TAG, "exit onLogInOrRegisterButtonClickedListener(String action)");

@@ -30,6 +30,9 @@ public class MapViewModel extends ViewModel {
     public final MutableLiveData<LinkedList<Place>> receivedPoints = new MutableLiveData<LinkedList<Place>>();
     public final MutableLiveData<Place> pointToSee = new MutableLiveData<>();
     public final MutableLiveData<String> currentFragment = new MutableLiveData<>();
+    public final MutableLiveData<String> currentFilter = new MutableLiveData<>();
+    public final MutableLiveData<Boolean> showSidebar = new MutableLiveData<>();
+    public final MutableLiveData<LinkedList<String>> dataToFilter = new MutableLiveData<>();
 
 
     public MapViewModel() {
@@ -64,8 +67,41 @@ public class MapViewModel extends ViewModel {
         Log.d(TAG, "exit updateNamesSortedByRating");
     }
 
+    public LiveData<LinkedList<String>> getDataToFilter () {
+        //  Log.d(TAG, "enter getPointsNamesToShow");
+        return dataToFilter;
+    }
+
+    public void updateDataToFilter (LinkedList <String> filter) {
+        Log.d(TAG, "enter updateDataToFilter (LinkedList <String> filter)");
+        dataToFilter.setValue(filter);
+        Log.i(TAG, "size: "+filter.size());
+        Log.d(TAG, "exit updateDataToFilter (LinkedList <String> filter)");
+    }
+
     public LiveData<String> getCurrentFragment() {
         return currentFragment;
+    }
+
+    public LiveData<String> getCurrentFilter() {
+        return currentFilter;
+    }
+
+    public void updateCurrentFilter(String filter) {
+        Log.d(TAG, "enter updateCurrentFilter");
+        currentFilter.setValue(filter);
+        Log.d(TAG, "exit updateCurrentFilter");
+    }
+
+    public LiveData<Boolean> isSidebarReguested() {
+        return showSidebar;
+    }
+
+    public void upateShowSidebar(Boolean toShow) {
+        Log.d(TAG, "enter upateShowSidebar");
+        Log.i(TAG, "show sidebar: "+toShow);
+        showSidebar.setValue(toShow);
+        Log.d(TAG, "exit upateShowSidebar");
     }
 
     public void updateCurrentFragment(String newFragment) {
@@ -109,7 +145,6 @@ public class MapViewModel extends ViewModel {
     }
 
     public LiveData<Place> getPointToSee() {
-
         return pointToSee;
     }
 

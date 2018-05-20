@@ -63,30 +63,10 @@
         </LinearLayout>
 
 
-        <ScrollView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_below="@id/wrapperTop"
-            android:id="@+id/scrl"
-            >
-
-            <LinearLayout
-                android:id="@+id/filters"
-                android:textColor="#ff000000"
-                android:orientation="vertical"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
-
-            </LinearLayout>
-
-        </ScrollView>
-
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_below="@id/wrapperTop"
-            android:layout_toRightOf="@id/scrl"
             android:id="@+id/mapWrapper"
 
             >
@@ -99,41 +79,6 @@
                 tools:context="com.example.olga.naviguide.MapsActivity" />
 
         </RelativeLayout>
-
-        <!--<RelativeLayout-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_marginTop="10dp"-->
-            <!--android:layout_marginBottom="10dp"-->
-            <!--android:id="@+id/wrapperBottom"-->
-            <!--android:layout_alignParentBottom="true"-->
-            <!--&gt;-->
-
-            <!--<ImageButton-->
-                <!--android:layout_width="wrap_content"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:id="@+id/imageB"-->
-                <!--android:background="@drawable/button_background"-->
-                <!--android:layout_alignParentRight="true"-->
-                <!--android:layout_marginRight="16dp"-->
-                <!--android:elevation="5dp"-->
-                <!--/>-->
-
-
-            <!--<ImageButton-->
-                <!--android:layout_width="wrap_content"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:layout_marginRight="16dp"-->
-                <!--android:background="@drawable/button_background_orange"-->
-                <!--android:layout_alignParentRight="true"-->
-                <!--android:layout_marginTop="16dp"-->
-                <!--android:layout_marginBottom="16dp"-->
-                <!--android:layout_below="@+id/imageB"-->
-                <!--android:elevation="5dp"-->
-                <!--android:id="@+id/clearMap"-->
-                <!--/>-->
-
-        <!--</RelativeLayout>-->
 
 
     </RelativeLayout>

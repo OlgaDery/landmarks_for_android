@@ -1,4 +1,5 @@
 package com.google.albertasights.ui;
+import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
@@ -6,22 +7,28 @@ import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
+import android.graphics.drawable.GradientDrawable;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.CompoundButtonCompat;
-import android.support.v4.widget.Space;
+import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.support.v4.widget.Space;
+import android.widget.RelativeLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -128,190 +135,6 @@ public class UiUtils {
         return orientation;
     }
 
-    public static void configureFilters (Context context, LinearLayout filter, String deviceType,
-                                         ArrayList<String> receivedFilters,
-                                         ArrayList<String> selectedFilters,
-                                         View.OnClickListener checkBoxListener, String currentFilter,
-                                         View.OnClickListener clearButtonList,
-                                         View.OnClickListener seeMoreBList,
-                                         View.OnClickListener sortPointsButtListenet,
-                                         ArrayList<String> ratings) {
-        Log.d(TAG, "enter configureFilters");
-        Log.d(TAG, "received filters: "+receivedFilters.size());
-        Log.d(TAG, "current filter: "+currentFilter);
-
-        filter.removeAllViews();
-        int globalIndex=-1;
-        ImageButton showFilterSection = new ImageButton(context);//(ImageButton) v.findViewById(R.id.imageB);
-        showFilterSection.setImageResource(R.drawable.show_more_up);
-        showFilterSection.getBackground().setAlpha(0);
-        showFilterSection.setOnClickListener(seeMoreBList);
-     //   showFilterSection.setColorFilter(new PorterDuffColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN));
-
-        ImageButton clearAll = new ImageButton(context);//(ImageButton) v.findViewById(R.id.clearMap);
-        clearAll.setImageResource(R.drawable.close_trimmed);
-        clearAll.getBackground().setAlpha(0);
-        clearAll.setTag("CLEAR_MAP");
-        clearAll.setOnClickListener(clearButtonList);
-
-        WindowManager wm = (WindowManager)context.getSystemService(Context.WINDOW_SERVICE);
-        Display display = wm.getDefaultDisplay();
-        DisplayMetrics metrics = new DisplayMetrics();
-        display.getMetrics(metrics);
-        int screen_width = metrics.widthPixels;
-        int elementWight = 0;
-
-        LinearLayout bottomsLayout = new LinearLayout(context);
-        bottomsLayout.setOrientation(LinearLayout.HORIZONTAL);
-        LinearLayout.LayoutParams param = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT, 1);
-        Space space = new Space(context);
-        Space space1 = new Space(context);
-        Space space2 = new Space(context);
-        space.setLayoutParams(param);
-        space1.setLayoutParams(param);
-        space2.setLayoutParams(param);
-
-        bottomsLayout.addView(space, 0);
-        bottomsLayout.addView(showFilterSection, 1);
-        bottomsLayout.addView(space1, 2);
-        bottomsLayout.addView(clearAll, 3);
-        bottomsLayout.addView(space2, 4);
-        filter.addView(bottomsLayout, globalIndex++);
-
-        TextView text = new TextView(context);
-        text.setPadding(20,20,20,20);
-        if (getOrientation(context).equals("Portrait")) {
-            switch (currentFilter) {
-                case MapFragment.FILTERS:
-                    text.setText("Rating:");
-                    filter.addView(text, globalIndex++);
-                    elementWight = screen_width - 300;
-                    break;
-                case MapFragment.ALL:
-
-                    text.setText("Sorted be name:");
-                    filter.addView(text, globalIndex++);
-                  //  filter.addView(b, 2);
-                    elementWight = screen_width - 200;
-                    break;
-                case MapFragment.LOVED:
-                    text.setText("Selected points:");
-                    filter.addView(text, globalIndex++);
-                    elementWight = screen_width - 200;
-                    break;
-            }
-        } else {
-            switch (currentFilter) {
-                case MapFragment.FILTERS:
-                    text.setText("Rating:");
-                    filter.addView(text, globalIndex++);
-                    elementWight = screen_width - 550;
-                    break;
-                case MapFragment.ALL:
-                    text.setText("Sorted be name:");
-                    filter.addView(text, globalIndex);
-                  //  filter.addView(b, 2);
-                    elementWight = screen_width - 450;
-                    break;
-                case MapFragment.LOVED:
-                    text.setText("Selected points:");
-                    filter.addView(text, globalIndex++);
-                    elementWight = screen_width - 450;
-                    break;
-            }
-        }
-        filter.setLayoutParams(new FrameLayout.LayoutParams(elementWight, FrameLayout.LayoutParams.WRAP_CONTENT));
-
-        if (currentFilter.equals(MapFragment.LOVED)&& receivedFilters.size()==0) {
-            TextView text1 = new TextView(context);
-            text.setText("You have not selected any points yet");
-            filter.addView(text1);
-            return;
-        }
-
-        ArrayList<String> lst = new ArrayList<>(receivedFilters.size());
-        lst.addAll(receivedFilters);
-        Collections.sort(lst);
-        // adding checkboxes dynamically
-
-        ColorStateList colorStateList = new ColorStateList(
-                new int[][]{
-                        new int[]{-android.R.attr.state_checked}, // unchecked
-                        new int[]{android.R.attr.state_checked} , // checked
-                },
-                new int[]{
-                        Color.parseColor("#000000"),
-                        Color.parseColor("#40b6ff"),
-                }
-        );
-
-        if (currentFilter.equals(MapFragment.FILTERS)){
-
-            CheckBox checkBox1 = new CheckBox(context);
-            checkBox1.setText("*****");
-            checkBox1.setTag("5");
-            if (ratings.contains("5")) {
-                checkBox1.setChecked(true);
-            }
-            checkBox1.setPadding(20,20,20,20);
-            checkBox1.setOnClickListener(sortPointsButtListenet);
-            filter.addView(checkBox1, globalIndex++);
-            CheckBox checkBox2 = new CheckBox(context);
-            checkBox2.setText("****");
-            if (ratings.contains("4")) {
-                checkBox2.setChecked(true);
-            }
-            checkBox2.setTag("4");
-            checkBox2.setPadding(20,20,20,20);
-            checkBox2.setOnClickListener(sortPointsButtListenet);
-            filter.addView(checkBox2, globalIndex++);
-            CheckBox checkBox3 = new CheckBox(context);
-            checkBox3.setTag("3");
-            checkBox3.setPadding(20,20,20,20);
-            if (ratings.contains("3")) {
-                checkBox3.setChecked(true);
-            }
-            checkBox3.setOnClickListener(sortPointsButtListenet);
-            checkBox3.setText("***");
-            filter.addView(checkBox3, globalIndex++);
-        }
-
-        TextView text1 = new TextView(context);
-        text1.setText("Categories:");
-        text1.setPadding(20,20,20,20);
-        filter.addView(text1, globalIndex++);
-
-//set the space between checkboxes
-        for (int i = 0; i < receivedFilters.size(); i++) {
-         //   Log.d(TAG, "!!!");
-            CheckBox checkBox = new CheckBox(context);
-
-            // set the text size depending on the device type
-            checkBox.setText(lst.get(i));
-         //   Log.i(TAG, lst.get(i));
-            if (deviceType.equals("tablet")) {
-                checkBox.setTextSize(context.getResources().getDimension(R.dimen.avg_textsize));
-            }
-
-            if (selectedFilters.contains(lst.get(i))) {
-                // set checked checkbox
-                checkBox.setChecked(true);
-                Log.i(TAG, "should be checked: " + lst.get(i));
-            }
-            checkBox.setPadding(20,20,20,20);
-            checkBox.setTag(lst.get(i));
-
-            //setting the color of text and the box of check box
-          //  checkBox.setTextColor(Color.BLACK);
-            CompoundButtonCompat.setButtonTintList(checkBox,colorStateList);
-            checkBox.setOnClickListener(checkBoxListener);
-            filter.addView(checkBox, globalIndex++);
-        }
-
-
-    }
 
     public static void showToast(Context context, String message) {
         Toast.makeText(context,
@@ -338,7 +161,7 @@ public class UiUtils {
     }
 
     public static void manageFragments (Fragment fragmemt, FragmentManager fManager, boolean addToBackStack,
-                                        int containerID, String action) {
+                                        int containerID, String action, String tag) {
         Log.d(TAG, "enter manageFragments");
         Fragment newFr = fragmemt;
         for (Fragment f: fManager.getFragments()) {
@@ -350,9 +173,19 @@ public class UiUtils {
         }
         FragmentTransaction transaction = fManager.beginTransaction();
         if (action.equals("ADD")) {
-            transaction.add(containerID, newFr);
+            if (tag.length()>1) {
+                transaction.add(containerID, newFr, tag);
+            } else {
+                transaction.add(containerID, newFr);
+            }
         } else if (action.equals("REPLACE")) {
+            if (tag.length()>1) {
+                transaction.replace(containerID, newFr, tag);
+            }
             transaction.replace(containerID, newFr);
+        } else if (action.equals("REMOVE")) {
+            Fragment fragment = fManager.findFragmentByTag(tag);
+            transaction.remove(fragment);
         }
         if (addToBackStack == true) {
             transaction.addToBackStack(null);
@@ -360,5 +193,19 @@ public class UiUtils {
         transaction.commit();
         Log.d(TAG, "exit manageFragments");
     }
+
+    public static boolean checkIfFragmentAdded (String tag, FragmentManager fManager) {
+        Log.d(TAG, "enter checkIfFragmentAdded (String tag, FragmentManager fManager)");
+        Fragment fragment = fManager.findFragmentByTag(tag);
+        if (fragment!=null) {
+            Log.d(TAG, "exit checkIfFragmentAdded (String tag, FragmentManager fManager)");
+            return true;
+
+        } else {
+            Log.d(TAG, "exit checkIfFragmentAdded (String tag, FragmentManager fManager)");
+            return false;
+        }
+    }
+
 
 }

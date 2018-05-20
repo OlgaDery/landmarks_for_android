@@ -54,13 +54,13 @@ public class UserActivity extends MenuActivity implements NoUserFragment.OnButto
                         Log.d(TAG, "user logged in, adding the User Fragment");
  //                       transaction.add(R.id.user_container, userDataFragment).commit();
                         UiUtils.manageFragments(userDataFragment, getSupportFragmentManager(), false,
-                                R.id.user_container, "ADD");
+                                R.id.user_container, "ADD", "u1");
                     } else {
                         Log.d(TAG, "user exists but not logged in");
 
                      //   transaction.add(R.id.user_container, logInFragment).commit();
                         UiUtils.manageFragments(logInFragment, getSupportFragmentManager(), false,
-                                R.id.user_container, "ADD");
+                                R.id.user_container, "ADD", "login");
                     }
                 }
 
@@ -69,7 +69,7 @@ public class UserActivity extends MenuActivity implements NoUserFragment.OnButto
                     Log.i("TAG", "user does not exists");
                  //   transaction.add(R.id.user_container, logInFragment).commit();
                 UiUtils.manageFragments(logInFragment, getSupportFragmentManager(), false,
-                        R.id.user_container, "ADD");
+                        R.id.user_container, "ADD", "login");
                 }
 //        }
 
@@ -90,7 +90,7 @@ public class UserActivity extends MenuActivity implements NoUserFragment.OnButto
                             viewModel.updateUser(user);
                        //     transaction.replace(R.id.user_container, userDataFragment);
                             UiUtils.manageFragments(userDataFragment, getSupportFragmentManager(), false,
-                                    R.id.user_container, "REPLACE");
+                                    R.id.user_container, "REPLACE", "u1");
 
                             Log.d(TAG, "user added");
                             //TODO update UI (replace one fragment with another)
@@ -105,7 +105,7 @@ public class UserActivity extends MenuActivity implements NoUserFragment.OnButto
                             }
                         //    transaction.replace(R.id.user_container, logInFragment);
                             UiUtils.manageFragments(logInFragment, getSupportFragmentManager(), false,
-                                    R.id.user_container, "REPLACE");
+                                    R.id.user_container, "REPLACE", "login");
                         }
                        // transaction.commit();
                     }
@@ -150,7 +150,7 @@ public class UserActivity extends MenuActivity implements NoUserFragment.OnButto
 //        transaction.replace(R.id.user_container, progressFragment);
 //        transaction.commit();
         UiUtils.manageFragments(progressFragment, getSupportFragmentManager(), false,
-                R.id.user_container, "REPLACE");
+                R.id.user_container, "REPLACE", "progr1");
         Log.i(TAG, "exit onLogInOrRegisterButtonClickedListener()");
 
     }
@@ -175,7 +175,7 @@ public class UserActivity extends MenuActivity implements NoUserFragment.OnButto
 //            transaction.addToBackStack(null);
 //            transaction.commit();
             UiUtils.manageFragments(modifYUserDataFragment, getSupportFragmentManager(), true,
-                    R.id.user_container, "REPLACE");
+                    R.id.user_container, "REPLACE", "u1");
         }
 
         Log.i(TAG, "exit onUserUpdateListener()");
@@ -192,7 +192,7 @@ public class UserActivity extends MenuActivity implements NoUserFragment.OnButto
 //        transaction.addToBackStack(null);
 //        transaction.commit();
         UiUtils.manageFragments(progressFragment, getSupportFragmentManager(), true,
-                R.id.user_container, "REPLACE");
+                R.id.user_container, "REPLACE", "progr1");
         Log.i(TAG, "exit onSubmitUser()");
 
     }
