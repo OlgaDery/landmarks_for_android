@@ -163,39 +163,49 @@ public class UiUtils {
     public static void manageFragments (Fragment fragmemt, FragmentManager fManager, boolean addToBackStack,
                                         int containerID, String action, String tag) {
         Log.d(TAG, "enter manageFragments");
-        Fragment newFr = fragmemt;
-        for (Fragment f: fManager.getFragments()) {
-            if (f.getClass().getName().equals(fragmemt.getClass().getName())) {
-                newFr = f;
-                Log.i(TAG, "the same fragm exists");
-                break;
-            }
-        }
+
         FragmentTransaction transaction = fManager.beginTransaction();
         if (action.equals("ADD")) {
             if (tag.length()>1) {
-                transaction.add(containerID, newFr, tag);
+                transaction.add(containerID, fragmemt, tag);
             } else {
-                transaction.add(containerID, newFr);
+                transaction.add(containerID, fragmemt);
             }
         } else if (action.equals("REPLACE")) {
             if (tag.length()>1) {
-                transaction.replace(containerID, newFr, tag);
+                transaction.replace(containerID, fragmemt, tag);
             }
-            transaction.replace(containerID, newFr);
+            transaction.replace(containerID, fragmemt);
         } else if (action.equals("REMOVE")) {
-            Fragment fragment = fManager.findFragmentByTag(tag);
-            transaction.remove(fragment);
+            fragmemt = fManager.findFragmentByTag(tag);
+            if (fragmemt!=null) {
+                Log.i(TAG, "fragment found to remove");
+                transaction.remove(fragmemt);
+            }
+        } else if (action.equals("HIDE")) {
+            fragmemt = fManager.findFragmentByTag(tag);
+            if (fragmemt!=null) {
+                transaction.hide(fragmemt);
+            }
+        } else if (action.equals("SHOW")) {
+            fragmemt = fManager.findFragmentByTag(tag);
+            if (fragmemt!=null) {
+                transaction.show(fragmemt);
+            }
         }
         if (addToBackStack == true) {
             transaction.addToBackStack(null);
         }
         transaction.commit();
+        for (Fragment f: fManager.getFragments()) {
+            Log.i(TAG, "fragment exists: "+ f.getClass().getName());
+        }
         Log.d(TAG, "exit manageFragments");
     }
 
     public static boolean checkIfFragmentAdded (String tag, FragmentManager fManager) {
         Log.d(TAG, "enter checkIfFragmentAdded (String tag, FragmentManager fManager)");
+
         Fragment fragment = fManager.findFragmentByTag(tag);
         if (fragment!=null) {
             Log.d(TAG, "exit checkIfFragmentAdded (String tag, FragmentManager fManager)");

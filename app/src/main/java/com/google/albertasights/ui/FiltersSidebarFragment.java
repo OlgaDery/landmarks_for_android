@@ -201,7 +201,6 @@ public class FiltersSidebarFragment extends Fragment {
                             }
                             break;
 
-
                         default:
                             break;
                     }

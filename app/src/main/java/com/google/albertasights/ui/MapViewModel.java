@@ -34,6 +34,10 @@ public class MapViewModel extends ViewModel {
     public final MutableLiveData<Boolean> showSidebar = new MutableLiveData<>();
     public final MutableLiveData<LinkedList<String>> dataToFilter = new MutableLiveData<>();
 
+    public final MutableLiveData<LinkedList<String>> selectedFiltersForCategories = new MutableLiveData<>();
+    public final MutableLiveData<LinkedList<String>> selectedFiltersForAllPoints = new MutableLiveData<>();
+    public final MutableLiveData<LinkedList<String>> selectedFiltersForLoved = new MutableLiveData<>();
+
 
     public MapViewModel() {
         Log.d(TAG, "enter MapViewModel()");
@@ -145,7 +149,38 @@ public class MapViewModel extends ViewModel {
     }
 
     public LiveData<Place> getPointToSee() {
+
         return pointToSee;
+    }
+
+    public LiveData<LinkedList<String>> getSelectedFiltersForCategories (){
+        return selectedFiltersForCategories;
+    }
+
+    public LiveData<LinkedList<String>> getSelectedFiltersForAll (){
+        return selectedFiltersForAllPoints;
+    }
+
+    public LiveData<LinkedList<String>> getSelectedFiltersForLoved (){
+        return selectedFiltersForLoved;
+    }
+
+    public void updateSelectedFiltersForCategories(LinkedList <String> cats) {
+        Log.d(TAG, "enter updateSelectedFiltersForCategories");
+        selectedFiltersForCategories.setValue(cats);
+        Log.d(TAG, "exit updateSelectedFiltersForCategories");
+    }
+
+    public void updateSelectedFiltersForAllPoints(LinkedList <String> names) {
+        Log.d(TAG, "enter updateSelectedFiltersForAllPoints");
+        selectedFiltersForAllPoints.setValue(names);
+        Log.d(TAG, "exit updateSelectedFiltersForAllPoints");
+    }
+
+    public void updateSelectedFiltersForLoved(LinkedList <String> names) {
+        Log.d(TAG, "enter updateSelectedFiltersForLoved");
+        selectedFiltersForLoved.setValue(names);
+        Log.d(TAG, "exit updateSelectedFiltersForLoved");
     }
 
 

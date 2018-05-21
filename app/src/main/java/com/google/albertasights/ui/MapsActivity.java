@@ -80,11 +80,6 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
                     viewModel.updateDataToFilter(viewModel.getLoved().getValue());
                 }
                 //TODO declare the listener in sidebar to change the content
-
-                if (UiUtils.checkIfFragmentAdded("progr1", getSupportFragmentManager())==false)  {
-                    UiUtils.manageFragments(new SideBarFragment1(), getSupportFragmentManager(), false,
-                            R.id.map_container, "ADD", "progr1");
-                }
             }
         };
         viewModel.getCurrentFilter().observe(this, filtersObserver);
@@ -97,7 +92,15 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
                 //if string = FILTER, putting categories as arguments
                 if (newStatus==false) {
                     UiUtils.manageFragments(new SideBarFragment1(), getSupportFragmentManager(), false,
-                            R.id.map_container, "REMOVE", "progr1");
+                            R.id.map_container, "HIDE", "progr1");
+                } else {
+                    if (UiUtils.checkIfFragmentAdded("progr1", getSupportFragmentManager())==false)  {
+                        UiUtils.manageFragments(new SideBarFragment1(), getSupportFragmentManager(), false,
+                                R.id.map_container, "ADD", "progr1");
+                    } else {
+                        UiUtils.manageFragments(new SideBarFragment1(), getSupportFragmentManager(), false,
+                                R.id.map_container, "SHOW", "progr1");
+                    }
                 }
                 //TODO declare the listener in sidebar to change the content
             }
@@ -127,8 +130,7 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
             //TODO fragment test
             UiUtils.manageFragments(progressFr, getSupportFragmentManager(), false,
                     R.id.map_container, "ADD", "progr1");
-//            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-//            transaction.add(R.id.map_container, progressFr).commit();
+
        }
 
         // Retrieve the content view that renders the map.
@@ -167,8 +169,6 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
                         all.addAll(rating1);
                         viewModel.updatePointsToShow(lst1);
                         viewModel.updateNamesSortedByRating(all);
-//                        getSupportFragmentManager().beginTransaction().replace(R.id.map_container,
-//                                mapFragment).commit();
                         //TODO fragments
                         UiUtils.manageFragments(mapFragment, getSupportFragmentManager(), false,
                                 R.id.map_container, "REPLACE", "map");
@@ -371,7 +371,12 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
 //                    loginFragment).addToBackStack(null).commit();
             UiUtils.manageFragments(loginFragment, getSupportFragmentManager(), true,
                     R.id.map_container, "REPLACE", "login");
-        } else {
+        } else if (action.equals("HIDE_SIDEBAR")) {
+            UiUtils.manageFragments(new SideBarFragment1(), getSupportFragmentManager(), false,
+                    R.id.map_container, "HIDE", "progr1");
+            viewModel.upateShowSidebar(false);
+
+        } else{
           //  getSupportFragmentManager().beginTransaction().replace(R.id.map_container,
           //         pointFr).addToBackStack(null).commit();
             UiUtils.manageFragments(pointFr, getSupportFragmentManager(), true,

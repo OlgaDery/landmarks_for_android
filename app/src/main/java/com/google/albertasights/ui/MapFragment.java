@@ -352,14 +352,14 @@ public class MapFragment extends Fragment implements
                             viewModel.upateShowSidebar(true);
                         }
                         return;
-                    } else {
-                        //TODO user has selected a new filter, need to show all the points
-                        viewModel.updatePointsToShow(viewModel.getNamesSortedByRating().getValue());
+//                    } else {
+//                        //TODO user has selected a new filter, need to show all the points
                     }
                 } else {
                     //TODO user has selected a filter first time, need to show all the points
-                    viewModel.updatePointsToShow(viewModel.getNamesSortedByRating().getValue());
+                   // viewModel.updatePointsToShow(viewModel.getNamesSortedByRating().getValue());
                 }
+                LinkedList<String> list = new LinkedList<>();
 
                 //  current_filter = button;
                 if (button.equals(FILTERS)) {
@@ -367,6 +367,19 @@ public class MapFragment extends Fragment implements
                    // filters.put(FILTERS, true);
                     viewModel.updateCurrentFilter(button);
                     viewModel.upateShowSidebar(true);
+
+                    if (viewModel.getSelectedFiltersForCategories().getValue()!=null &&
+                            viewModel.getSelectedFiltersForCategories().getValue().size()>0) {
+                        Log.d(TAG, "1");
+                        for (Place p : viewModel.getRecievedPoints().getValue()) {
+                            if (viewModel.getSelectedFiltersForCategories().getValue().contains(p.getCategory())) {
+                                list.add(p.getName());
+                            }
+                        }
+                    } else {
+                        Log.d(TAG, "2");
+                        list.addAll(viewModel.getNamesSortedByRating().getValue());
+                    }
 
                 } else if (button.equals(LOVED)) {
                     //TODO user has to be logged in, otherwise to show tost and return;
@@ -376,10 +389,15 @@ public class MapFragment extends Fragment implements
                         Log.i(TAG, "email: "+ prefs.getString(UiUtils.EMAIL, "email"));
                         Log.i(TAG, "password: "+ prefs.getString(UiUtils.PASSWORD, "psw"));
                         if (prefs.getBoolean(UiUtils.LOGGED_IN, true)==true) {
-//                            filters.clear();
-//                            filters.put(LOVED, true);
+
                             viewModel.updateCurrentFilter(button);
                             viewModel.upateShowSidebar(true);
+                            if (viewModel.getSelectedFiltersForLoved().getValue()!=null &&
+                                    viewModel.getSelectedFiltersForLoved().getValue().size()>0) {
+                                list.addAll(viewModel.getSelectedFiltersForLoved().getValue());
+                            } else {
+                                list.addAll(viewModel.getNamesSortedByRating().getValue());
+                            }
 
                         } else {
                             onInfoViewExpanded(UiUtils.LOG_IN, "");
@@ -392,8 +410,14 @@ public class MapFragment extends Fragment implements
                     }
 
                 } else if (button.equals(ALL)) {
-//                    filters.clear();
-//                    filters.put(ALL, true);
+                    if (viewModel.getSelectedFiltersForAll().getValue()!=null &&
+                            viewModel.getSelectedFiltersForAll().getValue().size()>0) {
+                        list.addAll(viewModel.getSelectedFiltersForAll().getValue());
+                        Log.d(TAG, "3");
+                    } else {
+                        list.addAll(viewModel.getNamesSortedByRating().getValue());
+                        Log.d(TAG, "4");
+                    }
                     viewModel.updateCurrentFilter(button);
                     viewModel.upateShowSidebar(true);
 
@@ -403,11 +427,12 @@ public class MapFragment extends Fragment implements
                     viewModel.updatePointsToShow(viewModel.getNamesSortedByRating().getValue());
                     viewModel.updateCurrentFilter(button);
                     viewModel.upateShowSidebar(false);
+                 //   stabilizeViewWithZoom();
+                    return;
                   //  filters.put(CLEAR_MAP, showFiltersSidebar);
                 }
-
-              //  filtersModified = true;
-               // viewModel.updateFilterMap(filters);
+                viewModel.updatePointsToShow(list);
+             //   stabilizeViewWithZoom();
 
                 Log.d(TAG, "exit onClick imageButtons(View view) ");
             }
@@ -441,7 +466,7 @@ public class MapFragment extends Fragment implements
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     mLocationPermissionGranted = true;
-                    updateLocationUI(filters);
+                  //  updateLocationUI(filters);
 
                     if (places.size()>0) {
                         showClusters();
@@ -509,20 +534,12 @@ public class MapFragment extends Fragment implements
                 @Override
                 public boolean onMarkerClick(Marker m) {
                     //  Log.d(TAG, "enter onMarkerClick(Marker m)");
-
                     if (m.getTitle()==null) {
                         //          Log.d(TAG, "cluster clicked");
                         return true;
                     } else {
-
-//                        if (showFiltersSidebar==true) {
-//                            //  UiUtils.showFilters=!UiUtils.showFilters;
-//                            //TODO update filters in ViewModel
-//                            filters.clear();
-//                            filters.put(current_filter, !showFiltersSidebar);
-//                            viewModel.updateFilterMap(filters);
-//                        }
-
+//                            //TODO hide sidebar
+                        onInfoViewExpanded("HIDE_SIDEBAR", "");
                         m.showInfoWindow();
 
                         //   Log.d(TAG, "exit onMarkerClick(Marker m)");
@@ -559,142 +576,8 @@ public class MapFragment extends Fragment implements
         }
 
         //TODO in the activity has been recreation or reset the ViewModel data has to be used
-//        if (viewModel.filtersToApply.getValue()!=null) {
-//            Log.i (TAG, "not null");
-//            filters = viewModel.filtersToApply.getValue();
-//        }
-//        updateLocationUI(filters);
 
         Log.d(TAG, "exit onMapReady");
-
-    }
-
-    private void updateLocationUI(Map <String, Boolean> newFilter) {
-
-        Log.d(TAG, "enter updateLocationUI");
-//
-//        if (!newFilter.isEmpty()) {
-//
-//            ArrayList<String> temp = new ArrayList<String>(0);
-//            temp.addAll(newFilter.keySet());
-//         //   receivedFilters.clear();
-//            Log.d(TAG, "current filter: " + temp.get(0));
-//
-//
-//            if (filtersModified==true) {
-//
-//                //new filter set and the sidebar is open, new checkboxes have to get loaded
-//                if (newFilter.containsKey(FILTERS)) {
-//                    for (Place p : places) {
-//                        if (!receivedFilters.contains(p.getCategory()))
-//                            receivedFilters.add(p.getCategory());
-//                    }
-//
-//                } else if (newFilter.containsKey(LOVED)) {
-//                    //  receivedFilters
-//                    if (viewModel.getLoved().getValue().size()>0) {
-//                        receivedFilters.addAll(viewModel.getLoved().getValue());
-//                    }
-//
-//                } else if (newFilter.containsKey(ALL)) {
-//                    receivedFilters.addAll(viewModel.getNamesSortedByRating().getValue());
-//
-//                } else if (newFilter.containsKey(CLEAR_MAP)) {
-////                    bottomWr.removeAllViews();
-//
-//                    filter.removeAllViews();
-//                    filter.getLayoutParams().height = 0;
-//                    filter.getLayoutParams().width = 0;
-//                    viewModel.updateFilterMap(new HashMap<String, Boolean>());
-//                    for (ImageButton b : buttons) {
-//
-//                        // TODO!!!!!!!!!!!!!! Change
-//                        b.setColorFilter(new PorterDuffColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN));
-//                    }
-//                    filters.clear();
-//                    try {
-//                        rr.removeView(bottomWr);
-//                    } catch (Exception e) {
-//
-//                    }
-//                    showFiltersSidebar = false;
-//                    current_filter="";
-//                    filterSidebarModified = false;
-//                    filtersModified = false;
-//                    stabilizeViewWithZoom();
-//                    return;
-//                }
-//
-//                if (newFilter.get(temp.get(0))==true) {
-////                    UiUtils.configureFilters(getActivity(), filter, deviceType,
-////                            receivedFilters, selectedFilters, checkBoxListener, temp.get(0), filterButtonsListener,
-////                            showMoreButtonsListener, applyRatingListener,
-////                            ratings);
-//                    try {
-////                        bottomWr.getLayoutParams().height = filter.getHeight();
-////                        bottomWr.getLayoutParams().width = filter.getWidth();
-//                        rr.addView(bottomWr);
-//                    } catch (Exception e) {
-//                        Log.d(TAG, "already added");
-//                    }
-//                    Log.d(TAG, "1");
-//                } else {
-//                    //new filter set, but filter sidebar is hidden
-//                    //   filter.removeAllViews();
-//                    Log.d(TAG, "2");
-//                }
-//
-//            } else if (filtersModified==false && newFilter.get(temp.get(0))==true) {
-//                //using the same filter, opening the filter sidebar
-//                Log.d(TAG, "3");
-//                if (newFilter.containsKey(FILTERS)) {
-//                    for (Place p : places) {
-//                        if (!receivedFilters.contains(p.getCategory()))
-//                            receivedFilters.add(p.getCategory());
-//                    }
-//
-//                } else if (newFilter.containsKey(LOVED)) {
-//                    //  receivedFilters
-//                    for (Place p : places) {
-//                        if (viewModel.getLoved().getValue().contains(p.getName()))
-//                            receivedFilters.add(p.getName());
-//                    }
-//
-//                } else if (newFilter.containsKey(ALL)) {
-//                    receivedFilters.addAll(viewModel.getNamesSortedByRating().getValue());
-//                }
-////                UiUtils.configureFilters(getActivity(), filter, deviceType,
-////                        receivedFilters, selectedFilters, checkBoxListener, temp.get(0), filterButtonsListener,
-////                        showMoreButtonsListener, applyRatingListener, ratings);
-//                try {
-//                    rr.addView(bottomWr);
-//                } catch (Exception e) {
-//                    Log.d(TAG, "already added");
-//                }
-//
-//
-//            } else if (filtersModified==false && newFilter.get(temp.get(0))==false) {
-//                //using the same filter, closing the sidebar
-//                filter.removeAllViews();
-//                filter.getLayoutParams().height = 0;
-//                filter.getLayoutParams().width = 0;
-//                try {
-//                    rr.removeView(bottomWr);
-//                } catch (Exception e) {
-//
-//                }
-//                Log.d(TAG, "4");
-//            }
-//
-//            //resetting the values of class variables for later usage
-//            current_filter = temp.get(0);
-//            showFiltersSidebar = newFilter.get(current_filter);
-//
-//            filterSidebarModified = false;
-//            filtersModified = false;
-//
-//        }
-        Log.d(TAG, "exit updateUI");
 
     }
 
@@ -725,7 +608,6 @@ public class MapFragment extends Fragment implements
         }
         stabilizeViewWithZoom();
         Log.d(TAG, "exit showClusters()");
-
     }
 
 
@@ -767,13 +649,16 @@ public class MapFragment extends Fragment implements
     public void onInfoViewExpanded(String action, String pointName) {
         //TODO
         Log.i(TAG, "action: "+action);
-        if (mListener != null) {
-            isRestarted=true;
-            latIfRestarted = mMap.getCameraPosition().target.latitude;
-            longIfRestarted = mMap.getCameraPosition().target.longitude;
-            zoomIfRestarted = mMap.getCameraPosition().zoom;
-            mListener.onPointDetailsSelected(action);
+        if (!action.equals("HIDE_SIDEBAR")) {
+            if (mListener != null) {
+                isRestarted=true;
+                latIfRestarted = mMap.getCameraPosition().target.latitude;
+                longIfRestarted = mMap.getCameraPosition().target.longitude;
+                zoomIfRestarted = mMap.getCameraPosition().zoom;
+            }
         }
+
+        mListener.onPointDetailsSelected(action);
     }
 
     @Override
@@ -799,7 +684,6 @@ public class MapFragment extends Fragment implements
         @Override
         protected void onClusterItemRendered(MyClusterItem item, Marker marker) {
             super.onClusterItemRendered(item, marker);
-            count++;
             if (saveInfoWindow==true) {
                 if (selectedMarkerID.equals(marker.getTitle())) {
                     Log.i(TAG, "got it!");
@@ -807,9 +691,6 @@ public class MapFragment extends Fragment implements
                     selectedMarkerID = "";
                     saveInfoWindow=false;
                 }
-            }
-            if (count==viewModel.getPointsNamesToShow().getValue().size()-1) {
-                stabilizeViewWithZoom();
             }
 
         }
