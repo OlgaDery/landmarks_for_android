@@ -346,11 +346,12 @@ public class MapFragment extends Fragment implements
 
                     //TODO user has selected the same filter, upgating isSidebarReguested only
                     if (viewModel.getCurrentFilter().getValue().equals(button)) {
-                        if (viewModel.isSidebarReguested().getValue()!=null) {
-                            viewModel.upateShowSidebar(!viewModel.isSidebarReguested().getValue());
-                        } else {
-                            viewModel.upateShowSidebar(true);
-                        }
+                        viewModel.upateShowSidebar(true);
+//                        if (viewModel.isSidebarReguested().getValue()!=null) {
+//                            viewModel.upateShowSidebar(!viewModel.isSidebarReguested().getValue());
+//                        } else {
+//
+//                        }
                         return;
 //                    } else {
 //                        //TODO user has selected a new filter, need to show all the points
@@ -421,15 +422,6 @@ public class MapFragment extends Fragment implements
                     viewModel.updateCurrentFilter(button);
                     viewModel.upateShowSidebar(true);
 
-                } else {
-                    //clear all
-                  //  filters.clear();
-                    viewModel.updatePointsToShow(viewModel.getNamesSortedByRating().getValue());
-                    viewModel.updateCurrentFilter(button);
-                    viewModel.upateShowSidebar(false);
-                 //   stabilizeViewWithZoom();
-                    return;
-                  //  filters.put(CLEAR_MAP, showFiltersSidebar);
                 }
                 viewModel.updatePointsToShow(list);
              //   stabilizeViewWithZoom();
@@ -666,6 +658,7 @@ public class MapFragment extends Fragment implements
         //TODO hook the click on the marker to the listener, what should trigger the replacement of the activity
         for (Place p : places) {
             if (p.getName().equals(marker.getTitle())) {
+                Log.i(TAG, "point to expand: "+p.getName());
                 viewModel.updatePoint(p);
                 break;
             }

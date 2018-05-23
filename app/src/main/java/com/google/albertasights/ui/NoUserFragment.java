@@ -1,5 +1,6 @@
 package com.google.albertasights.ui;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -68,11 +69,16 @@ public class NoUserFragment extends Fragment {
     }
 
     @Override
+    @TargetApi(22)
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         Log.d(TAG, "enter onCreateView");
         View view = inflater.inflate(R.layout.fragment_no_user, container, false);
+
+        view.setTranslationZ(50.0f);
+        view.setElevation(135.0f);
+
         final EditText email = (EditText) view.findViewById(R.id.email);
         final EditText password = (EditText) view.findViewById(R.id.password);
         text = (TextView) view.findViewById(R.id.txt_user);
@@ -81,14 +87,7 @@ public class NoUserFragment extends Fragment {
         logInButton = (Button)view.findViewById(R.id.log_button);
         logInButton.setTag(UiUtils.LOG_IN);
 
-        WindowManager wm = (WindowManager)getActivity().getSystemService(Context.WINDOW_SERVICE);
-        Display display = wm.getDefaultDisplay();
-        DisplayMetrics metrics = new DisplayMetrics();
-        display.getMetrics(metrics);
-        int screen_height = metrics.heightPixels;
-        int screen_width = metrics.widthPixels;
-        String orientation = UiUtils.getOrientation(getActivity());
-        deviceType = UiUtils.findScreenSize(getActivity());
+
 //        if (deviceType.equals("tablet")) {
 //            text.setTextSize(getActivity().getResources().getDimension(R.dimen.avg_header));
 //        } else {

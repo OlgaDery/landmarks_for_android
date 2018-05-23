@@ -14,7 +14,10 @@ public class UserViewModel extends ViewModel {
     private static final String TAG = UserViewModel.class.getSimpleName();
     public final MutableLiveData<User> user = new MutableLiveData<>();
     public final MutableLiveData<String> currentAction = new MutableLiveData<>();
-    public final MutableLiveData<String> destination = new MutableLiveData<>();
+    public final MutableLiveData<String> deviceType = new MutableLiveData<>();
+    public final MutableLiveData<String> orientation = new MutableLiveData<>();
+    public final MutableLiveData<Integer> wight = new MutableLiveData<>();
+    public final MutableLiveData<Integer> hight = new MutableLiveData<>();
 
     public UserViewModel() {
         Log.d(TAG, "enter UserViewModel()");
@@ -43,16 +46,32 @@ public class UserViewModel extends ViewModel {
         return currentAction;
     }
 
-    public LiveData<String> getDestination () {
-
-        return destination;
+    public LiveData<Integer> getWight() {
+        return wight;
     }
 
-    public void updateDestination (String newDest) {
-        Log.d(TAG, "enter updateDestination");
-        destination.setValue(newDest);
-        Log.d(TAG, "exit updateDestination");
+    public LiveData<Integer> getHight() {
+        return hight;
     }
 
+    public LiveData<String> getOrienr() {
+        return orientation;
+    }
+
+    public LiveData<String> getDevice() {
+        return deviceType;
+    }
+
+    public void updateHights(Integer hight1) {
+        hight.setValue(hight1);
+    }
+
+    public void updateOrientation (String orient) {
+        orientation.setValue(orient);
+    }
+
+    public void updateDeviceType (String device) {
+        deviceType.setValue(device);
+    }
 
 }

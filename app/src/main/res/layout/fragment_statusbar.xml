@@ -16,6 +16,7 @@
         android:layout_alignParentTop="true"
         android:layout_margin="30dp"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:elevation="100dp"/>
     
 </RelativeLayout>

@@ -17,6 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -26,7 +27,9 @@ import com.google.android.gms.maps.model.Marker;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -50,7 +53,9 @@ public class SideBarFragment1 extends Fragment {
     private View.OnClickListener checkBoxListener;
     private View.OnClickListener applyRatingListener;
     private boolean restartedOrRecreated = false;
-    LinkedList <String> selectedFilters = new LinkedList<>();
+    private  LinkedList <String> selectedFilters = new LinkedList<>();
+    private ImageButton clearAll;
+    private ImageButton hide;
 
     private OnFragmentInteractionListener mListener;
 
@@ -216,15 +221,54 @@ public class SideBarFragment1 extends Fragment {
         // Inflate the layout for this fragment
 
         View v = inflater.inflate(R.layout.fragment_side_bar_fragment1, container, false);
-        v.getLayoutParams().width = 400;
+        if (viewModel.getOrienr().getValue().equals(UiUtils.PORTRAIT)) {
+            v.getLayoutParams().width =  viewModel.getWight().getValue()/2+70;
+        } else {
+            v.getLayoutParams().width =  viewModel.getWight().getValue()/2;
+        }
+        //TODO configure the top margin dinamically depending on the size of the buttons container of the map fragment
+
         ll = (LinearLayout)v.findViewById(R.id.test_layout);
+        clearAll = (ImageButton)v.findViewById(R.id.clearAll);
+        hide = (ImageButton) v.findViewById(R.id.hideSidebar);
+
+        hide.setImageResource(R.drawable.show_more_up);
+        hide.getBackground().setAlpha(0);
+
+        clearAll.setImageResource(R.drawable.clear);
+        clearAll.getBackground().setAlpha(0);
+        View.OnClickListener hideSidebarListener = new View.OnClickListener() {
+            public void onClick(View view) {
+                Log.d(TAG, "enter hideSidebarButtonsListener(View view)");
+                viewModel.upateShowSidebar(false);
+
+                Log.d(TAG, "exit hideSidebarButtonsListener(View view)");
+            }
+        };
+        View.OnClickListener clearAllListener = new View.OnClickListener() {
+            public void onClick(View view) {
+
+                Log.d(TAG, "enter clearAllListener(View view)");
+                viewModel.updatePointsToShow(viewModel.getNamesSortedByRating().getValue());
+                viewModel.updateCurrentFilter(null);
+                viewModel.upateShowSidebar(false);
+                viewModel.updateDataToFilter(null);
+
+                Log.d(TAG, "exit clearAllListener(View view)");
+            }
+        };
+        hide.setOnClickListener(hideSidebarListener);
+        clearAll.setOnClickListener(clearAllListener);
+
         final Observer<LinkedList<String>> filtersObserver = new Observer<LinkedList<String>>() {
 
             @Override
             public void onChanged(@Nullable final LinkedList<String> filt) {
                 Log.i(TAG, "enter onChanged(@Nullable final LinkedList<String> filt)");
-                ll.removeAllViews();
-                configureFilters(ll);
+                if (filt!=null) {
+                    ll.removeAllViews();
+                    configureFilters(ll);
+                }
 
                 //TODO declare the listener in sidebar to change the content
             }
@@ -309,10 +353,10 @@ public class SideBarFragment1 extends Fragment {
 //            }
             txt.setText("All points");
         } else if (viewModel.getCurrentFilter().getValue().equals(MapFragment.LOVED)) {
-            if (viewModel.getLoved().getValue()==null) {
-                TextView text1 = new TextView(getActivity());
-                txt.setText("You have not selected any points yet");
-                ll.addView(text1);
+            if (viewModel.getLoved().getValue()==null || viewModel.getLoved().getValue().size()==0) {
+
+                txt.setText("You have not selected any points yet. To add point to your collection, expand the info window of the marker and click the heart icon");
+                ll.addView(txt);
                 return;
             } else {
 //                if (viewModel.getSelectedFiltersForLoved().getValue()!=null) {

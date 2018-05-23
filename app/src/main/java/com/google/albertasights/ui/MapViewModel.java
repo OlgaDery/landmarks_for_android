@@ -2,6 +2,7 @@ package com.google.albertasights.ui;
 
 
 import android.arch.lifecycle.LiveData;
+import android.arch.lifecycle.MediatorLiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.ViewModel;
 import android.content.BroadcastReceiver;
@@ -38,6 +39,10 @@ public class MapViewModel extends ViewModel {
     public final MutableLiveData<LinkedList<String>> selectedFiltersForAllPoints = new MutableLiveData<>();
     public final MutableLiveData<LinkedList<String>> selectedFiltersForLoved = new MutableLiveData<>();
 
+    public final MutableLiveData<String> deviceType = new MutableLiveData<>();
+    public final MutableLiveData<String> orientation = new MutableLiveData<>();
+    public final MutableLiveData<Integer> wight = new MutableLiveData<>();
+    public final MutableLiveData<Integer> hight = new MutableLiveData<>();
 
     public MapViewModel() {
         Log.d(TAG, "enter MapViewModel()");
@@ -79,7 +84,9 @@ public class MapViewModel extends ViewModel {
     public void updateDataToFilter (LinkedList <String> filter) {
         Log.d(TAG, "enter updateDataToFilter (LinkedList <String> filter)");
         dataToFilter.setValue(filter);
-        Log.i(TAG, "size: "+filter.size());
+        if (filter!=null) {
+            Log.i(TAG, "size: "+filter.size());
+        }
         Log.d(TAG, "exit updateDataToFilter (LinkedList <String> filter)");
     }
 
@@ -181,6 +188,38 @@ public class MapViewModel extends ViewModel {
         Log.d(TAG, "enter updateSelectedFiltersForLoved");
         selectedFiltersForLoved.setValue(names);
         Log.d(TAG, "exit updateSelectedFiltersForLoved");
+    }
+
+    public void updateWight (Integer wight1) {
+        wight.setValue(wight1);
+    }
+
+    public LiveData<Integer> getWight() {
+        return wight;
+    }
+
+    public LiveData<Integer> getHight() {
+        return hight;
+    }
+
+    public LiveData<String> getOrienr() {
+        return orientation;
+    }
+
+    public LiveData<String> getDevice() {
+        return deviceType;
+    }
+
+    public void updateHights(Integer hight1) {
+        hight.setValue(hight1);
+    }
+
+    public void updateOrientation (String orient) {
+        orientation.setValue(orient);
+    }
+
+    public void updateDeviceType (String device) {
+        deviceType.setValue(device);
     }
 
 

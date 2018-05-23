@@ -78,6 +78,10 @@ public class UiUtils {
     public static final String FIRST_NAME = "FIRST_NAME";
     public static final String LAST_NAME = "LAST_NAME";
     public static final String SORTED_BY = "SORTED_BY";
+    public static final String PORTRAIT = "PORTRAIT";
+    public static final String LANDSCAPE = "LANDSCAPE";
+    public static final String TABLET = "TABLET";
+    public static final String PHONE = "PHONE";
     public static final String BY_RATING = "BY_RATING";
     public static final String BY_NAME = "BY_NAME";
 
@@ -102,22 +106,32 @@ public class UiUtils {
 
     }
 
-    public static String findScreenSize (Context context) {
-        //TODO figure out if the device is a phone or a tablet
-        //  Log.d(TAG, "enter setTextSizeGettingScreenSize (TextView textview, Context context)");
-
+    public static Integer getWidthInches (Context context) {
         WindowManager wm = (WindowManager)    context.getSystemService(Context.WINDOW_SERVICE);
         Display display = wm.getDefaultDisplay();
         DisplayMetrics metrics = new DisplayMetrics();
         display.getMetrics(metrics);
 
-        float widthInches = metrics.widthPixels / metrics.xdpi;
-        float heightInches = metrics.heightPixels / metrics.ydpi;
-        double diagonalInches = Math.sqrt(Math.pow(widthInches, 2) + Math.pow(heightInches, 2));
+        return metrics.widthPixels;
+    }
+
+    public static Integer getHightInches (Context context) {
+        WindowManager wm = (WindowManager)    context.getSystemService(Context.WINDOW_SERVICE);
+        Display display = wm.getDefaultDisplay();
+        DisplayMetrics metrics = new DisplayMetrics();
+        display.getMetrics(metrics);
+
+        return metrics.heightPixels;
+    }
+
+    public static String findScreenSize (Context context) {
+        //TODO figure out if the device is a phone or a tablet
+        //  Log.d(TAG, "enter setTextSizeGettingScreenSize (TextView textview, Context context)");
+        double diagonalInches = Math.sqrt(Math.pow(getWidthInches(context), 2) + Math.pow(getHightInches(context), 2));
         if (diagonalInches >= 7.0) {
-            return "tablet";
+            return TABLET;
         } else {
-            return "phone";
+            return PHONE;
         }
 
     }
@@ -127,9 +141,9 @@ public class UiUtils {
         int orientationValue = context.getResources().getConfiguration().orientation;
 
         if (orientationValue == Configuration.ORIENTATION_PORTRAIT) {
-            orientation = "Portrait";
+            orientation = PORTRAIT;
         } else {
-            orientation = "Landscape";
+            orientation = LANDSCAPE;
         }
 
         return orientation;

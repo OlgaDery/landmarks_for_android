@@ -39,13 +39,13 @@ public class MyInfoWindowAdaptor implements GoogleMap.InfoWindowAdapter {
     private static final String TAG = MyInfoWindowAdaptor.class.getSimpleName();
 
     public MyInfoWindowAdaptor (Context context1, Set<Place> places1, String orient, String device) {
-        //  Log.d(TAG, "enter MyInfoWindowAdaptor (Context context1, Set<Place> places1)");
-
+        Log.d(TAG, "enter MyInfoWindowAdaptor (Context context1, Set<Place> places1)");
+//TODO pass all dimentions as params for constructor
         this.context = context1;
         this.places= places1;
         this.orientation=orient;
         this.deviceType=device;
-        //   Log.d(TAG, "exit MyInfoWindowAdaptor (Context context1, Set<Place> places1)");
+        Log.d(TAG, "exit MyInfoWindowAdaptor (Context context1, Set<Place> places1)");
     }
 
     @Override
@@ -58,78 +58,63 @@ public class MyInfoWindowAdaptor implements GoogleMap.InfoWindowAdapter {
      //   Log.d(TAG, "enter getInfoContents(Marker marker)"+ marker.getId());
         //   String type = UiUtils.findScreenSize(context);
         View v;
+        //get screen size
+        WindowManager wm = (WindowManager)context.getSystemService(Context.WINDOW_SERVICE);
+        Display display = wm.getDefaultDisplay();
+        DisplayMetrics metrics = new DisplayMetrics();
+        display.getMetrics(metrics);
+        int screen_height = metrics.heightPixels;
+        int screen_width = metrics.widthPixels;
 
         try{
-            if (orientation.equals("Portrait")) {
+            if (orientation.equals(UiUtils.PORTRAIT)) {
                 v = LayoutInflater.from(context).inflate(R.layout.custom_info_contents, null);
+                if (deviceType.equals(UiUtils.TABLET)) {
+                    //TODO big vertical
+                    v.getLayoutParams().width = screen_width/2;
+                    v.getLayoutParams().height= screen_height/2;
+                    photo = (ImageView) v.findViewById(R.id.img);
+                    photo.getLayoutParams().height = screen_height/3-20;
+                    photo.getLayoutParams().width = screen_width/2-20;
+                } else {
+                    //TODO small vertical
+                    v.getLayoutParams().width = (screen_width/100)*70;
+                    v.getLayoutParams().height = screen_width/2;
+                    photo = (ImageView) v.findViewById(R.id.img);
+                    photo.getLayoutParams().height = 300;//screen_height/2-20;
+                    photo.getLayoutParams().width = (screen_width/100)*70-20;
+
+                }
             } else {
                 v = LayoutInflater.from(context).inflate(R.layout.custom_info_contents1, null);
+
+                if (deviceType.equals(UiUtils.TABLET)) {
+                    //TODO big horizontal
+                    v.getLayoutParams().width = screen_width/2;
+                    v.getLayoutParams().height = screen_width/2;
+                    photo = (ImageView) v.findViewById(R.id.img);
+                    photo.getLayoutParams().height = screen_width/3;
+                    photo.getLayoutParams().width = screen_width/4;
+
+                } else {
+                    //TODO small horizontal
+                    v.getLayoutParams().width = (screen_width/100)*70;
+                    v.getLayoutParams().height = screen_width/100*70;
+                    photo = (ImageView) v.findViewById(R.id.img);
+                    photo.getLayoutParams().height = 250;//screen_height/2-20;
+                    photo.getLayoutParams().width = 330;
+                }
             }
 
             descr = (TextView) v.findViewById(R.id.descript);
             name = (TextView) v.findViewById(R.id.name);
-            photo = (ImageView) v.findViewById(R.id.img);
+
             ImageButton button = (ImageButton) v.findViewById(R.id.more);
             button.setImageResource(R.drawable.more_horizontal);
-            if (deviceType.equals("tablet")) {
-                descr.setTextSize(context.getResources().getDimension(R.dimen.avg_textsize));
-                name.setTextSize(context.getResources().getDimension(R.dimen.big_textsize));
-            }
-
-            //get screen size
-            WindowManager wm = (WindowManager)context.getSystemService(Context.WINDOW_SERVICE);
-            Display display = wm.getDefaultDisplay();
-            DisplayMetrics metrics = new DisplayMetrics();
-            display.getMetrics(metrics);
-            int screen_height = metrics.heightPixels;
-            int screen_width = metrics.widthPixels;
-            if (deviceType.equals("tablet")) {
-                if (orientation.equals("Portrait")) {
-                    //big vertical
-                    RelativeLayout ll = (RelativeLayout) v.findViewById(R.id.base);
-                    RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams
-                            (screen_width/2, ViewGroup.LayoutParams.WRAP_CONTENT);
-                    ll.setLayoutParams(layoutParams);
-                    //  ll.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
-                    //  ll.getLayoutParams().width = 400;
-                    photo.getLayoutParams().height = screen_height/3-20;
-                    photo.getLayoutParams().width = screen_width/2-20;
-
-                } else {
-                    //big horizontal
-                    RelativeLayout rl = (RelativeLayout)v.findViewById(R.id.base);
-                    RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(screen_width/2, screen_height/2);
-                    rl.setLayoutParams(layoutParams);
-                    photo.getLayoutParams().height = screen_height/3;
-                    photo.getLayoutParams().width = screen_width/4;
-
-                }
-
-            } else {
-
-                if (orientation.equals("Portrait")) {
-                    //small vertical
-                    RelativeLayout ll = (RelativeLayout) v.findViewById(R.id.base);
-                    RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams
-                            ((screen_width/100)*70, ViewGroup.LayoutParams.WRAP_CONTENT);
-                    ll.setLayoutParams(layoutParams);
-                    //  ll.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
-                    //  ll.getLayoutParams().width = 400;
-                    photo.getLayoutParams().height = 300;//screen_height/2-20;
-                    photo.getLayoutParams().width = (screen_width/100)*70-20;
-
-                } else {
-                    //small horizontal
-                    RelativeLayout rl = (RelativeLayout)v.findViewById(R.id.base);
-                    RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(screen_width/100*70,
-                            ViewGroup.LayoutParams.WRAP_CONTENT);
-                    rl.setLayoutParams(layoutParams);
-                    photo.getLayoutParams().height = 250;//(screen_height-80)-50;
-                    photo.getLayoutParams().width = 330;//rl.getWidth()/20-30;
-
-                }
-
-            }
+//            if (deviceType.equals(UiUtils.TABLET)) {
+//                descr.setTextSize(context.getResources().getDimension(R.dimen.avg_textsize));
+//                name.setTextSize(context.getResources().getDimension(R.dimen.big_textsize));
+//            }
 
             for (Place p: places) {
                 if (p.getName().equals(marker.getTitle())) {

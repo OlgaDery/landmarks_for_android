@@ -72,10 +72,6 @@ public class PointFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "enter onCreate(Bundle savedInstanceState)");
-//        if (getArguments() != null) {
-//            mParam1 = getArguments().getString(ARG_PARAM1);
-//            mParam2 = getArguments().getString(ARG_PARAM2);
-//        }
         viewModel = ViewModelProviders.of(getActivity()).get(MapViewModel.class);
         viewModel.updateCurrentFragment(this.getClass().getSimpleName());
         Log.d(TAG, "exit onCreate(Bundle savedInstanceState)");
@@ -88,42 +84,31 @@ public class PointFragment extends Fragment {
 
         Log.d(TAG, "enter  onCreateView");
         point = viewModel.getPointToSee().getValue();
+        Log.i(TAG, "point in point activity: "+point.getName());
         View v = inflater.inflate(R.layout.activity_point, container, false);
-        orientation = UiUtils.getOrientation(getActivity());
-        deviceType = UiUtils.findScreenSize(getActivity());
+        //TODO configure the size and position
 
-
-        //        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-//        setSupportActionBar(toolbar);
-        RelativeLayout allTheView = (RelativeLayout) v.findViewById(R.id.pointView);
-        ImageView banner = (ImageView) v.findViewById(R.id.banner);
-        WindowManager wm = (WindowManager)getActivity().getSystemService(Context.WINDOW_SERVICE);
-        Display display = wm.getDefaultDisplay();
-        DisplayMetrics metrics = new DisplayMetrics();
-        display.getMetrics(metrics);
-        if (orientation.equals("Portrait")) {
-            allTheView.removeView(banner);
-        } else {
-            if (deviceType.equals("tablet")) {
-                Picasso.with(getActivity())
-                        .load(R.raw.mallorn1)
-                        .resize(400, metrics.heightPixels)
-                        //    .onlyScaleDown()
-                        .centerCrop()
-                        .into(banner);
-            } else {
-                Picasso.with(getActivity())
-                        .load(R.raw.mallorn1)
-                        .resize(380, metrics.heightPixels)
-                        //    .onlyScaleDown()
-                        .centerCrop()
-                        .into(banner);
-            }
-
-        }
-
-        //initializing the buttons
-
+//        if (orientation.equals("Portrait")) {
+//            allTheView.removeView(banner);
+//        } else {
+//            if (deviceType.equals("tablet")) {
+//                Picasso.with(getActivity())
+//                        .load(R.raw.mallorn1)
+//                        .resize(400, metrics.heightPixels)
+//                        //    .onlyScaleDown()
+//                        .centerCrop()
+//                        .into(banner);
+//            } else {
+//                Picasso.with(getActivity())
+//                        .load(R.raw.mallorn1)
+//                        .resize(380, metrics.heightPixels)
+//                        //    .onlyScaleDown()
+//                        .centerCrop()
+//                        .into(banner);
+//            }
+//
+//        }
+//
         ImageButton fab = (ImageButton) v.findViewById(R.id.fab);
         fab.getBackground().setAlpha(0);
         fab.setImageResource(R.drawable.directions);
@@ -141,6 +126,9 @@ public class PointFragment extends Fragment {
 
         final ImageButton likeButton = (ImageButton) v.findViewById(R.id.like);
         likeButton.getBackground().setAlpha(0);
+        if (viewModel.getLoved().getValue()!=null) {
+            Log.i(TAG, "loved not null");
+        }
         if (viewModel.getLoved().getValue().contains(point.getName())) {
             likeButton.setColorFilter(new PorterDuffColorFilter(Color.RED, PorterDuff.Mode.SRC_IN));
         }

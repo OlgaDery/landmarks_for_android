@@ -21,7 +21,6 @@
             android:textColor="#ff000000"
             android:text="Point name:"
             android:layout_alignParentLeft="true"
-            android:textSize="18dp"
             android:textStyle="bold" />
 
         <ImageView
@@ -41,7 +40,6 @@
             android:text="Descriptio description:"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="16dp"
             android:textColor="#ff7f7f7f" />
 
 

@@ -44,7 +44,7 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
     private PointFragment pointFr = new PointFragment();
     private NoUserFragment loginFragment = new NoUserFragment();
     private StatusBarFragment progressFr = new StatusBarFragment();
-    private FiltersSidebarFragment sideBar= new FiltersSidebarFragment();
+    private SideBarFragment1 sideBar= new SideBarFragment1();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,28 +58,36 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         viewModel = ViewModelProviders.of(this).get(MapViewModel.class);
 
-        //TODO check the shared preferences
+        //TODO saving the dimentions, orientation and device type
+        viewModel.updateHights(UiUtils.getHightInches(getApplicationContext()));
+        viewModel.updateWight(UiUtils.getWidthInches(getApplicationContext()));
+        viewModel.updateDeviceType(UiUtils.findScreenSize(getApplicationContext()));
+        viewModel.updateOrientation(UiUtils.getOrientation(getApplicationContext()));
+
+
         //observes the map with selected points filters to apply
         final Observer<String> filtersObserver = new Observer<String>() {
             @Override
             public void onChanged(@Nullable final String newFilter) {
                 Log.i(TAG, "enter onChanged(String newFilter)");
                 Log.i(TAG, "filter: "+newFilter);
-                //if string = FILTER, putting categories as arguments
-                if (newFilter.equals(MapFragment.ALL)) {
-                    viewModel.updateDataToFilter(viewModel.getNamesSortedByRating().getValue());
-                } else if (newFilter.equals(MapFragment.FILTERS)) {
-                    LinkedList<String> tmp = new LinkedList<>();
-                    for (Place p : viewModel.getRecievedPoints().getValue()) {
-                        if (!tmp.contains(p.getCategory())) {
-                            tmp.add(p.getCategory());
+                if (newFilter!=null) {
+                    //if string = FILTER, putting categories as arguments
+                    if (newFilter.equals(MapFragment.ALL)) {
+                        viewModel.updateDataToFilter(viewModel.getNamesSortedByRating().getValue());
+                    } else if (newFilter.equals(MapFragment.FILTERS)) {
+                        LinkedList<String> tmp = new LinkedList<>();
+                        for (Place p : viewModel.getRecievedPoints().getValue()) {
+                            if (!tmp.contains(p.getCategory())) {
+                                tmp.add(p.getCategory());
+                            }
                         }
+                        viewModel.updateDataToFilter(tmp);
+                    } else if (newFilter.equals(MapFragment.LOVED)) {
+                        viewModel.updateDataToFilter(viewModel.getLoved().getValue());
                     }
-                    viewModel.updateDataToFilter(tmp);
-                } else if (newFilter.equals(MapFragment.LOVED)) {
-                    viewModel.updateDataToFilter(viewModel.getLoved().getValue());
                 }
-                //TODO declare the listener in sidebar to change the content
+
             }
         };
         viewModel.getCurrentFilter().observe(this, filtersObserver);
@@ -91,15 +99,15 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
                 //
                 //if string = FILTER, putting categories as arguments
                 if (newStatus==false) {
-                    UiUtils.manageFragments(new SideBarFragment1(), getSupportFragmentManager(), false,
-                            R.id.map_container, "HIDE", "progr1");
+                    UiUtils.manageFragments(sideBar, getSupportFragmentManager(), false,
+                            R.id.map_container, "HIDE", "sidebar");
                 } else {
-                    if (UiUtils.checkIfFragmentAdded("progr1", getSupportFragmentManager())==false)  {
-                        UiUtils.manageFragments(new SideBarFragment1(), getSupportFragmentManager(), false,
-                                R.id.map_container, "ADD", "progr1");
+                    if (UiUtils.checkIfFragmentAdded("sidebar", getSupportFragmentManager())==false)  {
+                        UiUtils.manageFragments(sideBar, getSupportFragmentManager(), false,
+                                R.id.map_container, "ADD", "sidebar");
                     } else {
-                        UiUtils.manageFragments(new SideBarFragment1(), getSupportFragmentManager(), false,
-                                R.id.map_container, "SHOW", "progr1");
+                        UiUtils.manageFragments(sideBar, getSupportFragmentManager(), false,
+                                R.id.map_container, "SHOW", "sidebar");
                     }
                 }
                 //TODO declare the listener in sidebar to change the content
@@ -107,15 +115,15 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
         };
         viewModel.isSidebarReguested().observe(this, sideBarObserver);
 
-        if (prefs.getStringSet(UiUtils.SELECTED_POINTS, new HashSet<String>())!=null) {
-            LinkedList <String> lst = new LinkedList<>();
-            lst.addAll(prefs.getStringSet(UiUtils.SELECTED_POINTS, new HashSet<String>()));
-            viewModel.updateLoved(lst);
-          //  Log.i(TAG, "selected points added: "+ viewModel.getLoved().getValue().size());
-        }
-        if (prefs.contains(UiUtils.LOGGED_IN)) {
-
-          //  Log.i(TAG, "user logged in: "+ prefs.getBoolean(UiUtils.LOGGED_IN, true));
+        if (viewModel.getLoved().getValue()==null) {
+            if (prefs.getStringSet(UiUtils.SELECTED_POINTS, new HashSet<String>())!=null) {
+                LinkedList <String> lst = new LinkedList<>();
+                lst.addAll(prefs.getStringSet(UiUtils.SELECTED_POINTS, new HashSet<String>()));
+                viewModel.updateLoved(lst);
+                //  Log.i(TAG, "selected points added: "+ viewModel.getLoved().getValue().size());
+            } else {
+                viewModel.updateLoved(new LinkedList<String>());
+            }
         }
 
         if (viewModel.getRecievedPoints().getValue()==null) {
@@ -230,9 +238,9 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
                         UiUtils.showToast(getApplicationContext(), "Success!");
                     //    getSupportFragmentManager().beginTransaction().replace(R.id.map_container, mapFragment).commit();
 
-                        //TODO fragment
-                        UiUtils.manageFragments(mapFragment, getSupportFragmentManager(), false,
-                                R.id.map_container, "REPLACE", "map");
+                       //TODO remove status bar fragment
+                        UiUtils.manageFragments(progressFr, getSupportFragmentManager(), false,
+                                R.id.map_container, "REMOVE", "progr1");
 
 
                                 //replace(R.id.map_container, mapFragment).commit();
@@ -245,9 +253,9 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
                         } else {
                             UiUtils.showToast(getApplicationContext(), "Error with data submittion");
                         }
-                        //TODO fragment
+                        //TODO remove status bar fragment and return the login one
                         UiUtils.manageFragments(loginFragment, getSupportFragmentManager(), false,
-                                R.id.map_container, "REPLACE", "login");
+                                R.id.map_container, "ADD", "login");
 
                     }
 
@@ -365,20 +373,19 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
     public void onPointDetailsSelected(String action) {
         Log.d(TAG, "enter onPointDetailsSelected(String name)");
         Log.i(TAG, "act: "+action);
-        //TODO fragments
+
         if (action.equals(UiUtils.LOG_IN) || action.equals(UiUtils.CREATE_USER)) {
-//            getSupportFragmentManager().beginTransaction().replace(R.id.map_container,
-//                    loginFragment).addToBackStack(null).commit();
+//TODO add instead of replace
             UiUtils.manageFragments(loginFragment, getSupportFragmentManager(), true,
-                    R.id.map_container, "REPLACE", "login");
+                    R.id.map_container, "ADD", "login");
         } else if (action.equals("HIDE_SIDEBAR")) {
             UiUtils.manageFragments(new SideBarFragment1(), getSupportFragmentManager(), false,
-                    R.id.map_container, "HIDE", "progr1");
+                    R.id.map_container, "HIDE", "sidebar");
             viewModel.upateShowSidebar(false);
 
         } else{
-          //  getSupportFragmentManager().beginTransaction().replace(R.id.map_container,
-          //         pointFr).addToBackStack(null).commit();
+            Log.i(TAG, viewModel.getPointToSee().getValue().getName());
+
             UiUtils.manageFragments(pointFr, getSupportFragmentManager(), true,
                     R.id.map_container, "REPLACE", "point");
         }
@@ -395,11 +402,12 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
     @Override
     public void onLogInOrRegisterButtonClickedListener(String action) {
         Log.i(TAG, "enter onLogInOrRegisterButtonClickedListener(String action)");
-        //TODO fragments
+        //TODO add instead of replace
+        UiUtils.manageFragments(loginFragment, getSupportFragmentManager(), false,
+                R.id.map_container, "REMOVE", "login");
         UiUtils.manageFragments(progressFr, getSupportFragmentManager(), false,
-                R.id.map_container, "REPLACE", "progr1");
-//        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-//        transaction.replace(R.id.map_container, progressFr).commit();
+                R.id.map_container, "ADD", "progr1");
+
         Log.i(TAG, "exit onLogInOrRegisterButtonClickedListener(String action)");
     }
 }
