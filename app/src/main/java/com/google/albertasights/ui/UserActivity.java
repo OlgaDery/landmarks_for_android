@@ -22,6 +22,7 @@ public class UserActivity extends MenuActivity implements NoUserFragment.OnButto
     private Fragment userDataFragment;
     private Fragment modifYUserDataFragment;
     private Fragment progressFragment;
+    private Fragment socialBtns;
     private User user;
     private BroadcastReceiver receiver;
     private UserViewModel viewModel;
@@ -37,9 +38,13 @@ public class UserActivity extends MenuActivity implements NoUserFragment.OnButto
         userDataFragment = new UserFragment();
         modifYUserDataFragment = new EnterUserFragment();
         progressFragment = new StatusBarFragment();
+        socialBtns = new SocialButtonsFragment();
         viewModel = ViewModelProviders.of(this).get(UserViewModel.class);
+
         UiUtils.manageFragments(userDataFragment, getSupportFragmentManager(), false,
                 R.id.user_container, "ADD", "u1");
+        UiUtils.manageFragments(socialBtns, getSupportFragmentManager(), false,
+                R.id.user_container, "ADD", "socialBt");
             //TODO
 
         if (viewModel.getUser().getValue()==null) {

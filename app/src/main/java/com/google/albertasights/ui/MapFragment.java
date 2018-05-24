@@ -515,7 +515,7 @@ public class MapFragment extends Fragment implements
             mMap.setOnCameraIdleListener(mClusterManager);
 
             MyInfoWindowAdaptor adaptor = new MyInfoWindowAdaptor(getContext(), places,
-                    orientation, deviceType);
+                    orientation, deviceType, viewModel.getHight().getValue(), viewModel.getWight().getValue());
             mMap.setInfoWindowAdapter(adaptor);
 
             mMap.setOnInfoWindowClickListener(this);
@@ -531,7 +531,12 @@ public class MapFragment extends Fragment implements
                         return true;
                     } else {
 //                            //TODO hide sidebar
-                        onInfoViewExpanded("HIDE_SIDEBAR", "");
+                        if (viewModel.isSidebarReguested().getValue()!=null) {
+                            if (viewModel.isSidebarReguested().getValue().equals(Boolean.TRUE)) {
+                                onInfoViewExpanded("HIDE_SIDEBAR", "");
+                            }
+                        }
+
                         m.showInfoWindow();
 
                         //   Log.d(TAG, "exit onMarkerClick(Marker m)");

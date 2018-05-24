@@ -4,15 +4,12 @@ import com.google.albertasights.R;
 import com.google.albertasights.models.Place;
 import com.google.android.gms.maps.GoogleMap;
 import android.content.Context;
-import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -35,87 +32,99 @@ public class MyInfoWindowAdaptor implements GoogleMap.InfoWindowAdapter {
     private String orientation;
     private String deviceType;
     private String toLoad;
+    private int screenWight;
+    private int screenHight;
     int count = 0;
     private static final String TAG = MyInfoWindowAdaptor.class.getSimpleName();
 
-    public MyInfoWindowAdaptor (Context context1, Set<Place> places1, String orient, String device) {
+    public MyInfoWindowAdaptor (Context context1, Set<Place> places1, String orient, String device, int hight, int wight) {
         Log.d(TAG, "enter MyInfoWindowAdaptor (Context context1, Set<Place> places1)");
 //TODO pass all dimentions as params for constructor
         this.context = context1;
         this.places= places1;
         this.orientation=orient;
         this.deviceType=device;
+        this.screenHight = hight;
+        this.screenWight = wight;
         Log.d(TAG, "exit MyInfoWindowAdaptor (Context context1, Set<Place> places1)");
     }
 
     @Override
     public View getInfoWindow(Marker marker) {
+
         return null;
     }
 
     @Override
     public View getInfoContents(Marker marker) {
-     //   Log.d(TAG, "enter getInfoContents(Marker marker)"+ marker.getId());
+        Log.d(TAG, "enter getInfoContents(Marker marker)"+ marker.getId());
         //   String type = UiUtils.findScreenSize(context);
         View v;
-        //get screen size
-        WindowManager wm = (WindowManager)context.getSystemService(Context.WINDOW_SERVICE);
-        Display display = wm.getDefaultDisplay();
-        DisplayMetrics metrics = new DisplayMetrics();
-        display.getMetrics(metrics);
-        int screen_height = metrics.heightPixels;
-        int screen_width = metrics.widthPixels;
+        Log.i(TAG, "screen h: "+screenHight);
+        Log.i(TAG, "screen w: "+screenWight);
 
         try{
             if (orientation.equals(UiUtils.PORTRAIT)) {
                 v = LayoutInflater.from(context).inflate(R.layout.custom_info_contents, null);
-                if (deviceType.equals(UiUtils.TABLET)) {
-                    //TODO big vertical
-                    v.getLayoutParams().width = screen_width/2;
-                    v.getLayoutParams().height= screen_height/2;
-                    photo = (ImageView) v.findViewById(R.id.img);
-                    photo.getLayoutParams().height = screen_height/3-20;
-                    photo.getLayoutParams().width = screen_width/2-20;
-                } else {
-                    //TODO small vertical
-                    v.getLayoutParams().width = (screen_width/100)*70;
-                    v.getLayoutParams().height = screen_width/2;
-                    photo = (ImageView) v.findViewById(R.id.img);
-                    photo.getLayoutParams().height = 300;//screen_height/2-20;
-                    photo.getLayoutParams().width = (screen_width/100)*70-20;
 
-                }
             } else {
                 v = LayoutInflater.from(context).inflate(R.layout.custom_info_contents1, null);
-
-                if (deviceType.equals(UiUtils.TABLET)) {
-                    //TODO big horizontal
-                    v.getLayoutParams().width = screen_width/2;
-                    v.getLayoutParams().height = screen_width/2;
-                    photo = (ImageView) v.findViewById(R.id.img);
-                    photo.getLayoutParams().height = screen_width/3;
-                    photo.getLayoutParams().width = screen_width/4;
-
-                } else {
-                    //TODO small horizontal
-                    v.getLayoutParams().width = (screen_width/100)*70;
-                    v.getLayoutParams().height = screen_width/100*70;
-                    photo = (ImageView) v.findViewById(R.id.img);
-                    photo.getLayoutParams().height = 250;//screen_height/2-20;
-                    photo.getLayoutParams().width = 330;
-                }
             }
 
+            photo = (ImageView) v.findViewById(R.id.img);
             descr = (TextView) v.findViewById(R.id.descript);
             name = (TextView) v.findViewById(R.id.name);
 
             ImageButton button = (ImageButton) v.findViewById(R.id.more);
             button.setImageResource(R.drawable.more_horizontal);
+            if (orientation.equals(UiUtils.PORTRAIT)) {
+
+                if (deviceType.equals(UiUtils.TABLET)) {
+                    //TODO big vertical
+                    Log.i(TAG, "vertical tablet");
+//                    RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(screenWight/2, screenHight/2);
+//                    v.setLayoutParams(params);
+//                    LinearLayout.LayoutParams photoParams = new LinearLayout.LayoutParams(screenWight/2-20, screenHight/3-20);
+//                    photo.setLayoutParams(photoParams);
+                } else {
+                    //TODO small vertical
+                    Log.i(TAG, "vertical small");
+                   LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(screenWight/100*70, screenHight/100*70);
+                   v.setLayoutParams(params);
+                   RelativeLayout.LayoutParams photoParams = new RelativeLayout.LayoutParams(screenWight/100*70-20, 300);
+                   photo.setLayoutParams(photoParams);
+                   if (photo.getLayoutParams()!=null) {
+                       Log.i(TAG, "photo hight: "+photo.getLayoutParams().height);
+                   }
+
+                }
+            } else {
+                //  v = LayoutInflater.from(context).inflate(R.layout.custom_info_contents1, null);
+
+                if (deviceType.equals(UiUtils.TABLET)) {
+//                    //TODO big horizontal
+                    Log.i(TAG, "horizontal tablet");
+//                    RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(screenWight/2, screenHight/2);
+//                    v.setLayoutParams(params);
+//                    LinearLayout.LayoutParams photoParams = new LinearLayout.LayoutParams(screenWight/4, screenWight/3);
+//                    photo.setLayoutParams(photoParams);
+
+                } else {
+                    //TODO small horizontal
+                    Log.i(TAG, "horizontal small");
+                    RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(screenWight/100*70, screenHight/100*70);
+                    v.setLayoutParams(params);
+                    RelativeLayout.LayoutParams photoParams = new RelativeLayout.LayoutParams(screenWight/4, 250);
+                    photo.setLayoutParams(photoParams);
+                }
+            }
+
 //            if (deviceType.equals(UiUtils.TABLET)) {
 //                descr.setTextSize(context.getResources().getDimension(R.dimen.avg_textsize));
 //                name.setTextSize(context.getResources().getDimension(R.dimen.big_textsize));
 //            }
 
+            //TODO setting up the content
             for (Place p: places) {
                 if (p.getName().equals(marker.getTitle())) {
                     name.setText(p.getName());
@@ -171,11 +180,13 @@ public class MyInfoWindowAdaptor implements GoogleMap.InfoWindowAdapter {
 
                 }
             }
+
     //   Log.d(TAG, "exit getInfoContents(Marker marker)");
 
             return v;
-        } catch (Exception e) {
-            Log.e(TAG, e.getMessage());
+        } catch (Exception e){
+            e.printStackTrace();
+           // Log.e(TAG, e.);
             toLoad=null;
             return null;
         }
@@ -186,7 +197,7 @@ public class MyInfoWindowAdaptor implements GoogleMap.InfoWindowAdapter {
         if (this.toLoad.equals("url")) {
             Picasso.with(context)
                     .load(url)
-                    .resize(photo.getLayoutParams().width, photo.getLayoutParams().height)
+                    .resize(photo.getLayoutParams().width, photo.getLayoutParams().height)//, )
                     .centerCrop()
                     .into(photo, new InfoWindowRefresher(marker));
             //   Log.i(TAG, "id removed: "+ )) ;

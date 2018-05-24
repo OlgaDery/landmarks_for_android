@@ -167,7 +167,8 @@ public class PointFragment extends Fragment {
         listview = (ListView) v.findViewById(R.id.listView1);
 
         //TODO provide dimensions, position and device type via constructor
-        PointListviewAdapter adapter = new PointListviewAdapter(point, getActivity());
+        PointListviewAdapter adapter = new PointListviewAdapter(point, getActivity(), viewModel.getOrienr().getValue(),
+                viewModel.getDevice().getValue(), viewModel.getHight().getValue(), viewModel.getWight().getValue());
         listview.setAdapter(adapter);
         Log.d(TAG, "exit  onCreateView");
         return v;

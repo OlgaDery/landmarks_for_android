@@ -32,10 +32,16 @@ public class PointListviewAdapter extends BaseAdapter {
     private Place point;
     private String orientation;
     private String deviceType;
+    int screenH;
+    int screenW;
 
-    public PointListviewAdapter (Place p, Context context1) {
+    public PointListviewAdapter (Place p, Context context1, String orient, String device, int screenHight, int screenWight) {
         this.context = context1;
         this.point = p;
+        this.screenH = screenHight;
+        this.screenW = screenWight;
+        this.orientation = orient;
+        this.deviceType = device;
     }
 
     @Override
@@ -56,16 +62,6 @@ public class PointListviewAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         convertView = LayoutInflater.from(context).inflate(R.layout.point_row, null);
-
-        WindowManager wm = (WindowManager)context.getSystemService(Context.WINDOW_SERVICE);
-        Display display = wm.getDefaultDisplay();
-        DisplayMetrics metrics = new DisplayMetrics();
-        display.getMetrics(metrics);
-        int screen_height = metrics.heightPixels;
-        int screen_width = metrics.widthPixels;
-        orientation = UiUtils.getOrientation(context);
-        deviceType = UiUtils.findScreenSize(context);
-        //      listItemsValue.clear();
 
         //initializing the photo
         ImageView photo = (ImageView) convertView.findViewById(R.id.img);
@@ -102,7 +98,7 @@ public class PointListviewAdapter extends BaseAdapter {
         TextView rating = (TextView) convertView.findViewById(R.id.rating);
         rating.setText(titles[3] + point.getRating());
 
-        if (deviceType.equals("tablet")) {
+        if (deviceType.equals(UiUtils.TABLET)) {
             descript.setTextSize(context.getResources().getDimension(R.dimen.big_textsize));
             name.setTextSize(context.getResources().getDimension(R.dimen.big_textsize));
             link.setTextSize(context.getResources().getDimension(R.dimen.big_textsize));
@@ -117,17 +113,16 @@ public class PointListviewAdapter extends BaseAdapter {
 
         if (point.getPhotoLink()!=null && point.getPhotoLink().length()>5)
         {
-            if (orientation.equals("Portrait")) {
-                //big portrait screen
-                photo.getLayoutParams().height = screen_height/3;
-                //TODO set the width of the parental element
-                photo.getLayoutParams().width = screen_width-40;
+            if (orientation.equals(UiUtils.PORTRAIT)) {
+                // portrait screen, set the width of the parental element
+              photo.getLayoutParams().height = screenH/3;
+              photo.getLayoutParams().width = screenW-40;
 
             } else {
-                //big landscape screen
-                photo.getLayoutParams().height = screen_height/3+50;
+                // landscape screen
+                photo.getLayoutParams().height = screenH/3+50;
                 //TODO set the width of the parental element
-                photo.getLayoutParams().width = screen_width - 150-40;
+                photo.getLayoutParams().width = screenW-40;
             }
             Picasso.with(context)
                     .load(UiUtils.parseUrl(point.getPhotoLink()))
@@ -138,8 +133,8 @@ public class PointListviewAdapter extends BaseAdapter {
 
         } else
         {
-            photo.getLayoutParams().height = screen_height/3-60;
-            photo.getLayoutParams().width = screen_width/2-60;
+            photo.getLayoutParams().height = screenH/3-60;
+            photo.getLayoutParams().width = screenW/2-60;
             Picasso.with(context)
                     .load(R.drawable.no_ph)
                     .into(photo);

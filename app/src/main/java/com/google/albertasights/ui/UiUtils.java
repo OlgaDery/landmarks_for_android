@@ -127,13 +127,20 @@ public class UiUtils {
     public static String findScreenSize (Context context) {
         //TODO figure out if the device is a phone or a tablet
         //  Log.d(TAG, "enter setTextSizeGettingScreenSize (TextView textview, Context context)");
-        double diagonalInches = Math.sqrt(Math.pow(getWidthInches(context), 2) + Math.pow(getHightInches(context), 2));
-        if (diagonalInches >= 7.0) {
+        DisplayMetrics metrics = new DisplayMetrics();
+        WindowManager wm = (WindowManager)context.getSystemService(Context.WINDOW_SERVICE);
+        wm.getDefaultDisplay().getMetrics(metrics);
+
+        float yInches= metrics.heightPixels/metrics.ydpi;
+        float xInches= metrics.widthPixels/metrics.xdpi;
+        double diagonalInches = Math.sqrt(xInches*xInches + yInches*yInches);
+        if (diagonalInches>=6.5){
+            // 6.5inch device or bigger
             return TABLET;
-        } else {
+        }else{
+            // smaller device
             return PHONE;
         }
-
     }
 
     public static String getOrientation (Context context) {
