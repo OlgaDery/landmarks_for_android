@@ -22,6 +22,7 @@ import com.google.albertasights.models.User;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -71,20 +72,37 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
             public void onChanged(@Nullable final String newFilter) {
                 Log.i(TAG, "enter onChanged(String newFilter)");
                 Log.i(TAG, "filter: "+newFilter);
+                LinkedList<String> sortedLost = new LinkedList<>();
                 if (newFilter!=null) {
                     //if string = FILTER, putting categories as arguments
                     if (newFilter.equals(MapFragment.ALL)) {
-                        viewModel.updateDataToFilter(viewModel.getNamesSortedByRating().getValue());
+                        sortedLost.addAll(viewModel.getNamesSortedByRating().getValue());
                     } else if (newFilter.equals(MapFragment.FILTERS)) {
-                        LinkedList<String> tmp = new LinkedList<>();
                         for (Place p : viewModel.getRecievedPoints().getValue()) {
-                            if (!tmp.contains(p.getCategory())) {
-                                tmp.add(p.getCategory());
+                            if (!sortedLost.contains(p.getCategory())) {
+                                sortedLost.add(p.getCategory());
                             }
                         }
-                        viewModel.updateDataToFilter(tmp);
+                      //  viewModel.updateDataToFilter(tmp);
                     } else if (newFilter.equals(MapFragment.LOVED)) {
-                        viewModel.updateDataToFilter(viewModel.getLoved().getValue());
+                       // viewModel.updateDataToFilter(viewModel.getLoved().getValue());
+                        sortedLost.addAll(viewModel.getLoved().getValue());
+                    }
+                    Collections.sort(sortedLost);
+
+                    viewModel.updateDataToFilter(sortedLost);
+                    if (sortedLost.size()>50) {
+                        LinkedList<String> tmp = new LinkedList<>();
+                        for (int i = 0; i < 50; i++) {
+                            tmp.add(sortedLost.get(i));
+                            //   Log.i(TAG, "adding to scroll: "+ sortedLost.get(i));
+                            if (tmp.size()==sortedLost.size()) {
+                                break;
+                            }
+                        }
+                        viewModel.updateNamesToShowInScroll(tmp);
+                    } else {
+                        viewModel.updateNamesToShowInScroll(sortedLost);
                     }
                 }
 
@@ -197,19 +215,7 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
                         UiUtils.showToast(getApplicationContext(),
                                 "added!");
                     }
-//                } else if (intent.getAction().equals(UiUtils.DB_CHECKED)) {
-//                    Log.d(TAG, "DB checked, receiver started");
-//
-//                    //TODO the broadcast may receive the User data and the IDs selected by user
-//                    if (intent.getSerializableExtra(UiUtils.USER)!=null) {
-//                        User user = (User) intent.getSerializableExtra(UiUtils.USER);
-//
-//                        if (intent.getSerializableExtra(UiUtils.SELECTED_POINTS)!=null) {
-//                            selectedByUser.addAll((ArrayList<String>)intent.getStringArrayListExtra(UiUtils.SELECTED_POINTS));
-//                        }
-//                    } else {
-//                        UiUtils.showToast(getApplicationContext(), "user is null");
-//                    }
+
 
                 } else if (intent.getAction().equals(UiUtils.POINT_REMOVED)) {
                     if (intent.getStringExtra(UiUtils.LOVED)!=null) {

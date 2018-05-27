@@ -3,24 +3,61 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingLeft="20dp"
+    android:paddingRight="20dp"
+    android:paddingBottom="20dp"
     tools:context=".ui.UserFragment">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:layout_marginBottom="5dp"
+        android:id = "@+id/top_wrapper"
+        android:layout_alignParentTop="true"
+        android:orientation="horizontal">
+        <!-- TODO: Update blank fragment layout -->
+        <Space
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"/>
+
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/updt_button"/>
+
+        <Space
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"/>
+
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/log_out"
+            />
+
+        <Space
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"/>
+        >
+
+    </LinearLayout>
 
 
     <ScrollView
         android:id="@+id/user_form"
-        android:layout_alignParentTop="true"
+        android:layout_below="@id/top_wrapper"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
         <RelativeLayout
             android:id="@+id/user_data"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:layout_height="wrap_content">
 
             <TextView
                 android:id="@+id/email_data"
@@ -62,32 +99,6 @@
                 android:layout_marginTop="16dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
-
-            <Button
-                android:id="@+id/updt_button"
-                android:layout_below="@+id/role_data"
-                android:layout_alignParentLeft="true"
-                android:layout_width="150dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="Update data"
-                android:layout_marginBottom="16dp"
-                android:background="@color/colorPrimary"
-                android:textColor="@color/colorWhite"
-                android:textStyle="bold" />
-
-            <Button
-                android:id="@+id/log_out"
-                android:layout_below="@+id/role_data"
-                android:layout_alignParentRight="true"
-                android:layout_width="150dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="Log out"
-                android:layout_marginBottom="16dp"
-                android:background="@color/colorPrimary"
-                android:textColor="@color/colorWhite"
-                android:textStyle="bold" />
 
 
         </RelativeLayout>

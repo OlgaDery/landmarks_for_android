@@ -16,18 +16,20 @@
 
     <TextView
         android:id="@+id/name"
-        android:layout_below="@+id/img"
-        android:layout_width="match_parent"
+        android:layout_toRightOf="@+id/img"
+        android:layout_marginLeft="10dp"
+        android:layout_alignParentTop="true"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="#ff000000"
         android:text="Point name:"
-        android:layout_alignParentLeft="true"
         android:textSize="18dp"
         android:textStyle="bold" />
 
     <TextView
         android:id="@+id/descript"
         android:layout_toRightOf="@+id/img"
+        android:layout_below="@+id/name"
         android:layout_marginLeft="10dp"
         android:text="Descriptio description Descriptio description Descriptio description Descriptio description"
         android:layout_width="match_parent"
@@ -39,7 +41,7 @@
     <ImageButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/name"
+        android:layout_below="@+id/img"
         android:id="@+id/more"
         android:background="@color/colorWhite"
         android:onClick="getDirections"

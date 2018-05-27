@@ -7,6 +7,7 @@ import android.content.Context;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -89,7 +90,7 @@ public class MyInfoWindowAdaptor implements GoogleMap.InfoWindowAdapter {
                 } else {
                     //TODO small vertical
                     Log.i(TAG, "vertical small");
-                   LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(screenWight/100*70, screenHight/100*70);
+                   LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(screenWight/100*70, ViewGroup.LayoutParams.WRAP_CONTENT);//screenHight/100*70
                    v.setLayoutParams(params);
                    RelativeLayout.LayoutParams photoParams = new RelativeLayout.LayoutParams(screenWight/100*70-20, 300);
                    photo.setLayoutParams(photoParams);
@@ -112,7 +113,7 @@ public class MyInfoWindowAdaptor implements GoogleMap.InfoWindowAdapter {
                 } else {
                     //TODO small horizontal
                     Log.i(TAG, "horizontal small");
-                    RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(screenWight/100*70, screenHight/100*70);
+                    RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(screenWight/100*70, ViewGroup.LayoutParams.WRAP_CONTENT);//screenHight/100*70
                     v.setLayoutParams(params);
                     RelativeLayout.LayoutParams photoParams = new RelativeLayout.LayoutParams(screenWight/4, 250);
                     photo.setLayoutParams(photoParams);
@@ -130,8 +131,8 @@ public class MyInfoWindowAdaptor implements GoogleMap.InfoWindowAdapter {
                     name.setText(p.getName());
                     //TODO!!
                     String newDescr;
-                    if (p.getDescript().length() > 150) {
-                        newDescr = p.getDescript().substring(0, 150);
+                    if (p.getDescript().length() > 100) {
+                        newDescr = p.getDescript().substring(0, 100);
                     } else {
                         newDescr = p.getDescript();
                     }

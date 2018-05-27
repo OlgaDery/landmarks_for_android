@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item type="id" name="rating_header_id"/>
+    <item type="id" name="rating_listView_id"/>
+    <item type="id" name="categories_header_id"/>
+</resources>

@@ -69,13 +69,16 @@ public class SocialButtonsFragment extends Fragment {
         // Inflate the layout for this fragment
         View v =  inflater.inflate(R.layout.fragment_social_buttons, container, false);
         ImageButton fb = (ImageButton)v.findViewById(R.id.facebook_gr);
+        fb.getBackground().setAlpha(0);
         ImageButton insta = (ImageButton)v.findViewById(R.id.instagram_gr);
+        insta.getBackground().setAlpha(0);
         Picasso.with(getActivity())
                 .load(R.raw.fb)
                 .resize(80, 80)
                 .into(fb);
+
         Picasso.with(getActivity())
-                .load(R.raw.insta)
+                .load(R.raw.inst)
                 .resize(80, 80)
                 .into(insta);
 

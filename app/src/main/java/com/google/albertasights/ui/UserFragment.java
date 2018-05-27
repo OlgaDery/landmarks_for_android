@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.google.albertasights.R;
@@ -38,8 +39,8 @@ public class UserFragment extends Fragment {
     private TextView firstName;
     private TextView lastName;
     private TextView role;
-    private Button button1;
-    private Button button2;
+    private ImageButton button1;
+    private ImageButton button2;
 
     private OnUserUpdateOrLogoutListener mListener;
 
@@ -91,8 +92,13 @@ public class UserFragment extends Fragment {
         lastName = (TextView) view.findViewById(R.id.last_name_data);
         firstName = (TextView) view.findViewById(R.id.first_name_data);
         role = (TextView) view.findViewById(R.id.role_data);
-        button1 = (Button)view.findViewById(R.id.updt_button);
-        button2 = (Button)view.findViewById(R.id.log_out);
+        button1 = (ImageButton)view.findViewById(R.id.updt_button);
+        button1.setImageResource(R.drawable.edit);
+        button1.getBackground().setAlpha(0);
+
+        button2 = (ImageButton)view.findViewById(R.id.log_out);
+        button2.setImageResource(R.drawable.logout);
+        button2.getBackground().setAlpha(0);
         if (viewModel.getUser().getValue()!=null) {
             updateUI(viewModel.getUser().getValue());
         }

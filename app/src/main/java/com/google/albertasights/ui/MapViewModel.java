@@ -44,6 +44,9 @@ public class MapViewModel extends ViewModel {
     public final MutableLiveData<Integer> wight = new MutableLiveData<>();
     public final MutableLiveData<Integer> hight = new MutableLiveData<>();
 
+    public final MutableLiveData<LinkedList<String>> namesToShowInScroll = new MutableLiveData<>();
+    public final MutableLiveData<Integer> scrollY = new MutableLiveData<>();
+
     public MapViewModel() {
         Log.d(TAG, "enter MapViewModel()");
         Log.d(TAG, "exit MapViewModel()");
@@ -199,6 +202,7 @@ public class MapViewModel extends ViewModel {
     }
 
     public LiveData<Integer> getHight() {
+
         return hight;
     }
 
@@ -211,18 +215,40 @@ public class MapViewModel extends ViewModel {
     }
 
     public void updateHights(Integer hight1) {
+
         hight.setValue(hight1);
     }
 
     public void updateOrientation (String orient) {
+
         orientation.setValue(orient);
     }
 
     public void updateDeviceType (String device) {
+
         deviceType.setValue(device);
     }
 
+    public void updateY(Integer y) {
 
+        scrollY.setValue(y);
+    }
+
+    public LiveData<Integer> getScrollY() {
+
+        return scrollY;
+    }
+
+
+    public void updateNamesToShowInScroll(LinkedList <String> names) {
+        Log.d(TAG, "enter updateNamesToShowInScroll");
+        namesToShowInScroll.setValue(names);
+        Log.d(TAG, "exit updateNamesToShowInScroll");
+    }
+
+    public LiveData<LinkedList<String>> getNamesToShowInScroll(){
+        return namesToShowInScroll;
+    }
 
 
     @Override

@@ -110,7 +110,7 @@ public class PointFragment extends Fragment {
 //        }
 //
         ImageButton fab = (ImageButton) v.findViewById(R.id.fab);
-        fab.getBackground().setAlpha(0);
+     //   fab.getBackground().setAlpha(0);
         fab.setImageResource(R.drawable.directions);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -125,7 +125,7 @@ public class PointFragment extends Fragment {
         });
 
         final ImageButton likeButton = (ImageButton) v.findViewById(R.id.like);
-        likeButton.getBackground().setAlpha(0);
+       // likeButton.getBackground().setAlpha(0);
         if (viewModel.getLoved().getValue()!=null) {
             Log.i(TAG, "loved not null");
         }
