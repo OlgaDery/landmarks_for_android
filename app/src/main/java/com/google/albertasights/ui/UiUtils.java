@@ -7,6 +7,7 @@ import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
+import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Handler;
 import android.preference.PreferenceManager;
@@ -169,8 +170,21 @@ public class UiUtils {
             if (b.getTag().equals(activeButtonTag)) {
                 b.setColorFilter(new PorterDuffColorFilter(Color.BLUE, PorterDuff.Mode.SRC_IN));
             } else {
-                b.setColorFilter(new PorterDuffColorFilter(Color.LTGRAY, PorterDuff.Mode.SRC_IN));
+                b.setColorFilter(new PorterDuffColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN));
             }
+        }
+    }
+
+    public static void setTextSize (Integer screenHight, TextView textView, String orientation,
+                                    Boolean isHeader) {
+        textView.setTextSize(screenHight/120);
+        if (orientation.equals(UiUtils.PORTRAIT)) {
+            textView.setTextSize(screenHight/120);
+        } else {
+            textView.setTextSize(screenHight/80);
+        }
+        if (isHeader==true){
+            textView.setTypeface(null, Typeface.BOLD);
         }
     }
 

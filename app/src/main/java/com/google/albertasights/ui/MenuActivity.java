@@ -58,7 +58,7 @@ public class MenuActivity extends AppCompatActivity {
                     User user = new User (prefs.getString(UiUtils.EMAIL, "email"),
                             prefs.getString(UiUtils.PASSWORD, "email"));
                     user.setFirstName(prefs.getString(UiUtils.FIRST_NAME, "Dear Friend"));
-                    user.setFirstName(prefs.getString(UiUtils.LAST_NAME, "No"));
+                    user.setLastName(prefs.getString(UiUtils.LAST_NAME, "No"));
                     user.setLoggedIn(prefs.getBoolean(UiUtils.LOGGED_IN, true));
                     user.setRole(prefs.getString(UiUtils.ROLE, "user"));
                     intent5.putExtra(UiUtils.USER, user);

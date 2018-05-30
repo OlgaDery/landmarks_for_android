@@ -42,6 +42,7 @@ public class EnterUserFragment extends Fragment {
     private EditText firstName;
     private EditText lastName;
     private Button submitBt;
+    private Button changePasswordBt;
     private static final String TAG = EnterUserFragment.class.getSimpleName();
     private OnSubmitUserListener mListener;
 
@@ -96,6 +97,7 @@ public class EnterUserFragment extends Fragment {
 
         }
         submitBt = (Button) view.findViewById(R.id.submit);
+        changePasswordBt = (Button) view.findViewById(R.id.updPassword);
         View.OnClickListener lstn = new View.OnClickListener() {
             public void onClick(View view) {
 
@@ -104,15 +106,14 @@ public class EnterUserFragment extends Fragment {
 
                 if (firstName.getText().toString()!=null || (firstName.getText().toString().length()>0)) {
                     firstN = firstName.getText().toString();
+                    Log.i(TAG, "first name: "+firstName.getText().toString());
                 }
                 if (lastName.getText().toString()!=null || (lastName.getText().toString().length()>0)) {
                     lastN = lastName.getText().toString();
+                    Log.i(TAG, "last name: "+ lastName.getText().toString());
                 }
 
-
-                //   Log.d(TAG, "enter showFilters(View view)");
-                onButtonPressed(email.getText().toString(), password.getText().toString(),
-                        firstN, lastN);
+                onButtonPressed(email.getText().toString(), firstN, lastN);
 
                 //    Log.d(TAG, "exit showFilters(View view)");
             }
@@ -122,7 +123,7 @@ public class EnterUserFragment extends Fragment {
         return view;
     }
 
-    public void onButtonPressed(String email, String password, String fst, String lst) {
+    public void onButtonPressed(String email, String fst, String lst) {
         Log.d(TAG, "enter onInfoViewExpanded");
         if (mListener != null) {
             // TODO: send data to IntentService
@@ -130,7 +131,7 @@ public class EnterUserFragment extends Fragment {
             Intent intent = new Intent(getActivity(), DBIntentService.class);
             intent.setAction(UiUtils.CREATE_USER);
             intent.putExtra(UiUtils.EMAIL, email);
-            intent.putExtra(UiUtils.PASSWORD, password);
+          //  intent.putExtra(UiUtils.PASSWORD, password);
             intent.putExtra(UiUtils.FIRST_NAME, fst);
             intent.putExtra(UiUtils.LAST_NAME, lst);
             getActivity().startService(intent);

@@ -49,15 +49,16 @@ public class DBIntentService extends IntentService {
                 saveSelectedPoint(param1);
             } else if (UiUtils.CREATE_USER.equals(action)) {
                 final String email = intent.getStringExtra(UiUtils.EMAIL);
-                final String password = intent.getStringExtra(UiUtils.PASSWORD);
+                String password = "";
+                if (intent.getStringExtra(UiUtils.PASSWORD)!=null) {
+                    password = intent.getStringExtra(UiUtils.PASSWORD);
+                }
+
                 final String firstName = intent.getStringExtra(UiUtils.FIRST_NAME);
                 final String lastName = intent.getStringExtra(UiUtils.LAST_NAME);
+                Log.i(TAG, "first name: "+firstName);
+                Log.i(TAG, "last name: "+ lastName);
                 String role = "user";
-//                try {
-//                    role = intent.getStringExtra(UiUtils.ROLE);
-//                } catch (Exception e) {
-//                    role = "user";
-//                }
                 try {
                     createUser(email, password, role, firstName, lastName);
 
@@ -138,10 +139,14 @@ public class DBIntentService extends IntentService {
             editor.putString(UiUtils.LAST_NAME, lastName);
             editor.putString(UiUtils.ROLE, role);
             editor.putBoolean(UiUtils.LOGGED_IN, true);
-            editor.putString(UiUtils.PASSWORD, uPassword);
+            if (uPassword.length()>1) {
+                editor.putString(UiUtils.PASSWORD, uPassword);
+            }
             editor.commit();
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-            Log.d(TAG, "pref size: " +prefs.getAll().size());
+           // Log.d(TAG, "pref size: " +prefs.getAll().size());
+            Log.i(TAG, "first name: "+firstName);
+            Log.i(TAG, "last name: "+ lastName);
 
             User user = new User(email, uPassword);
             user.setLastName(lastName);

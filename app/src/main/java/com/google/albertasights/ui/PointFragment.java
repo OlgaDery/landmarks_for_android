@@ -86,28 +86,6 @@ public class PointFragment extends Fragment {
         point = viewModel.getPointToSee().getValue();
         Log.i(TAG, "point in point activity: "+point.getName());
         View v = inflater.inflate(R.layout.activity_point, container, false);
-        //TODO configure the size and position
-
-//        if (orientation.equals("Portrait")) {
-//            allTheView.removeView(banner);
-//        } else {
-//            if (deviceType.equals("tablet")) {
-//                Picasso.with(getActivity())
-//                        .load(R.raw.mallorn1)
-//                        .resize(400, metrics.heightPixels)
-//                        //    .onlyScaleDown()
-//                        .centerCrop()
-//                        .into(banner);
-//            } else {
-//                Picasso.with(getActivity())
-//                        .load(R.raw.mallorn1)
-//                        .resize(380, metrics.heightPixels)
-//                        //    .onlyScaleDown()
-//                        .centerCrop()
-//                        .into(banner);
-//            }
-//
-//        }
 //
         ImageButton fab = (ImageButton) v.findViewById(R.id.fab);
      //   fab.getBackground().setAlpha(0);
@@ -170,6 +148,10 @@ public class PointFragment extends Fragment {
         PointListviewAdapter adapter = new PointListviewAdapter(point, getActivity(), viewModel.getOrienr().getValue(),
                 viewModel.getDevice().getValue(), viewModel.getHight().getValue(), viewModel.getWight().getValue());
         listview.setAdapter(adapter);
+
+        if (viewModel.getOrienr().getValue().equals(UiUtils.LANDSCAPE)) {
+            v.getLayoutParams().width = viewModel.getWight().getValue()-250;
+        }
         Log.d(TAG, "exit  onCreateView");
         return v;
     }

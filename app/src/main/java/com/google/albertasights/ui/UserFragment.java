@@ -75,9 +75,12 @@ public class UserFragment extends Fragment {
             @Override
             public void onChanged(@Nullable final User updatedUser) {
                 // Update the UI.
-                updateUI(updatedUser);
+                if (updatedUser!=null) {
+                    updateUI(updatedUser);
+                }
             }
         };
+        viewModel.getUser().observe(this, userObserver);
         Log.d(TAG, "exit onCreate");
     }
 

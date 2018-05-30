@@ -7,6 +7,7 @@ import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -64,7 +65,6 @@ public class SideBarFragment1 extends Fragment {
     private View.OnClickListener checkBoxListener;
     private View.OnClickListener applyRatingListener;
     private boolean restartedOrRecreated = false;
-    private  LinkedList <String> selectedFilters = new LinkedList<>();
     private ImageButton clearAll;
     private ImageButton hide;
     private TextView header;
@@ -74,9 +74,7 @@ public class SideBarFragment1 extends Fragment {
     private RelativeLayout sideBar;
 
     private OnFragmentInteractionListener mListener;
-
-  //  private LinkedList<String> selectedFilters = new LinkedList<>();
-    private ArrayList<String> ratings=new ArrayList<>(3);
+  //  private ArrayList<String> ratings=new ArrayList<>(3);
 
     private static final String TAG = SideBarFragment1.class.getSimpleName();
 
@@ -106,129 +104,12 @@ public class SideBarFragment1 extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (savedInstanceState != null) {
-            selectedFilters.addAll(savedInstanceState.getStringArrayList(MapFragment.KEY_SELECTED_FILTERS));
-            ratings = savedInstanceState.getStringArrayList("RATINGS");
+           // selectedFilters.addAll(savedInstanceState.getStringArrayList(MapFragment.KEY_SELECTED_FILTERS));
+          //  ratings = savedInstanceState.getStringArrayList("RATINGS");
             restartedOrRecreated = true;
         }
         viewModel = ViewModelProviders.of(getActivity()).get(MapViewModel.class);
         viewModel.updateCurrentFragment(this.getClass().getSimpleName());
-        //this listener starts when the user check the checkbox in
-        checkBoxListener = new View.OnClickListener() {
-
-            public void onClick(View v) {
-                Log.d(TAG, "enter onClick checkBox(View view) ");
-//                String checked = ((CheckBox) v).getTag().toString();
-//
-//                if (selectedFilters.contains(checked)) {
-//                    selectedFilters.remove(checked);
-//                    Log.i(TAG, "removing: " + checked);
-//                } else {
-//                    selectedFilters.add(checked);
-//                    Log.i(TAG, "adding: " + checked);
-//                }
-//                //TODO create the logic to modify the list of points to show
-//                LinkedList<String> list = new LinkedList<>();
-//
-//                if (selectedFilters.size() == 0 &&
-//                        ratings.size() == 0) {
-//                    for (Place p : viewModel.getRecievedPoints().getValue()) {
-//                        list.add(p.getName());
-//                    }
-//                } else {
-//
-//                    switch (viewModel.getCurrentFilter().getValue()) {
-//                        case MapFragment.FILTERS:
-//                            //TODO move this to separate activities start methods
-//                            if (ratings.size() > 0 && selectedFilters.size() > 0) {
-//                                for (Place p : viewModel.getRecievedPoints().getValue()) {
-//                                    if (selectedFilters.contains(p.getCategory())
-//                                            && ratings.contains(String.valueOf(p.getRating()))) {
-//                                        list.add(p.getName());
-//                                    }
-//                                }
-//                            } else if (ratings.size() > 0 && selectedFilters.size() == 0) {
-//                                for (Place p : viewModel.getRecievedPoints().getValue()) {
-//                                    if (ratings.contains(String.valueOf(p.getRating()))) {
-//                                        list.add(p.getName());
-//                                    }
-//                                }
-//
-//                            } else if (ratings.size() == 0 && selectedFilters.size() > 0) {
-//                                for (Place p : viewModel.getRecievedPoints().getValue()) {
-//                                    if (selectedFilters.contains(p.getCategory())) {
-//                                        list.add(p.getName());
-//                                    }
-//                                }
-//                            }
-//
-//                            break;
-//                        case MapFragment.LOVED:
-//                            for (Place p : viewModel.getRecievedPoints().getValue()) {
-//                                if (selectedFilters.contains(p.getName())) {
-//                                    list.add(p.getName());
-//                                }
-//                            }
-//                            break;
-//                        case MapFragment.ALL:
-//                            for (Place p : viewModel.getRecievedPoints().getValue()) {
-//                                if (selectedFilters.contains(p.getName())) {
-//                                    list.add(p.getName());
-//                                }
-//                            }
-//                            break;
-//
-//                        default:
-//                            break;
-//                    }
-//                }
-//
-//                //TODO TEST THIS SECTION
-//                viewModel.updatePointsToShow(list);
-                Log.d(TAG, "exit onClick checkBox(View view) ");
-            }
-        };
-
-        applyRatingListener = new View.OnClickListener() {
-            public void onClick(View view) {
-//                Log.d(TAG, "enter applyRatingListener(View view)");
-//                String sortedBy =((CheckBox) view).getTag().toString();
-//                Log.i(TAG, "rating selected: "+ sortedBy);
-//                if (ratings.contains(sortedBy)) {
-//                    ratings.remove(sortedBy);
-//                } else {
-//                    ratings.add(sortedBy);
-//                }
-//                LinkedList<String> tmp = new LinkedList<>();
-//                if (ratings.size()==0 && selectedFilters.size()==0) {
-//                    tmp.addAll(
-//                            viewModel.getNamesSortedByRating().getValue());
-//                }
-//                else if (selectedFilters.size()>0 && ratings.size()>0) {
-//                    for (Place p : viewModel.getRecievedPoints().getValue()) {
-//                        if (selectedFilters.contains(p.getCategory())
-//                                && ratings.contains(String.valueOf(p.getRating()))) {
-//                            tmp.add(p.getName());
-//                        }
-//                    }
-//                } else if (ratings.size()==0 && selectedFilters.size()>0){
-//                    for (Place p : viewModel.getRecievedPoints().getValue()) {
-//                        if (selectedFilters.contains(p.getCategory())) {
-//                            tmp.add(p.getName());
-//                        }
-//                    }
-//
-//                } else if (ratings.size()>0 && selectedFilters.size()==0) {
-//                    for (Place p : viewModel.getRecievedPoints().getValue()) {
-//                        if (ratings.contains(String.valueOf(p.getRating()))) {
-//                            tmp.add(p.getName());
-//                        }
-//                    }
-//                }
-//                viewModel.updatePointsToShow(tmp);
-
-                Log.d(TAG, "exit applyRatingListener(View view)");
-            }
-        };
     }
 
     @Override
@@ -289,6 +170,8 @@ public class SideBarFragment1 extends Fragment {
                 viewModel.updatePointsToShow(viewModel.getNamesSortedByRating().getValue());
                 viewModel.upateShowSidebar(false);
                 viewModel.updateDataToFilter(null);
+                viewModel.updateNamesToShowInScroll(null);
+                viewModel.updateRatings(null);
 
                 Log.d(TAG, "exit clearAllListener(View view)");
             }
@@ -302,7 +185,6 @@ public class SideBarFragment1 extends Fragment {
             public void onChanged(@Nullable final LinkedList<String> filt) {
                 Log.i(TAG, "enter onChanged(@Nullable final LinkedList<String> filt)");
                 if (filt!=null) {
-                   // ll.removeAllViews();
                     configureFilters(sideBar);
                 }
 
@@ -310,8 +192,38 @@ public class SideBarFragment1 extends Fragment {
             }
         };
         viewModel.getDataToFilter().observe(this, scrollDataObserver);
-        if (restartedOrRecreated==true) {
-          //  ll.removeAllViews();
+
+        final Observer<LinkedList<String>> selectedFiltersObserver = new Observer<LinkedList<String>>() {
+
+            @Override
+            public void onChanged(@Nullable final LinkedList<String> selectedF) {
+
+                Log.i(TAG, "enter onChanged selectedFiltersObserver(@Nullable final LinkedList<String> filt)");
+                if (selectedF!=null) {
+                    FilterListviewAdapter.setCurrenrFilter(MapFragment.FILTERS);
+                    //TODO to provide the updated list of selected filters to ListViewAdaptor
+                    FilterListviewAdapter.updateListOfSelectedFilters(selectedF);
+                }
+            }
+        };
+        viewModel.getNamesToShowInScroll().observe(this, selectedFiltersObserver);
+
+        final Observer<LinkedList<String>> ratingsObserver = new Observer<LinkedList<String>>() {
+
+            @Override
+            public void onChanged(@Nullable final LinkedList<String> selectedF) {
+
+                Log.i(TAG, "enter onChanged ratingsObserver(@Nullable final LinkedList<String> filt)");
+                if (selectedF!=null) {
+                    FilterListviewAdapter.setCurrenrFilter("RATING");
+                    //TODO to provide the updated list of selected filters to ListViewAdaptor
+                    FilterListviewAdapter.setRating(selectedF);
+                }
+            }
+        };
+        viewModel.getRatings().observe(this, ratingsObserver);
+
+        if (viewModel.getCurrentFilter().getValue()!=null) {
             configureFilters(sideBar);
         }
         return v;
@@ -359,11 +271,13 @@ public class SideBarFragment1 extends Fragment {
     @TargetApi(17)
     private void configureFilters(RelativeLayout sideBar) {
         Log.d(TAG, "enter configureFilters(LinearLayout ll)");
+       // restartedOrRecreated=false;
         sideBar.removeAllViews();
         //TODO adding back the views including tho bottom element
         try {
             sideBar.addView(header);
             header.setPadding(20,20,20,20);
+            header.setTypeface(null, Typeface.BOLD);
         } catch (Exception e) {
 
         }
@@ -373,7 +287,6 @@ public class SideBarFragment1 extends Fragment {
         } catch (Exception e) {
 
         }
-
         if (viewModel.getCurrentFilter().getValue().equals(MapFragment.FILTERS)) {
 
 //TODO add extra listview for rating
@@ -381,9 +294,10 @@ public class SideBarFragment1 extends Fragment {
 //                Log.i(TAG, "storing values for filters: "+ viewModel.getSelectedFiltersForCategories().getValue().size());
 //                selectedFilters.addAll(viewModel.getSelectedFiltersForCategories().getValue());
 //            }
-            //TODO toppest element
+            //toppest element
             TextView text1 = new TextView(getActivity());
-            text1.setText("Rating");
+            text1.setText("Rating:");
+            text1.setTypeface(null, Typeface.BOLD);
             text1.setPadding(20,20,20,20);
             text1.setId(R.id.rating_header_id);
             RelativeLayout.LayoutParams textParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -392,13 +306,22 @@ public class SideBarFragment1 extends Fragment {
 
             //TODO second element under the toppest
             listFilter2 = new ListView(getActivity());
-            final String [] symbols = {"*****", "****", "***"};
-            ArrayAdapter adapter2 = new ArrayAdapter<String>(getActivity(),
-                    android.R.layout.simple_list_item_1, symbols);
+
+            final String [] symbols = {"5", "4", "3"};
+            LinkedList<String> tmp = new LinkedList<>();
+            for (String s: symbols) {
+                tmp.add(s);
+            }
+            FilterListviewAdapter adapter2 = new FilterListviewAdapter(tmp, getActivity(), viewModel.getDevice().getValue(),
+                    viewModel.getHight().getValue(), viewModel.getWight().getValue());
             listFilter2.setAdapter(adapter2);
             RelativeLayout.LayoutParams lp2 = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
             lp2.addRule(RelativeLayout.BELOW, text1.getId());
+
             listFilter2.setLayoutParams(lp2);
+            if(viewModel.getOrienr().getValue().equals(UiUtils.LANDSCAPE)) {
+                lp2.width = 150;
+            }
             listFilter2.setId(R.id.rating_listView_id);
             listFilter2.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
@@ -413,50 +336,51 @@ public class SideBarFragment1 extends Fragment {
                     } else {
                         sortedBy="3";
                     }
-                    Log.i(TAG, "listview children: "+listFilter2.getChildCount());
-                    for (int i = 0; i < listFilter2.getChildCount(); i++) {
+                    LinkedList<String> tmp1 = new LinkedList<>();
+                    tmp1.addAll(viewModel.getRatings().getValue());
+
+                    for (int i = 0; i < 3; i++) {
                         if(position == i){
                             Log.i(TAG, "element found");
-                            if (ratings.contains(sortedBy)) {
-                                ratings.remove(sortedBy);
-                                listFilter2.getChildAt(i).setBackgroundColor(Color.WHITE);
+                            if (viewModel.getRatings().getValue().contains(sortedBy)) {
+
+                                tmp1.remove(sortedBy);
+                                view.setBackgroundColor(Color.WHITE);
                             } else {
-                                ratings.add(sortedBy);
-                                listFilter2.getChildAt(i).setBackgroundColor(Color.BLUE);
+                                tmp1.add(sortedBy);
+                                view.setBackgroundColor(Color.LTGRAY);
                             }
 
-//                        }else{
-//                            listFilter2.getChildAt(i).setBackgroundColor(Color.TRANSPARENT);
                             break;
                         }
 
                     }
-
+                    viewModel.updateRatings(tmp1);
 
                     Log.i(TAG, "rating selected: "+ sortedBy);
 
                     LinkedList<String> tmp = new LinkedList<>();
-                    if (ratings.size()==0 && selectedFilters.size()==0) {
+                    if (viewModel.getRatings().getValue().size()==0 && viewModel.getNamesToShowInScroll().getValue().size()==0) {
                         tmp.addAll(
                                 viewModel.getNamesSortedByRating().getValue());
                     }
-                    else if (selectedFilters.size()>0 && ratings.size()>0) {
+                    else if (viewModel.getNamesToShowInScroll().getValue().size()>0 && viewModel.getRatings().getValue().size()>0) {
                         for (Place p : viewModel.getRecievedPoints().getValue()) {
-                            if (selectedFilters.contains(p.getCategory())
-                                    && ratings.contains(String.valueOf(p.getRating()))) {
+                            if (viewModel.getNamesToShowInScroll().getValue().contains(p.getCategory())
+                                    && viewModel.getRatings().getValue().contains(String.valueOf(p.getRating()))) {
                                 tmp.add(p.getName());
                             }
                         }
-                    } else if (ratings.size()==0 && selectedFilters.size()>0){
+                    } else if (viewModel.getRatings().getValue().size()==0 && viewModel.getNamesToShowInScroll().getValue().size()>0){
                         for (Place p : viewModel.getRecievedPoints().getValue()) {
-                            if (selectedFilters.contains(p.getCategory())) {
+                            if (viewModel.getNamesToShowInScroll().getValue().contains(p.getCategory())) {
                                 tmp.add(p.getName());
                             }
                         }
 
-                    } else if (ratings.size()>0 && selectedFilters.size()==0) {
+                    } else if (viewModel.getRatings().getValue().size()>0 && viewModel.getNamesToShowInScroll().getValue().size()==0) {
                         for (Place p : viewModel.getRecievedPoints().getValue()) {
-                            if (ratings.contains(String.valueOf(p.getRating()))) {
+                            if (viewModel.getRatings().getValue().contains(String.valueOf(p.getRating()))) {
                                 tmp.add(p.getName());
                             }
                         }
@@ -468,16 +392,23 @@ public class SideBarFragment1 extends Fragment {
 
             sideBar.addView(listFilter2);
 
-            //TODO third element under the toppest
-            header.setText("Categories");
-            RelativeLayout.LayoutParams lp3 = (RelativeLayout.LayoutParams)header.getLayoutParams();
+            // third element under the toppest
+            header.setText("Categories:");
             header.setId(R.id.categories_header_id);
-            lp3.removeRule(RelativeLayout.ALIGN_PARENT_TOP);
-            lp3.addRule(RelativeLayout.BELOW, listFilter2.getId());
+            RelativeLayout.LayoutParams lp3 = (RelativeLayout.LayoutParams)header.getLayoutParams();
+            if(viewModel.getOrienr().getValue().equals(UiUtils.LANDSCAPE)) {
+                lp3.addRule(RelativeLayout.RIGHT_OF, text1.getId());
+            } else {
+                lp3.removeRule(RelativeLayout.ALIGN_PARENT_TOP);
+                lp3.addRule(RelativeLayout.BELOW, listFilter2.getId());
+            }
             header.setLayoutParams(lp3);
 
-            //TODO last element under the toppest
+            // last element under the toppest
             RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) listFilter1.getLayoutParams();
+            if(viewModel.getOrienr().getValue().equals(UiUtils.LANDSCAPE)) {
+                lp.addRule(RelativeLayout.RIGHT_OF, listFilter2.getId());
+            }
             lp.addRule(RelativeLayout.BELOW, header.getId());
             listFilter1.setLayoutParams(lp);
 
@@ -487,14 +418,14 @@ public class SideBarFragment1 extends Fragment {
 //                Log.i(TAG, "storing values for all: "+ viewModel.getSelectedFiltersForAll().getValue().size());
 //                selectedFilters.addAll(viewModel.getSelectedFiltersForAll().getValue());
 //            }
-            header.setText("All points");
+            header.setText("All points:");
 
         } else if (viewModel.getCurrentFilter().getValue().equals(MapFragment.LOVED)) {
             if (viewModel.getLoved().getValue()==null || viewModel.getLoved().getValue().size()==0) {
 
                 header.setText("You have not selected any points yet. To add point to your collection, expand the info window of the marker and click the heart icon");
                // ll.addView(txt);
-                return;
+                //return;
             } else {
 //                if (viewModel.getSelectedFiltersForLoved().getValue()!=null) {
 //                    selectedFilters.addAll(viewModel.getSelectedFiltersForLoved().getValue());
@@ -502,65 +433,11 @@ public class SideBarFragment1 extends Fragment {
                 header.setText("Selected");
             }
         }
-    //    ll.addView(txt, globalIndex++);
-        Log.i(TAG, "selected filters found: "+selectedFilters.size());
-//
-//        if (viewModel.getCurrentFilter().getValue().equals(MapFragment.FILTERS)){
-//            for (int i=0; i<3; i++) {
-//                CheckBox checkBox1 = new CheckBox(getActivity());
-//                //   Log.d(TAG, "adding checkbox");
-//                checkBox1.setText(sympols[i]);
-//                checkBox1.setTag(String.valueOf(5-i));
-//            if (ratings.contains(String.valueOf(5-i))) {
-//                checkBox1.setChecked(true);
-//            }
-//                checkBox1.setPadding(20,20,20,20);
-//                checkBox1.setOnClickListener(applyRatingListener);
-//                CompoundButtonCompat.setButtonTintList(checkBox1,colorStateList);
-//                ll.addView(checkBox1, globalIndex++);
-//            }
-//
-//            TextView text1 = new TextView(getActivity());
-//            text1.setText("Categories:");
-//            text1.setPadding(20,20,20,20);
-//            ll.addView(text1, globalIndex++);
-//        }
-//
-////        //TODO test dynamic scroll modification
-//
-//        if (!viewModel.getCurrentFilter().getValue().equals(MapFragment.ALL)) {
-//            for (int i = 0; i < viewModel.getNamesToShowInScroll().getValue().size(); i++) {
-//                //   Log.d(TAG, "!!!");
-//                CheckBox checkBox = new CheckBox(getActivity());
-//
-//                // set the text size depending on the device type
-//                checkBox.setText(viewModel.getNamesToShowInScroll().getValue().get(i));
-//                //   Log.i(TAG, lst.get(i));
-////            if (deviceType.equals("tablet")) {
-////                checkBox.setTextSize(context.getResources().getDimension(R.dimen.avg_textsize));
-////            }
-//
-//                if (selectedFilters.contains(viewModel.getDataToFilter().getValue().get(i))) {
-//                    // set checked checkbox
-//                    checkBox.setChecked(true);
-//                    Log.i(TAG, "should be checked: " + viewModel.getDataToFilter().getValue().get(i));
-//                }
-//                checkBox.setPadding(20,20,20,20);
-//                checkBox.setTag(viewModel.getNamesToShowInScroll().getValue().get(i));
-//
-//                //setting the color of text and the box of check box
-//                //  checkBox.setTextColor(Color.BLACK);
-//                CompoundButtonCompat.setButtonTintList(checkBox,colorStateList);
-//                checkBox.setOnClickListener(checkBoxListener);
-//                ll.addView(checkBox, globalIndex++);
-//            }
-//        } else {
-//
-//        }
+
         ArrayList <String> tmp = new ArrayList<>(viewModel.getDataToFilter().getValue().size());
         tmp.addAll(viewModel.getDataToFilter().getValue());
-        ArrayAdapter adapter = new ArrayAdapter<String>(getActivity(),
-                android.R.layout.simple_list_item_1, tmp);
+        FilterListviewAdapter adapter = new FilterListviewAdapter(viewModel.getDataToFilter().getValue(), getActivity(), viewModel.getDevice().getValue(),
+                viewModel.getHight().getValue(), viewModel.getWight().getValue());
         listFilter1.setAdapter(adapter);
         listFilter1.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -568,19 +445,38 @@ public class SideBarFragment1 extends Fragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Log.d(TAG, "enter onItemClick(AdapterView<?> parent, View view, int position, long id)");
                 String checked = viewModel.getDataToFilter().getValue().get(position);//((CheckBox) v).getTag().toString();
+                Log.i(TAG, "position" +position);
+                LinkedList<String> temp = new LinkedList<>();
+                try {
+                    temp.addAll(viewModel.getNamesToShowInScroll().getValue());
+                }catch (NullPointerException e) {
 
-                if (selectedFilters.contains(checked)) {
-                    selectedFilters.remove(checked);
-                    Log.i(TAG, "removing: " + checked);
-                } else {
-                    selectedFilters.add(checked);
-                    Log.i(TAG, "adding: " + checked);
                 }
+
+                for (int i = 0; i < viewModel.getDataToFilter().getValue().size(); i++) {
+                    if(position == i){
+                        Log.i(TAG, "element found");
+                        Log.i(TAG, "index" +i);
+                        if (temp.contains(checked)) {
+                            temp.remove(checked);
+                            view.setBackgroundColor(Color.WHITE);
+                        } else {
+                            temp.add(checked);
+                            view.setBackgroundColor(Color.LTGRAY);
+                        }
+
+//                        }else{
+//                            listFilter2.getChildAt(i).setBackgroundColor(Color.TRANSPARENT);
+                        break;
+                    }
+                }
+                viewModel.updateNamesToShowInScroll(temp);
+
                 //TODO create the logic to modify the list of points to show
                 LinkedList<String> list = new LinkedList<>();
 
-                if (selectedFilters.size() == 0 &&
-                        ratings.size() == 0) {
+                if (viewModel.getNamesToShowInScroll().getValue().size() == 0 &&
+                        viewModel.getRatings().getValue().size() == 0) {
                     for (Place p : viewModel.getRecievedPoints().getValue()) {
                         list.add(p.getName());
                     }
@@ -589,23 +485,23 @@ public class SideBarFragment1 extends Fragment {
                     switch (viewModel.getCurrentFilter().getValue()) {
                         case MapFragment.FILTERS:
                             //TODO move this to separate activities start methods
-                            if (ratings.size() > 0 && selectedFilters.size() > 0) {
+                            if (viewModel.getRatings().getValue().size() > 0 && viewModel.getNamesToShowInScroll().getValue().size() > 0) {
                                 for (Place p : viewModel.getRecievedPoints().getValue()) {
-                                    if (selectedFilters.contains(p.getCategory())
-                                            && ratings.contains(String.valueOf(p.getRating()))) {
+                                    if (viewModel.getNamesToShowInScroll().getValue().contains(p.getCategory())
+                                            && viewModel.getRatings().getValue().contains(String.valueOf(p.getRating()))) {
                                         list.add(p.getName());
                                     }
                                 }
-                            } else if (ratings.size() > 0 && selectedFilters.size() == 0) {
+                            } else if (viewModel.getRatings().getValue().size() > 0 && viewModel.getNamesToShowInScroll().getValue().size() == 0) {
                                 for (Place p : viewModel.getRecievedPoints().getValue()) {
-                                    if (ratings.contains(String.valueOf(p.getRating()))) {
+                                    if (viewModel.getRatings().getValue().contains(String.valueOf(p.getRating()))) {
                                         list.add(p.getName());
                                     }
                                 }
 
-                            } else if (ratings.size() == 0 && selectedFilters.size() > 0) {
+                            } else if (viewModel.getRatings().getValue().size() == 0 && viewModel.getNamesToShowInScroll().getValue().size() > 0) {
                                 for (Place p : viewModel.getRecievedPoints().getValue()) {
-                                    if (selectedFilters.contains(p.getCategory())) {
+                                    if (viewModel.getNamesToShowInScroll().getValue().contains(p.getCategory())) {
                                         list.add(p.getName());
                                     }
                                 }
@@ -614,14 +510,14 @@ public class SideBarFragment1 extends Fragment {
                             break;
                         case MapFragment.LOVED:
                             for (Place p : viewModel.getRecievedPoints().getValue()) {
-                                if (selectedFilters.contains(p.getName())) {
+                                if (viewModel.getNamesToShowInScroll().getValue().contains(p.getName())) {
                                     list.add(p.getName());
                                 }
                             }
                             break;
                         case MapFragment.ALL:
                             for (Place p : viewModel.getRecievedPoints().getValue()) {
-                                if (selectedFilters.contains(p.getName())) {
+                                if (viewModel.getNamesToShowInScroll().getValue().contains(p.getName())) {
                                     list.add(p.getName());
                                 }
                             }
@@ -647,10 +543,10 @@ public class SideBarFragment1 extends Fragment {
     public void onSaveInstanceState(@NonNull Bundle outState) {
         Log.d(TAG, "enter onSaveInstanceState(@NonNull Bundle outState)");
         super.onSaveInstanceState(outState);
-        outState.putStringArrayList("RATINGS", ratings);
-        ArrayList<String> tmp = new ArrayList<String>(selectedFilters.size());
-        tmp.addAll(selectedFilters);
-        outState.putStringArrayList(MapFragment.KEY_SELECTED_FILTERS, tmp);
+      //  outState.putStringArrayList("RATINGS", ratings);
+//        ArrayList<String> tmp = new ArrayList<String>(viewModel.getSelectedFiltersForLoved().getValue().size());
+//        tmp.addAll(viewModel.getSelectedFiltersForLoved().getValue());
+//        outState.putStringArrayList(MapFragment.KEY_SELECTED_FILTERS, tmp);
         Log.d(TAG, "enter onSaveInstanceState(@NonNull Bundle outState)");
 
     }

@@ -34,6 +34,7 @@ public class MapViewModel extends ViewModel {
     public final MutableLiveData<String> currentFilter = new MutableLiveData<>();
     public final MutableLiveData<Boolean> showSidebar = new MutableLiveData<>();
     public final MutableLiveData<LinkedList<String>> dataToFilter = new MutableLiveData<>();
+    public final MutableLiveData<LinkedList<String>> ratings = new MutableLiveData<>();
 
     public final MutableLiveData<LinkedList<String>> selectedFiltersForCategories = new MutableLiveData<>();
     public final MutableLiveData<LinkedList<String>> selectedFiltersForAllPoints = new MutableLiveData<>();
@@ -238,6 +239,17 @@ public class MapViewModel extends ViewModel {
 
         return scrollY;
     }
+
+    public void updateRatings (LinkedList <String> r) {
+        Log.d(TAG, "enter updateRatings");
+        ratings.setValue(r);
+        Log.d(TAG, "exit updateRatings");
+    }
+
+    public LiveData<LinkedList<String>> getRatings () {
+        return ratings;
+    }
+
 
 
     public void updateNamesToShowInScroll(LinkedList <String> names) {

@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
+import android.location.Location;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -70,6 +71,12 @@ public class MapFragment extends Fragment implements
     private float zoomIfRestarted = 0.0f;
     private double longIfRestarted = 0.0f;
     private double latIfRestarted = 0.0f;
+    private boolean recreated = false;
+
+    private double westCoord= 0.0f;
+    private double eastCoord = 0.0f;
+    private double southCoord = 0.0f;
+    private double northCoord = 0.0f;
 
     private GoogleMap mMap;
     private CameraPosition mCameraPosition;
@@ -186,23 +193,26 @@ public class MapFragment extends Fragment implements
         super.onCreate(savedInstanceState);
         if (savedInstanceState != null) {
             Log.d(TAG, "savedInstanceState not null");
+            try {
 
-            selectPointsToShow = savedInstanceState.getBoolean(KEY_SELECT_POINTS_TO_SHOW);
-            ArrayList<String> ids = savedInstanceState.getStringArrayList(KEY_MARKER_IDS);
-            currentZoom = savedInstanceState.getFloat(CURRENT_ZOOM);
-            Log.i(TAG, "zoom: " + currentZoom);
-            selectedMarkerID = savedInstanceState.getString("SELECTED_MARKER_ID");
-       //     current_filter = savedInstanceState.getString("CURRENT_FILTER");
-            mCameraPosition = savedInstanceState.getParcelable(KEY_CAMERA_POSITION);
-            Log.i(TAG, mCameraPosition.target.toString());
-            //    places = (HashSet)savedInstanceState.getSerializable(UiUtils.PLACES);
-            saveInfoWindow = savedInstanceState.getBoolean(SAVE_INFO_WINDOW);
-            animationStarted = savedInstanceState.getBoolean(STARTED_ANIMATION);
-            sortedBy = savedInstanceState.getString(UiUtils.SORTED_BY);
-            markerIds.addAll(ids);
-            if (savedInstanceState.getParcelable(KEY_CAMERA_POSITION)==null) {
+                selectPointsToShow = savedInstanceState.getBoolean(KEY_SELECT_POINTS_TO_SHOW);
+                ArrayList<String> ids = savedInstanceState.getStringArrayList(KEY_MARKER_IDS);
+                currentZoom = savedInstanceState.getFloat(CURRENT_ZOOM);
+                Log.i(TAG, "zoom: " + currentZoom);
+                selectedMarkerID = savedInstanceState.getString("SELECTED_MARKER_ID");
+                mCameraPosition = savedInstanceState.getParcelable(KEY_CAMERA_POSITION);
+                Log.i(TAG, mCameraPosition.target.toString());
+                saveInfoWindow = savedInstanceState.getBoolean(SAVE_INFO_WINDOW);
+                animationStarted = savedInstanceState.getBoolean(STARTED_ANIMATION);
+                sortedBy = savedInstanceState.getString(UiUtils.SORTED_BY);
+                markerIds.addAll(ids);
+                if (savedInstanceState.getParcelable(KEY_CAMERA_POSITION)==null) {
+
+                }
+            }catch (Exception e) {
 
             }
+
         }
 
         //getting the type and the orientation of device
@@ -268,13 +278,18 @@ public class MapFragment extends Fragment implements
         outState.putString(UiUtils.SORTED_BY, sortedBy);
 
         // save info window
-        for (Marker m: mClusterManager.getMarkerCollection().getMarkers()) {
-            if (m.isInfoWindowShown()==true) {
-                selectedMarkerID = m.getTitle();
-                saveInfoWindow = true;
-                break;
+        try{
+            for (Marker m: mClusterManager.getMarkerCollection().getMarkers()) {
+                if (m.isInfoWindowShown()==true) {
+                    selectedMarkerID = m.getTitle();
+                    saveInfoWindow = true;
+                    break;
+                }
             }
+        }catch (Exception e) {
+
         }
+
         outState.putString("SELECTED_MARKER_ID", selectedMarkerID);
         outState.putBoolean(SAVE_INFO_WINDOW, saveInfoWindow);
         Log.d(TAG, "enter onSaveInstanceState(@NonNull Bundle outState)");
@@ -345,16 +360,22 @@ public class MapFragment extends Fragment implements
 
                     //TODO user has selected the same filter, upgating isSidebarReguested only
                     if (viewModel.getCurrentFilter().getValue().equals(button)) {
+                        Log.i(TAG, "the same filter selected");
                         viewModel.upateShowSidebar(true);
                         return;
-//                    } else {
-//                        //TODO user has selected a new filter, need to show all the points
                     }
                 } else {
+                    Log.i(TAG, "the filter was null");
                     //TODO user has selected a filter first time, need to show all the points
                    // viewModel.updatePointsToShow(viewModel.getNamesSortedByRating().getValue());
                 }
                 LinkedList<String> list = new LinkedList<>();
+                if (viewModel.getCurrentFilter().getValue()!=null) {
+                    if (viewModel.getCurrentFilter().getValue().equals(MapFragment.FILTERS)){
+                        viewModel.updateRatings(new LinkedList<String>());
+                    }
+                    viewModel.updateNamesToShowInScroll(null);
+                }
 
                 //  current_filter = button;
                 if (button.equals(FILTERS)) {
@@ -547,6 +568,7 @@ public class MapFragment extends Fragment implements
             if (mCameraPosition!= null) {
                 myLatLng =  new LatLng(mCameraPosition.target.latitude,
                         mCameraPosition.target.longitude);
+                recreated=true;
             } else {
 
                 myLatLng = mDefaultCoord;
@@ -589,11 +611,51 @@ public class MapFragment extends Fragment implements
         mClusterManager.getMarkerCollection().clear();
         markerIds.clear();
         mClusterManager.cluster();
+        southCoord=0.0f;
+        northCoord=0.0f;
+        eastCoord=0.0f;
+        westCoord=0.0f;
+
         Log.i(TAG, "to show: "+viewModel.getPointsNamesToShow().getValue().size());
 
         count = 0;
         for (Place p : places) {
             if (viewModel.getPointsNamesToShow().getValue().contains(p.getName())) {
+                if (southCoord==0.0f) {
+                    southCoord=p.getLat();
+                } else {
+                    if (p.getLat()>southCoord) {
+                        southCoord =p.getLat();
+                    }
+                }
+                if (northCoord==0.0f) {
+                    northCoord=p.getLat();
+                } else {
+                    if (p.getLat()<northCoord) {
+                        northCoord =p.getLat();
+                    }
+                }
+                if (southCoord==0.0f) {
+                    southCoord=p.getLat();
+                } else {
+                    if (p.getLat()>southCoord) {
+                        southCoord =p.getLat();
+                    }
+                }
+                if (westCoord==0.0f) {
+                    westCoord=p.getLng();
+                } else {
+                    if (p.getLng()<westCoord) {
+                        westCoord =p.getLng();
+                    }
+                }
+                if (eastCoord==0.0f) {
+                    eastCoord=p.getLng();
+                } else {
+                    if (p.getLng()>eastCoord) {
+                        eastCoord =p.getLng();
+                    }
+                }
                 MyClusterItem offsetItem = new MyClusterItem(p.getLat(), p.getLng(), p.getName(), p.getCategory());
                 mClusterManager.addItem(offsetItem);
                 markerIds.add(p.getName());
@@ -628,6 +690,47 @@ public class MapFragment extends Fragment implements
 
     private void stabilizeViewWithZoom() {
         Log.d(TAG, "enter stabilizeViewWithZoom ()");
+        if (recreated==false) {
+            if (westCoord!=0.0f) {
+                Log.i(TAG, "Lat is: "+(northCoord+southCoord)/2);
+                Log.i(TAG, "Long is: "+(westCoord +eastCoord)/2);
+                LatLng newLatLng =  new LatLng(
+                        (northCoord+southCoord)/2, (westCoord+eastCoord)/2);
+                //TODO set zoom depending on the distance between the edge points
+                double max;
+                double latDistance = southCoord-northCoord;
+                double longDistance = -(westCoord-eastCoord);
+                if (latDistance>longDistance) {
+                    max=latDistance;
+                } else {
+                    max=longDistance;
+                }
+                Log.i(TAG, "max distance: "+max);
+                if (max<0.003f) {
+                    currentZoom = 18.5f;
+                } else if (0.003<=max && max<0.008) {
+                    currentZoom = 16.5f;
+                } else if (0.008<=max && max<0.01) {
+                    currentZoom = 15.5f;
+                } else if (0.01<=max && max<0.02){
+                    currentZoom = 14.5f;
+                } else if (0.02<=max && max<0.03) {
+                    currentZoom = 13.5f;
+                } else if (0.03<=max && max<0.05) {
+                    currentZoom = 12.5f;
+                } else if (0.05<=max && max<0.07) {
+                    currentZoom = 11.5f;
+                } else if (0.07<=max && max<0.2) {
+                    currentZoom = 10.5f;
+                } else {
+                    currentZoom = 9.5f;
+                }
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(newLatLng,
+                        currentZoom));
+            }
+        }
+
+
         if (zoomingOut==false) {
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mMap.getCameraPosition().target,
                     mMap.getCameraPosition().zoom-0.005f));
@@ -636,6 +739,8 @@ public class MapFragment extends Fragment implements
                     mMap.getCameraPosition().zoom+0.005f));
         }
         zoomingOut=!zoomingOut;
+        recreated=false;
+
         Log.d(TAG, "exit stabilizeViewWithZoom ()");
     }
 

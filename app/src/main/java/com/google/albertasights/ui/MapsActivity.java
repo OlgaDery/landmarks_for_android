@@ -46,6 +46,7 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
     private NoUserFragment loginFragment = new NoUserFragment();
     private StatusBarFragment progressFr = new StatusBarFragment();
     private SideBarFragment1 sideBar= new SideBarFragment1();
+    private Boolean restarted = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,7 +56,9 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
         Log.d(TAG, "enter onCreate");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
-
+        if (savedInstanceState!=null) {
+            restarted=true;
+        }
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         viewModel = ViewModelProviders.of(this).get(MapViewModel.class);
 
@@ -64,6 +67,12 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
         viewModel.updateWight(UiUtils.getWidthInches(getApplicationContext()));
         viewModel.updateDeviceType(UiUtils.findScreenSize(getApplicationContext()));
         viewModel.updateOrientation(UiUtils.getOrientation(getApplicationContext()));
+        if (viewModel.getNamesToShowInScroll().getValue()==null) {
+            viewModel.updateNamesToShowInScroll(new LinkedList<String>());
+        }
+        if (viewModel.getRatings().getValue()==null) {
+            viewModel.updateRatings(new LinkedList<String>());
+        }
 
 
         //observes the map with selected points filters to apply
@@ -72,8 +81,9 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
             public void onChanged(@Nullable final String newFilter) {
                 Log.i(TAG, "enter onChanged(String newFilter)");
                 Log.i(TAG, "filter: "+newFilter);
-                LinkedList<String> sortedLost = new LinkedList<>();
+
                 if (newFilter!=null) {
+                    LinkedList<String> sortedLost = new LinkedList<>();
                     //if string = FILTER, putting categories as arguments
                     if (newFilter.equals(MapFragment.ALL)) {
                         sortedLost.addAll(viewModel.getNamesSortedByRating().getValue());
@@ -91,19 +101,6 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
                     Collections.sort(sortedLost);
 
                     viewModel.updateDataToFilter(sortedLost);
-                    if (sortedLost.size()>50) {
-                        LinkedList<String> tmp = new LinkedList<>();
-                        for (int i = 0; i < 50; i++) {
-                            tmp.add(sortedLost.get(i));
-                            //   Log.i(TAG, "adding to scroll: "+ sortedLost.get(i));
-                            if (tmp.size()==sortedLost.size()) {
-                                break;
-                            }
-                        }
-                        viewModel.updateNamesToShowInScroll(tmp);
-                    } else {
-                        viewModel.updateNamesToShowInScroll(sortedLost);
-                    }
                 }
 
             }
@@ -210,8 +207,10 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
                         lst.addAll(viewModel.getLoved().getValue());
                         lst.add(intent.getStringExtra(UiUtils.LOVED));
                         viewModel.updateLoved(lst);
-                      //  selectedByUser.add(intent.getStringExtra(UiUtils.LOVED));
-                     //   updateLocationUI(filters);
+                        if (viewModel.getCurrentFilter().getValue().equals(MapFragment.LOVED)) {
+                            viewModel.updateDataToFilter(lst);
+                        }
+
                         UiUtils.showToast(getApplicationContext(),
                                 "added!");
                     }
@@ -225,6 +224,10 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
                         lst.addAll(viewModel.getLoved().getValue());
                         lst.remove(intent.getStringExtra(UiUtils.LOVED));
                         viewModel.updateLoved(lst);
+                        Log.i(TAG, "currrent filter: " + viewModel.getCurrentFilter().getValue());
+                        if (viewModel.getCurrentFilter().getValue().equals(MapFragment.LOVED)) {
+                            viewModel.updateDataToFilter(lst);
+                        }
                         if (viewModel.getPointsNamesToShow().getValue().contains(intent.getStringExtra(UiUtils.LOVED))) {
                             LinkedList<String> lst1 = new LinkedList<>();
                             lst1.addAll(viewModel.getPointsNamesToShow().getValue());
@@ -282,6 +285,7 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
     protected void onSaveInstanceState(Bundle outState) {
           Log.d(TAG, "enter onSaveInstanceState");
         super.onSaveInstanceState(outState);
+        outState.putBoolean("RESTARTED", true);
        Log.d(TAG, "exit onSaveInstanceState");
     }
 
@@ -293,6 +297,7 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
     protected void onResume() {
         Log.d(TAG, "enter onResume()");
         super.onResume();
+       // restarted=true;
         registerReceiver();
         Log.d(TAG, "exit onResume()");
 
@@ -394,6 +399,10 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
 
             UiUtils.manageFragments(pointFr, getSupportFragmentManager(), true,
                     R.id.map_container, "REPLACE", "point");
+            if (viewModel.getOrienr().equals(UiUtils.LANDSCAPE)) {
+                UiUtils.manageFragments(new AdsFragment(), getSupportFragmentManager(), true,
+                        R.id.map_container, "ADD", "banner");
+            }
         }
 
         Log.d(TAG, "exit onPointDetailsSelected(String name)");

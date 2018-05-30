@@ -52,6 +52,8 @@ public class UserActivity extends MenuActivity implements NoUserFragment.OnButto
                 //If user exists in SharedPreferences
                 if ((User) getIntent().getExtras().getSerializable(UiUtils.USER)!=null)  {
                     user = (User) getIntent().getExtras().getSerializable(UiUtils.USER);
+                    Log.i(TAG, "first name: "+user.getFirstName());
+                    Log.i(TAG, "last name: "+ user.getLastName());
                     viewModel.updateUser(user);
                     if (user.getLoggedIn()==false) {
                         UiUtils.manageFragments(logInFragment, getSupportFragmentManager(), false,
@@ -87,6 +89,8 @@ public class UserActivity extends MenuActivity implements NoUserFragment.OnButto
                         if (intent.getSerializableExtra(UiUtils.USER)!=null) {
                             User user = (User) intent.getSerializableExtra(UiUtils.USER);
                             viewModel.updateUser(user);
+                            Log.i(TAG, "first name: "+user.getFirstName());
+                            Log.i(TAG, "last name: "+ user.getLastName());
                             UiUtils.manageFragments(progressFragment, getSupportFragmentManager(), false,
                                     R.id.user_container, "REMOVE", "progr1");
                             UiUtils.manageFragments(logInFragment, getSupportFragmentManager(), false,
@@ -158,6 +162,7 @@ public class UserActivity extends MenuActivity implements NoUserFragment.OnButto
     public void onUserUpdateListener(String action) {
         //here is the listener from UserFragment
         Log.i(TAG, "enter onUserUpdateListener(String action)");
+        Log.i(TAG, "action: "+action);
         if (action.equals(UiUtils.LOG_OUT)) {
             SharedPreferences.Editor editor = UiUtils.getEditor(this);
             editor.putBoolean(UiUtils.LOGGED_IN, false);
