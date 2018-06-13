@@ -1,19 +1,45 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:gravity="center_horizontal"
-    android:orientation="vertical"
+    android:layout_height="match_parent"
+    android:background="@color/colorWhite"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".ui.NoUserFragment">
+    <Button
+        android:id="@+id/submit"
+        android:padding="10dp"
+        android:layout_alignParentTop="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:background="@color/colorPrimary"
+        android:textColor="@color/colorWhite"
+        android:text="submit data"
+        android:layout_marginRight="5dp"
+        android:textStyle="bold" />
+
+    <Button
+        android:id="@+id/updPassword"
+        android:padding="10dp"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="5dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:background="@color/colorPrimary"
+        android:textColor="@color/colorWhite"
+        android:text="change password"
+        android:textStyle="bold" />
 
     <ScrollView
         android:id="@+id/login_form"
+        android:layout_below="@id/updPassword"
+        android:layout_marginTop="15dp"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent">
 
         <LinearLayout
             android:id="@+id/email_login_form"
@@ -24,6 +50,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:id="@+id/txt1"
                 android:text="Email:"/>
 
             <EditText
@@ -38,6 +65,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:id="@+id/txt2"
                 android:text="First name:"/>
 
             <EditText
@@ -50,6 +78,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:id="@+id/txt3"
                 android:text="Last name:"/>
 
             <EditText
@@ -63,29 +92,5 @@
         </LinearLayout>
 
     </ScrollView>
-    <Button
-        android:id="@+id/submit"
-        android:padding="10dp"
-        android:layout_marginTop="@dimen/activity_vertical_margin"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:background="@color/colorPrimary"
-        android:textColor="@color/colorWhite"
-        android:text="update data"
-        android:layout_below="@id/login_form"
-        android:textStyle="bold" />
 
-    <Button
-        android:id="@+id/updPassword"
-        android:padding="10dp"
-        android:layout_marginTop="@dimen/activity_vertical_margin"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:background="@color/colorPrimary"
-        android:textColor="@color/colorWhite"
-        android:text="change password"
-        android:layout_below="@id/login_form"
-        android:textStyle="bold" />
 </RelativeLayout>

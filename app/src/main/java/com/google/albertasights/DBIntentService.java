@@ -13,12 +13,14 @@ import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.lite.Database;
 import com.couchbase.lite.MutableDocument;
 import com.google.albertasights.models.User;
+import com.google.albertasights.ui.MailSender;
 import com.google.albertasights.ui.UiUtils;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 /**
@@ -72,6 +74,14 @@ public class DBIntentService extends IntentService {
                 removeFromSelectedPoint(param1);
             } else if (UiUtils.LOG_IN.equals(action)) {
                 logIn(intent.getStringExtra(UiUtils.EMAIL), intent.getStringExtra(UiUtils.PASSWORD));
+            } else if (UiUtils.UPDATE_USER.equals(action)) {
+                updateUser(intent.getStringExtra(UiUtils.EMAIL), intent.getStringExtra(UiUtils.PASSWORD));
+
+            } else if (UiUtils.UPDATE_PASSWORD.equals(action)) {
+                updatePassword(intent.getStringExtra(UiUtils.EMAIL), intent.getStringExtra(UiUtils.PASSWORD));
+
+            } else if (UiUtils.RESET_PASSWORD.equals(action)) {
+                sendEmail(intent.getStringExtra(UiUtils.EMAIL));
             }
         }
         Log.d(TAG, "exit onHandleIntent(Intent intent)");
@@ -143,8 +153,6 @@ public class DBIntentService extends IntentService {
                 editor.putString(UiUtils.PASSWORD, uPassword);
             }
             editor.commit();
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-           // Log.d(TAG, "pref size: " +prefs.getAll().size());
             Log.i(TAG, "first name: "+firstName);
             Log.i(TAG, "last name: "+ lastName);
 
@@ -200,19 +208,34 @@ public class DBIntentService extends IntentService {
         Log.d(TAG, "exit checkDB()");
     }
 
-    private void updateUser() {
+    private void updateUser(String newEmail, String password) {
         Log.d(TAG, "enter updateUser()");
         // TODO: Replace with injection
 
     //    Database db = DBConnection.getDatabase("mydb", getApplicationContext());
         Intent i = new Intent();
         i.setAction(UiUtils.USER_UPDATED);
-//        if (db.getDocument("user")!=null) {
-//            if (db.getDocument("user").contains("id")) {
-//                //TODO add user and list of selected points
-//            }
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = UiUtils.getEditor(this);
+        editor.putString(UiUtils.EMAIL, newEmail);
+        editor.commit();
+        User user = new User (newEmail, password);
+        //  user.setRole(prefs.getString(UiUtils.ROLE, "user"));
+        i.putExtra(UiUtils.USER, user);
+//        if (prefs.getString(UiUtils.PASSWORD, "password").equals(password)) {
 //
+//
+//        } else {
+//            i.putExtra(UiUtils.LOGGED_IN, false);
 //        }
+        String message = "Hello! This email has been set for AlbertaSights. Cheers!";
+
+        try{
+            new MailSender().sendEmail(newEmail, "Cheers from AlbertaSights", message);
+
+        } catch (Exception e) {
+            Log.e(TAG, e.getMessage());
+        }
         getApplicationContext().sendBroadcast(i);
         Log.d(TAG, "enter updateUser()");
     }
@@ -240,6 +263,52 @@ public class DBIntentService extends IntentService {
 
         getApplicationContext().sendBroadcast(i);
         Log.d(TAG, "exit logIn(String email, String password)");
+    }
+
+    private void updatePassword(String newPassword, String password) {
+        Log.d(TAG, "enter updatePassword()");
+        // TODO: Replace with injection
+
+        //    Database db = DBConnection.getDatabase("mydb", getApplicationContext());
+        Intent i = new Intent();
+        i.setAction(UiUtils.UPDATE_PASSWORD);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        if (prefs.getString(UiUtils.PASSWORD, "password").equals(password)) {
+
+            SharedPreferences.Editor editor = UiUtils.getEditor(this);
+            editor.putString(UiUtils.PASSWORD, newPassword);
+            editor.commit();
+            User user = new User (prefs.getString(UiUtils.EMAIL, "email"), password);
+            //  user.setRole(prefs.getString(UiUtils.ROLE, "user"));
+            i.putExtra(UiUtils.USER, user);
+        } else {
+           // i.putExtra(UiUtils.LOGGED_IN, false);
+        }
+        getApplicationContext().sendBroadcast(i);
+        Log.d(TAG, "enter updatePassword()");
+    }
+
+    public void sendEmail (String email) {
+        Log.d(TAG, "enter sendEmail (String email)");
+        Intent i = new Intent();
+        i.setAction(UiUtils.RESET_PASSWORD);
+        Random ran = new Random();
+        Integer randRuneIndex = ran.nextInt((100 - 50) + 1) + 0;
+        Integer randRuneIndex2 = ran.nextInt((40 - 20) + 1) + 0;
+        String password = String.valueOf(randRuneIndex).concat(String.valueOf(randRuneIndex2));
+        String message = "Hello! Here is your new password to enter AlbertaSights - "
+                .concat(password).concat(". Now you can log in your account nd change it later. Cheers!");
+
+        try{
+            new MailSender().sendEmail(email, "New password for AlbertaSights", message);
+            SharedPreferences.Editor editor = UiUtils.getEditor(this);
+            editor.putString(UiUtils.PASSWORD, password);
+            editor.commit();
+            i.putExtra(UiUtils.RESET_PASSWORD, true);
+        } catch (Exception e) {
+            i.putExtra(UiUtils.RESET_PASSWORD, false);
+        }
+        getApplicationContext().sendBroadcast(i);
     }
 
 }

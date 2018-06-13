@@ -1,14 +1,20 @@
 package com.google.albertasights.ui;
 
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.google.albertasights.R;
 import com.squareup.picasso.Picasso;
@@ -26,10 +32,17 @@ public class SocialButtonsFragment extends Fragment {
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
+    private static final String TAG = SocialButtonsFragment.class.getSimpleName();
 
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
+    private MapViewModel viewModel;
+    private UserViewModel viewModel1;
+    private Integer screenH;
+    private Integer screenW;
+    private String orientation;
+    private String device;
 
     private OnFragmentInteractionListener mListener;
 
@@ -67,8 +80,36 @@ public class SocialButtonsFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        Log.d(TAG, "enter onCreateView");
         // Inflate the layout for this fragment
         View v =  inflater.inflate(R.layout.fragment_social_buttons, container, false);
+        if (getActivity().getClass().getCanonicalName().contains("User")) {
+            viewModel1 = ViewModelProviders.of(getActivity()).get(UserViewModel.class);
+            screenW = viewModel1.getWight().getValue();
+            screenH = viewModel1.getHight().getValue();
+            device = viewModel1.getDevice().getValue();
+            orientation = viewModel1.getOrienr().getValue();
+        } else {
+            viewModel = ViewModelProviders.of(getActivity()).get(MapViewModel.class);
+            screenW = viewModel.getWight().getValue();
+            screenH = viewModel.getHight().getValue();
+            device = viewModel.getDevice().getValue();
+            orientation = viewModel.getOrienr().getValue();
+        }
+
+        ViewGroup.LayoutParams lp = v.getLayoutParams();
+        //   UserViewModel viewModel1 = ViewModelProviders.of(getActivity()).get(UserViewModel.class);
+
+        if (orientation.equals(UiUtils.LANDSCAPE)) {
+            Log.i(TAG, getActivity().getClass().getCanonicalName());
+            if (getActivity().getClass().getCanonicalName().contains("User")) {
+                lp.width = screenW/100*80;
+            }
+        }
+     //   TextView txt = (TextView) v.findViewById(R.id.txt);
+     //   UiUtils.setTextSize(screenH, txt, orientation, false);
+     //   lp.height = screenW/13;
+
         ImageButton fb = (ImageButton)v.findViewById(R.id.facebook_gr);
         fb.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -99,15 +140,24 @@ public class SocialButtonsFragment extends Fragment {
 
             }
         });
+        int squareDiment=0;
+
+        if (orientation.equals(UiUtils.LANDSCAPE)) {
+            squareDiment=screenW/13;
+        } else {
+            squareDiment=screenH/13;
+        }
+
         Picasso.with(getActivity())
                 .load(R.raw.fb)
-                .resize(80, 80)
+                .resize(squareDiment, squareDiment)
                 .into(fb);
 
         Picasso.with(getActivity())
                 .load(R.raw.inst)
-                .resize(80, 80)
+                .resize(squareDiment, squareDiment)
                 .into(insta);
+        Log.d(TAG, "exit onCreateView");
 
         return v;
     }
@@ -121,13 +171,16 @@ public class SocialButtonsFragment extends Fragment {
 
     @Override
     public void onAttach(Context context) {
+        Log.d(TAG, "enter onAttach(Context context)");
         super.onAttach(context);
+
         if (context instanceof OnFragmentInteractionListener) {
             mListener = (OnFragmentInteractionListener) context;
        } //else {
 //            throw new RuntimeException(context.toString()
 //                    + " must implement OnFragmentInteractionListener");
 //        }
+        Log.d(TAG, "exit onAttach(Context context)");
     }
 
     @Override

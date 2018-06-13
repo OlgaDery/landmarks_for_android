@@ -4,6 +4,8 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.ClipData;
+import android.content.ClipDescription;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
@@ -17,7 +19,10 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.CompoundButtonCompat;
 import android.util.Log;
+import android.view.DragEvent;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -51,7 +56,7 @@ import java.util.Map;
  * Use the {@link SideBarFragment1#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class SideBarFragment1 extends Fragment {
+public class SideBarFragment1 extends Fragment implements View.OnTouchListener {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -72,6 +77,9 @@ public class SideBarFragment1 extends Fragment {
     private ListView listFilter1;
     private ListView listFilter2;
     private RelativeLayout sideBar;
+    private GestureDetector mDetector;
+    private float mInitialX, mInitialY;
+    private int listViewTopPosit;
 
     private OnFragmentInteractionListener mListener;
   //  private ArrayList<String> ratings=new ArrayList<>(3);
@@ -104,12 +112,15 @@ public class SideBarFragment1 extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (savedInstanceState != null) {
-           // selectedFilters.addAll(savedInstanceState.getStringArrayList(MapFragment.KEY_SELECTED_FILTERS));
-          //  ratings = savedInstanceState.getStringArrayList("RATINGS");
+            try {
+                listViewTopPosit = savedInstanceState.getInt("LIST_VIEW_POSIT");
+            } catch (Exception e) {
+
+            }
             restartedOrRecreated = true;
         }
         viewModel = ViewModelProviders.of(getActivity()).get(MapViewModel.class);
-        viewModel.updateCurrentFragment(this.getClass().getSimpleName());
+       // viewModel.updateCurrentFragment(this.getClass().getSimpleName());
     }
 
     @Override
@@ -118,11 +129,30 @@ public class SideBarFragment1 extends Fragment {
         // Inflate the layout for this fragment
 
         View v = inflater.inflate(R.layout.fragment_side_bar_fragment1, container, false);
+        v.setPadding(viewModel.getHight().getValue()/35, viewModel.getHight().getValue()/35,
+                viewModel.getHight().getValue()/35, viewModel.getHight().getValue()/35);
         sideBar = (RelativeLayout) v.findViewById(R.id.sidebar);
+        mDetector = new GestureDetector(getActivity(), new MyGestureListener());
+        v.setOnTouchListener(this);
+
         if (viewModel.getOrienr().getValue().equals(UiUtils.PORTRAIT)) {
-            v.getLayoutParams().width =  viewModel.getWight().getValue()/2+70;
+            //vertical
+            if (viewModel.getDevice().getValue().equals(UiUtils.TABLET)) {
+                v.getLayoutParams().width =  viewModel.getWight().getValue()/3+100;
+
+            } else {
+                v.getLayoutParams().width =  viewModel.getWight().getValue()/2+70;
+            }
+
         } else {
-            v.getLayoutParams().width =  viewModel.getWight().getValue()/2;
+            //horizontal
+            if (viewModel.getDevice().getValue().equals(UiUtils.TABLET)) {
+                v.getLayoutParams().width =  viewModel.getWight().getValue()/3;
+
+            } else {
+                v.getLayoutParams().width =  viewModel.getWight().getValue()/2;
+            }
+
         }
         //TODO configure the top margin dinamically depending on the size of the buttons container of the map fragment
 
@@ -134,22 +164,23 @@ public class SideBarFragment1 extends Fragment {
         listFilter1.getViewTreeObserver().addOnScrollChangedListener(new ViewTreeObserver.OnScrollChangedListener() {
             @Override
             public void onScrollChanged() {
-              //  Log.d(TAG, "enter onScrollChanged()");
-                if ( viewModel.getScrollY().getValue()==null) {
-                    viewModel.updateY(listFilter1.getScrollY());
-                }
+                if (viewModel.getDataToFilter().getValue().size()>0) {
+                    try {
+                        View child = listFilter1.getChildAt(0);
+                        Log.i(TAG, "top view: "+ child.getTag().toString());
+                        viewModel.updateY(viewModel.getDataToFilter().getValue()
+                                .indexOf(child.getTag().toString()));
+                    } catch (Exception e) {
 
-                // For ScrollView
-                //int scrollX = scrollView.getScrollX(); // For HorizontalScrollView
-                // DO SOMETHING WITH THE SCROLL COORDINATES
-              //  Log.d(TAG, "exit onScrollChanged()");
+                    }
+                }
             }
         });
 
         clearAll = (ImageButton)v.findViewById(R.id.clearAll);
         hide = (ImageButton) v.findViewById(R.id.hideSidebar);
 
-        hide.setImageResource(R.drawable.show_more_up);
+        hide.setImageResource(R.drawable.forward);
         hide.getBackground().setAlpha(0);
 
         clearAll.setImageResource(R.drawable.clear);
@@ -172,6 +203,7 @@ public class SideBarFragment1 extends Fragment {
                 viewModel.updateDataToFilter(null);
                 viewModel.updateNamesToShowInScroll(null);
                 viewModel.updateRatings(null);
+                viewModel.updateY(null);
 
                 Log.d(TAG, "exit clearAllListener(View view)");
             }
@@ -226,6 +258,10 @@ public class SideBarFragment1 extends Fragment {
         if (viewModel.getCurrentFilter().getValue()!=null) {
             configureFilters(sideBar);
         }
+
+
+        //TODO making the sidebar draggable
+
         return v;
     }
 
@@ -253,6 +289,46 @@ public class SideBarFragment1 extends Fragment {
         mListener = null;
     }
 
+    @Override
+    public boolean onTouch(View v, MotionEvent motionEvent) {
+        // pass the events to the gesture detector
+        // a return value of true means the detector is handling it
+        // a return value of false means the detector didn't
+        // recognize the event
+        Log.i(TAG, "enter onTouch(View v, MotionEvent motionEvent)");
+        ViewGroup.LayoutParams mLayoutParams  = (ViewGroup.LayoutParams) v.getLayoutParams();
+        ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
+
+        switch (motionEvent.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+               mInitialX = motionEvent.getRawX();
+
+                break;
+
+            case MotionEvent.ACTION_MOVE:
+                Log.i(TAG, "x: "+motionEvent.getRawX());
+                float deltaX = motionEvent.getRawX() - mInitialX;
+                if (Math.abs(deltaX) > 30)
+                {
+                    // Left to Right swipe action
+                    if (motionEvent.getRawX() > mInitialX)
+                    {
+                        viewModel.upateShowSidebar(false);
+                    }
+
+                }
+
+                break;
+
+            case MotionEvent.ACTION_UP:
+                Log.i(TAG, "up");
+               // mMovingView = null;
+                break;
+        }
+
+        return true;
+    }
+
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
@@ -271,13 +347,21 @@ public class SideBarFragment1 extends Fragment {
     @TargetApi(17)
     private void configureFilters(RelativeLayout sideBar) {
         Log.d(TAG, "enter configureFilters(LinearLayout ll)");
+        if (viewModel.getNamesToShowInScroll().getValue()==null) {
+            viewModel.updateNamesToShowInScroll(new LinkedList<String>());
+        }
+        if (viewModel.getRatings().getValue()==null) {
+            viewModel.updateRatings(new LinkedList<String>());
+        }
        // restartedOrRecreated=false;
         sideBar.removeAllViews();
         //TODO adding back the views including tho bottom element
         try {
             sideBar.addView(header);
-            header.setPadding(20,20,20,20);
-            header.setTypeface(null, Typeface.BOLD);
+            header.setPadding(0,0,
+                    0,0);
+            UiUtils.setTextSize(viewModel.getHight().getValue(), header,
+                    viewModel.getOrienr().getValue(), true);
         } catch (Exception e) {
 
         }
@@ -297,8 +381,10 @@ public class SideBarFragment1 extends Fragment {
             //toppest element
             TextView text1 = new TextView(getActivity());
             text1.setText("Rating:");
-            text1.setTypeface(null, Typeface.BOLD);
-            text1.setPadding(20,20,20,20);
+            text1.setPadding(0,0,
+                    0,0);
+            UiUtils.setTextSize(viewModel.getHight().getValue(), text1,
+                    viewModel.getOrienr().getValue(), true);
             text1.setId(R.id.rating_header_id);
             RelativeLayout.LayoutParams textParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
             textParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
@@ -394,10 +480,13 @@ public class SideBarFragment1 extends Fragment {
 
             // third element under the toppest
             header.setText("Categories:");
+
             header.setId(R.id.categories_header_id);
             RelativeLayout.LayoutParams lp3 = (RelativeLayout.LayoutParams)header.getLayoutParams();
             if(viewModel.getOrienr().getValue().equals(UiUtils.LANDSCAPE)) {
                 lp3.addRule(RelativeLayout.RIGHT_OF, text1.getId());
+                lp3.addRule(RelativeLayout.ALIGN_LEFT, listFilter1.getId());
+
             } else {
                 lp3.removeRule(RelativeLayout.ALIGN_PARENT_TOP);
                 lp3.addRule(RelativeLayout.BELOW, listFilter2.getId());
@@ -471,6 +560,7 @@ public class SideBarFragment1 extends Fragment {
                     }
                 }
                 viewModel.updateNamesToShowInScroll(temp);
+                Log.i(TAG, "selected filters: "+ viewModel.getNamesToShowInScroll().getValue().size());
 
                 //TODO create the logic to modify the list of points to show
                 LinkedList<String> list = new LinkedList<>();
@@ -543,10 +633,13 @@ public class SideBarFragment1 extends Fragment {
     public void onSaveInstanceState(@NonNull Bundle outState) {
         Log.d(TAG, "enter onSaveInstanceState(@NonNull Bundle outState)");
         super.onSaveInstanceState(outState);
-      //  outState.putStringArrayList("RATINGS", ratings);
-//        ArrayList<String> tmp = new ArrayList<String>(viewModel.getSelectedFiltersForLoved().getValue().size());
-//        tmp.addAll(viewModel.getSelectedFiltersForLoved().getValue());
-//        outState.putStringArrayList(MapFragment.KEY_SELECTED_FILTERS, tmp);
+        try {
+            outState.putInt("LIST_VIEW_POSIT", viewModel.getScrollY().getValue());
+
+        } catch (Exception e) {
+            outState.putInt("LIST_VIEW_POSIT", 0);
+        }
+
         Log.d(TAG, "enter onSaveInstanceState(@NonNull Bundle outState)");
 
     }
@@ -562,6 +655,12 @@ public class SideBarFragment1 extends Fragment {
     public void onResume() {
         Log.d(TAG, "enter onResume()");
         super.onResume();
+        if (restartedOrRecreated==true) {
+            Log.d(TAG, "scroling to posit");
+            listFilter1.setSelection(listViewTopPosit);
+            listViewTopPosit=0;
+            restartedOrRecreated=false;
+        }
         Log.d(TAG, "exit onResume()");
     }
 
@@ -576,6 +675,76 @@ public class SideBarFragment1 extends Fragment {
     public void onStop() {
         Log.d(TAG, "enter onStop()");
         super.onStop();
+        restartedOrRecreated=true;
+        try {
+            listViewTopPosit=viewModel.getScrollY().getValue();
+        } catch (Exception e) {
+
+        }
         Log.d(TAG, "exit onStop()");
     }
+
+    public void onSwipeLeft() {
+    }
+
+    public void onSwipeRight() {
+    }
+
+    // In the SimpleOnGestureListener subclass you should override
+    // onDown and any other gesture that you want to detect.
+    class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
+        private static final int SWIPE_DISTANCE_THRESHOLD = 100;
+        private static final int SWIPE_VELOCITY_THRESHOLD = 100;
+
+        @Override
+        public boolean onDown(MotionEvent event) {
+            Log.d("TAG","onDown: ");
+
+            // don't return false here or else none of the other
+            // gestures will work
+            return true;
+        }
+
+        @Override
+        public boolean onSingleTapConfirmed(MotionEvent e) {
+            Log.i("TAG", "onSingleTapConfirmed: ");
+            return true;
+        }
+
+        @Override
+        public void onLongPress(MotionEvent e) {
+            Log.i("TAG", "onLongPress: ");
+        }
+
+        @Override
+        public boolean onDoubleTap(MotionEvent e) {
+            Log.i("TAG", "onDoubleTap: ");
+            return true;
+        }
+
+        @Override
+        public boolean onScroll(MotionEvent e1, MotionEvent e2,
+                                float distanceX, float distanceY) {
+            Log.i("TAG", "onScroll: ");
+            return true;
+        }
+
+        @Override
+        public boolean onFling(MotionEvent event1, MotionEvent event2,
+                               float velocityX, float velocityY) {
+            Log.d("TAG", "onFling: ");
+            float distanceX = event2.getX() - event1.getX();
+            float distanceY = event2.getY() - event1.getY();
+            if (Math.abs(distanceX) > Math.abs(distanceY) && Math.abs(distanceX) > SWIPE_DISTANCE_THRESHOLD && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
+                if (distanceX > 0)
+                    onSwipeRight();
+                else
+                    onSwipeLeft();
+                return true;
+            }
+            return true;
+        }
+
+    }
+
 }

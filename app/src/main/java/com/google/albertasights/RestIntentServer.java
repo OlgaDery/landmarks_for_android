@@ -91,8 +91,7 @@ public class RestIntentServer extends IntentService {
            // connection.setRequestMethod("GET");//("POST")
             connection.setRequestProperty("X-Api-Key", "3.14");
             connection.setRequestProperty("Content-Type", "application/json");
-          //  connection.setDoInput(true);
-          //  connection.setDoOutput(true);
+            connection.setConnectTimeout(120000);
             connection.connect();
             InputStream in = new BufferedInputStream(connection.getInputStream());
 
@@ -132,7 +131,7 @@ public class RestIntentServer extends IntentService {
                 intent.putExtra(UiUtils.RESULT, "Error, server may be unavailable");
             }
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             Log.e(TAG, "io exception");
             intent.putExtra(UiUtils.RESULT, "Error, server may be unavailable");
         } finally {

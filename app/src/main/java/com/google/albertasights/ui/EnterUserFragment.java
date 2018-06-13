@@ -10,11 +10,14 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RelativeLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.google.albertasights.DBIntentService;
@@ -81,9 +84,24 @@ public class EnterUserFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         Log.d(TAG, "enter onCreateView");
+        UserViewModel viewModel1 = ViewModelProviders.of(getActivity()).get(UserViewModel.class);
         View view = inflater.inflate(R.layout.fragment_enter_user, container, false);
+        if (viewModel1.getOrienr().getValue().equals(UiUtils.LANDSCAPE)) {
+            RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(viewModel1.getWight().getValue()/100*70,
+                    ViewGroup.LayoutParams.MATCH_PARENT);
+            lp.addRule(Gravity.LEFT);
+            view.setLayoutParams(lp);
+
+            ScrollView scrl = (ScrollView) view.findViewById(R.id.login_form);
+            scrl.getLayoutParams().height = viewModel.getHight().getValue()/100*60;
+        }
+
+
         email = (EditText) view.findViewById(R.id.email);
-        password = (EditText) view.findViewById(R.id.password);
+        TextView txt1 = (TextView) view.findViewById(R.id.txt1);
+        TextView txt2 = (TextView) view.findViewById(R.id.txt2);
+        TextView txt3 = (TextView) view.findViewById(R.id.txt3);
+     //   password = (EditText) view.findViewById(R.id.password);
         firstName = (EditText) view.findViewById(R.id.first_name);
         lastName = (EditText) view.findViewById(R.id.last_name);
 
@@ -94,10 +112,23 @@ public class EnterUserFragment extends Fragment {
             TextView role = new TextView(getActivity());
             role.setText(viewModel.getUser().getValue().getFirstName());
             //TODO add to the view dinamically
+        }
 
+        if (viewModel.getDevice().getValue().equals(UiUtils.TABLET)) {
+            email.setTextSize(getActivity().getResources().getDimension(R.dimen.big_textsize));
+            lastName.setTextSize(getActivity().getResources().getDimension(R.dimen.big_textsize));
+            firstName.setTextSize(getActivity().getResources().getDimension(R.dimen.big_textsize));
+            txt1.setTextSize(getActivity().getResources().getDimension(R.dimen.big_textsize));
+            txt2.setTextSize(getActivity().getResources().getDimension(R.dimen.big_textsize));
+            txt3.setTextSize(getActivity().getResources().getDimension(R.dimen.big_textsize));
         }
         submitBt = (Button) view.findViewById(R.id.submit);
         changePasswordBt = (Button) view.findViewById(R.id.updPassword);
+        if (viewModel.getDevice().getValue().equals(UiUtils.PHONE)&& viewModel.getOrienr()
+                .getValue().equals(UiUtils.PORTRAIT)) {
+            submitBt.getLayoutParams().width = viewModel.getWight().getValue()/100*43;
+            changePasswordBt.getLayoutParams().width = viewModel.getWight().getValue()/100*43;
+        }
         View.OnClickListener lstn = new View.OnClickListener() {
             public void onClick(View view) {
 

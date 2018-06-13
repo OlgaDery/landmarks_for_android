@@ -3,12 +3,24 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".ui.PointFragment"
     android:layout_width="match_parent"
+    android:background="@color/colorWhite"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto">
+    <com.google.android.gms.ads.AdView
+        xmlns:ads="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/adView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentTop="true"
+        ads:adSize="BANNER"
+        ads:adUnitId="ca-app-pub-9273347200561604/5918204614">
+    </com.google.android.gms.ads.AdView>
+
 
     <ListView
         android:id="@+id/listView1"
-        android:layout_alignParentTop="true"
+        android:layout_below="@id/adView"
         android:layout_marginTop="20dp"
         android:layout_marginBottom="20dp"
         android:layout_marginLeft="20dp"

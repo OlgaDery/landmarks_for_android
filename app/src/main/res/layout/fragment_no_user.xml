@@ -1,87 +1,141 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="400dp"
+    android:gravity="center"
+    android:layout_marginTop="20dp"
     android:padding="15dp"
+    android:layout_marginBottom="20dp"
     android:background="@color/colorWhite"
-    android:layout_marginBottom="70dp"
-    android:layout_marginLeft="30dp"
-    android:layout_marginRight="30dp"
+    android:layout_gravity="center_horizontal"
     tools:context=".ui.NoUserFragment">
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent"
+        android:id="@+id/main_scroll"
+        >
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:id="@+id/log_scroll">
 
             <TextView
                 android:layout_width="match_parent"
-                android:layout_marginTop="20dp"
                 android:id="@+id/txt_user"
                 android:textSize="20dp"
                 android:layout_alignParentTop="true"
                 android:layout_alignParentLeft="true"
                 android:layout_height="wrap_content"
-                android:text="Please log in or create an account:"/>
+                android:text="Do you want to stay in touch?"/>
 
             <EditText
                 android:id="@+id/email"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="10dp"
                 android:layout_width="match_parent"
                 android:layout_alignParentLeft="true"
                 android:layout_below="@+id/txt_user"
                 android:layout_height="wrap_content"
-                android:hint="@string/prompt_email"
+                android:hint="Enter your email"
                 android:inputType="textEmailAddress"
                 android:maxLines="1"
                 android:singleLine="true" />
 
-            <EditText
-                android:id="@+id/password"
-                android:layout_marginTop="16dp"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_alignParentLeft="true"
-                android:layout_below="@+id/email"
-                android:hint="@string/prompt_password"
-                android:imeActionLabel="@string/action_sign_in_short"
-                android:imeOptions="actionUnspecified"
-                android:inputType="textPassword"
-                android:maxLines="1"
-                android:singleLine="true" />
+            <!--<EditText-->
+                <!--android:id="@+id/password"-->
+                <!--android:layout_marginTop="10dp"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:layout_alignParentLeft="true"-->
+                <!--android:layout_below="@+id/email"-->
+                <!--android:hint="@string/prompt_password"-->
+                <!--android:inputType="textPassword"-->
+                <!--android:maxLines="1"-->
+                <!--android:singleLine="true" />-->
 
             <Button
                 android:id="@+id/log_button"
-                android:layout_below="@+id/password"
-                android:layout_width="100dp"
+                android:layout_below="@+id/email"
+                android:layout_width="150dp"
                 android:layout_alignParentLeft="true"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:layout_marginBottom="16dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
                 android:background="@color/colorPrimary"
-                android:text="Log in"
+                android:text="Submit"
                 android:elevation="5dp"
                 android:textColor="@color/colorWhite"
                 android:textStyle="bold" />
-
 
             <Button
-                android:id="@+id/reg"
-                android:elevation="5dp"
-                android:layout_below="@+id/password"
-                android:layout_width="100dp"
-                android:layout_height="wrap_content"
-                android:background="@color/colorPrimary"
+                android:id="@+id/no_submit"
+                android:layout_below="@+id/email"
+                android:layout_width="150dp"
                 android:layout_alignParentRight="true"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
+                android:background="@color/colorPrimary"
+                android:text="No,thanks"
+                android:elevation="5dp"
                 android:textColor="@color/colorWhite"
-                android:layout_marginTop="16dp"
-                android:text="Register"
-                android:layout_marginBottom="16dp"
                 android:textStyle="bold" />
-        </RelativeLayout>
 
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:id="@+id/see_more"
+                android:layout_centerHorizontal="true"
+                android:layout_below="@+id/log_button"
+                android:layout_height="wrap_content" />
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/see_more"
+                android:layout_alignParentLeft="true"
+                android:id="@+id/low_wrapper"
+                >
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="10dp"
+                    android:textSize="20dp"
+                    android:text="If you do not remember your login/passord, there are other options:"
+                    android:id="@+id/low_text"/>
+
+                <Button
+                    android:id="@+id/emailPassw"
+                    android:elevation="5dp"
+                    android:layout_width="150dp"
+                    android:layout_height="wrap_content"
+                    android:background="@color/colorPrimary"
+                    android:layout_alignParentLeft="true"
+                    android:textColor="@color/colorWhite"
+                    android:layout_marginTop="10dp"
+                    android:layout_below="@+id/low_text"
+                    android:text="Email me new password"
+                    android:layout_marginBottom="10dp"
+                    android:textStyle="bold" />
+
+                <Button
+                    android:id="@+id/recreate"
+                    android:elevation="5dp"
+                    android:layout_below="@+id/low_text"
+                    android:layout_width="150dp"
+                    android:layout_height="wrap_content"
+                    android:background="@color/colorPrimary"
+                    android:textColor="@color/colorWhite"
+                    android:layout_marginTop="10dp"
+                    android:text="Reset all my data"
+                    android:layout_alignParentRight="true"
+                    android:layout_marginBottom="10dp"
+                    android:textStyle="bold" />
+
+            </RelativeLayout>
+
+
+        </RelativeLayout>
 
     </ScrollView>
 

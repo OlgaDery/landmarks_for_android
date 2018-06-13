@@ -4,11 +4,11 @@ android {
     compileSdkVersion 27
     buildToolsVersion '27.0.3'
     defaultConfig {
-        applicationId "com.google.albertasights"
+        applicationId "com.twovsodds.albertasights"
         minSdkVersion 15
         targetSdkVersion 27
-        versionCode 1
-        versionName "1.0"
+        versionCode 4
+        versionName "1.1"
         resValue "string", "google_maps_key", (project.findProperty("GOOGLE_MAPS_API_KEY") ?: "")
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
@@ -55,11 +55,15 @@ dependencies {
     implementation 'com.android.support.constraint:constraint-layout:1.0.2'
     implementation 'com.google.android.gms:play-services-maps:15.0.1'
     implementation 'com.google.android.gms:play-services-location:15.0.1'
+    implementation 'com.google.android.gms:play-services-ads:15.0.0'
     implementation 'com.google.maps.android:android-maps-utils:0.5+'
     implementation 'com.android.support:appcompat-v7:27.0.1'
     implementation 'com.android.support:design:27.0.1'
     implementation 'com.squareup.picasso:picasso:2.5.2'
     implementation 'junit:junit:4.12'
+    implementation 'com.sun.mail:android-mail:1.5.5'
+    implementation 'com.sun.mail:android-activation:1.5.5'
+
     testImplementation 'junit:junit:4.12'
     annotationProcessor 'android.arch.persistence.room:compiler:1.0.0'
 }

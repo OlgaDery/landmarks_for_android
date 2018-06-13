@@ -4,6 +4,8 @@ import com.google.albertasights.R;
 import com.google.albertasights.models.Place;
 import com.google.android.gms.maps.GoogleMap;
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -83,16 +85,16 @@ public class MyInfoWindowAdaptor implements GoogleMap.InfoWindowAdapter {
                 if (deviceType.equals(UiUtils.TABLET)) {
                     //TODO big vertical
                     Log.i(TAG, "vertical tablet");
-//                    RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(screenWight/2, screenHight/2);
-//                    v.setLayoutParams(params);
-//                    LinearLayout.LayoutParams photoParams = new LinearLayout.LayoutParams(screenWight/2-20, screenHight/3-20);
-//                    photo.setLayoutParams(photoParams);
+                    LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(screenWight/2, ViewGroup.LayoutParams.WRAP_CONTENT);
+                    v.setLayoutParams(params);
+                    RelativeLayout.LayoutParams photoParams = new RelativeLayout.LayoutParams(screenWight/2-20, screenHight/3-50);
+                    photo.setLayoutParams(photoParams);
                 } else {
                     //TODO small vertical
                     Log.i(TAG, "vertical small");
                    LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(screenWight/100*70, ViewGroup.LayoutParams.WRAP_CONTENT);//screenHight/100*70
                    v.setLayoutParams(params);
-                   RelativeLayout.LayoutParams photoParams = new RelativeLayout.LayoutParams(screenWight/100*70-20, 300);
+                   RelativeLayout.LayoutParams photoParams = new RelativeLayout.LayoutParams(screenWight/100*70-20, screenHight/3);
                    photo.setLayoutParams(photoParams);
                    if (photo.getLayoutParams()!=null) {
                        Log.i(TAG, "photo hight: "+photo.getLayoutParams().height);
@@ -105,25 +107,26 @@ public class MyInfoWindowAdaptor implements GoogleMap.InfoWindowAdapter {
                 if (deviceType.equals(UiUtils.TABLET)) {
 //                    //TODO big horizontal
                     Log.i(TAG, "horizontal tablet");
-//                    RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(screenWight/2, screenHight/2);
-//                    v.setLayoutParams(params);
-//                    LinearLayout.LayoutParams photoParams = new LinearLayout.LayoutParams(screenWight/4, screenWight/3);
-//                    photo.setLayoutParams(photoParams);
+                    LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(screenWight/2, ViewGroup.LayoutParams.WRAP_CONTENT);
+                    v.setLayoutParams(params);
+                    RelativeLayout.LayoutParams photoParams = new RelativeLayout.LayoutParams(screenWight/4, screenWight/4);
+                    photo.setLayoutParams(photoParams);
 
                 } else {
                     //TODO small horizontal
                     Log.i(TAG, "horizontal small");
-                    RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(screenWight/100*70, ViewGroup.LayoutParams.WRAP_CONTENT);//screenHight/100*70
+                    LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(screenWight/100*60, ViewGroup.LayoutParams.WRAP_CONTENT);//screenHight/100*70
                     v.setLayoutParams(params);
-                    RelativeLayout.LayoutParams photoParams = new RelativeLayout.LayoutParams(screenWight/4, 250);
+                    RelativeLayout.LayoutParams photoParams = new RelativeLayout.LayoutParams(screenWight/4, screenHight/2-20);
                     photo.setLayoutParams(photoParams);
                 }
             }
 
-//            if (deviceType.equals(UiUtils.TABLET)) {
-//                descr.setTextSize(context.getResources().getDimension(R.dimen.avg_textsize));
-//                name.setTextSize(context.getResources().getDimension(R.dimen.big_textsize));
-//            }
+            if (deviceType.equals(UiUtils.TABLET)) {
+                descr.setTextSize(context.getResources().getDimension(R.dimen.avg_textsize));
+                name.setTextSize(context.getResources().getDimension(R.dimen.big_textsize));
+                v.setPadding(30, 30, 30, 30);
+            }
 
             //TODO setting up the content
             for (Place p: places) {

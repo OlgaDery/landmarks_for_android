@@ -47,6 +47,7 @@ public class MapViewModel extends ViewModel {
 
     public final MutableLiveData<LinkedList<String>> namesToShowInScroll = new MutableLiveData<>();
     public final MutableLiveData<Integer> scrollY = new MutableLiveData<>();
+    public final MutableLiveData<Boolean> dataReceived = new MutableLiveData<>();
 
     public MapViewModel() {
         Log.d(TAG, "enter MapViewModel()");
@@ -232,6 +233,7 @@ public class MapViewModel extends ViewModel {
 
     public void updateY(Integer y) {
 
+        Log.i(TAG, "top index:" + y);
         scrollY.setValue(y);
     }
 
@@ -260,6 +262,14 @@ public class MapViewModel extends ViewModel {
 
     public LiveData<LinkedList<String>> getNamesToShowInScroll(){
         return namesToShowInScroll;
+    }
+
+    public LiveData <Boolean> getDataReceived () {
+        return dataReceived;
+    }
+
+    public void updateDataReceived(Boolean info) {
+        dataReceived.setValue(info);
     }
 
 

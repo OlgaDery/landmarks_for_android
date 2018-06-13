@@ -1,19 +1,25 @@
 package com.google.albertasights.ui;
 
+import android.annotation.TargetApi;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,6 +32,9 @@ import android.widget.RelativeLayout;
 import com.google.albertasights.DBIntentService;
 import com.google.albertasights.R;
 import com.google.albertasights.models.Place;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
 import com.squareup.picasso.Picasso;
 
 import java.util.Locale;
@@ -49,6 +58,7 @@ public class PointFragment extends Fragment {
     private String orientation;
     private String deviceType;
     private MapViewModel viewModel;
+    private AdView mAdView;
 
     public PointFragment() {
         // Required empty public constructor
@@ -78,6 +88,7 @@ public class PointFragment extends Fragment {
     }
 
     @Override
+    @TargetApi(22)
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         //getting the type and the orientation of device
@@ -86,6 +97,13 @@ public class PointFragment extends Fragment {
         point = viewModel.getPointToSee().getValue();
         Log.i(TAG, "point in point activity: "+point.getName());
         View v = inflater.inflate(R.layout.activity_point, container, false);
+        v.setTranslationZ(10.0f);
+        v.setElevation(5.0f);
+
+        MobileAds.initialize(getActivity(), "ca-app-pub-9273347200561604~7518194920");
+        mAdView = v.findViewById(R.id.adView);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        mAdView.loadAd(adRequest);
 //
         ImageButton fab = (ImageButton) v.findViewById(R.id.fab);
      //   fab.getBackground().setAlpha(0);
@@ -94,11 +112,19 @@ public class PointFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 //    Log.d(TAG, "onclick");
-                String uri = String.format(Locale.ENGLISH, "http://maps.google.com/maps?daddr=%f,%f (%s)",
-                        point.getLat(), point.getLng(), "Going there");
-                Intent mapIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
-                mapIntent.setPackage("com.google.android.apps.maps");
-                startActivity(mapIntent);
+                if (ContextCompat.checkSelfPermission(getContext(),
+                        android.Manifest.permission.ACCESS_FINE_LOCATION)
+                        == PackageManager.PERMISSION_GRANTED) {
+                    String uri = String.format(Locale.ENGLISH, "http://maps.google.com/maps?daddr=%f,%f (%s)",
+                            point.getLat(), point.getLng(), "Going there");
+                    Intent mapIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
+                    mapIntent.setPackage("com.google.android.apps.maps");
+                    startActivity(mapIntent);
+                } else {
+                    ActivityCompat.requestPermissions(getActivity(),
+                            new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                            1);
+                }
             }
         });
 
@@ -115,28 +141,29 @@ public class PointFragment extends Fragment {
             public void onClick(View view) {
                 //TODO hook this method to the listener to make it visible for the activity
                 Log.d(TAG, "onclick");
-                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-                if (prefs.getBoolean(UiUtils.LOGGED_IN, true)==true) {
-                    String id =((ImageButton) view).getTag().toString();
-                    if (!viewModel.getLoved().getValue().contains(point.getName())) {
-                        Intent writeToFile = new Intent(getActivity(), DBIntentService.class);
-                        writeToFile.setAction(UiUtils.ADD_POINT_TO_LOVED);
-                        writeToFile.putExtra(UiUtils.POINT_ID, id);
-                        getActivity().startService(writeToFile);
-                        likeButton.setColorFilter(new PorterDuffColorFilter(Color.RED, PorterDuff.Mode.SRC_IN));
-                    } else {
-                        //call the method to remove from selected
-                        Intent remove = new Intent(getActivity(), DBIntentService.class);
-                        remove.setAction(UiUtils.REMOVE_POINT);
-                        remove.putExtra(UiUtils.POINT_ID, id);
-                        getActivity().startService(remove);
-                        likeButton.setColorFilter(new PorterDuffColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN));
-                    }
-
+                String id =((ImageButton) view).getTag().toString();
+                if (!viewModel.getLoved().getValue().contains(point.getName())) {
+                    onButtonPressed(UiUtils.ADD_POINT_TO_LOVED);
+                    likeButton.setColorFilter(new PorterDuffColorFilter(Color.RED, PorterDuff.Mode.SRC_IN));
                 } else {
-                    //TODO!!!!!!
-                    UiUtils.showToast(getActivity(), "To use this option, please log in or create an account");
+                    //call the method to remove from selected
+                    onButtonPressed(UiUtils.REMOVE_POINT);
+                    likeButton.setColorFilter(new PorterDuffColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN));
                 }
+//                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+//                if (prefs.contains(UiUtils.LOGGED_IN)) {
+//                    if (prefs.getBoolean(UiUtils.LOGGED_IN, true)==true) {
+//
+//
+//                    } else {
+//                        //TODO!!!!!!
+//                        onButtonPressed(UiUtils.LOG_IN);
+//                        //  UiUtils.showToast(getActivity(), "To use this option, please log in or create an account");
+//                    }
+//                } else {
+//                    onButtonPressed(UiUtils.LOG_IN);
+//                }
+
             }
         });
 
@@ -150,16 +177,31 @@ public class PointFragment extends Fragment {
         listview.setAdapter(adapter);
 
         if (viewModel.getOrienr().getValue().equals(UiUtils.LANDSCAPE)) {
-            v.getLayoutParams().width = viewModel.getWight().getValue()-250;
+            RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(viewModel.getWight().getValue()/100*80,
+                    ViewGroup.LayoutParams.MATCH_PARENT);
+            lp.addRule(Gravity.RIGHT);
+            v.setLayoutParams(lp);
+
+        }
+
+        if (viewModel.getDevice().getValue().equals(UiUtils.TABLET)) {
+            if (viewModel.getOrienr().getValue().equals(UiUtils.LANDSCAPE)) {
+                v.setPadding(viewModel.getHight().getValue()/30, viewModel.getHight().getValue()/30
+                , viewModel.getHight().getValue()/30, viewModel.getHight().getValue()/30);
+            } else {
+                v.setPadding(viewModel.getWight().getValue()/30, viewModel.getWight().getValue()/30,
+                        viewModel.getWight().getValue()/30, viewModel.getWight().getValue()/30);
+            }
+
         }
         Log.d(TAG, "exit  onCreateView");
         return v;
     }
 
     // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
+    public void onButtonPressed(String tag) {
         if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
+            mListener.onPointFragmentInteraction(tag);
         }
     }
 
@@ -201,6 +243,6 @@ public class PointFragment extends Fragment {
      */
     public interface OnPointFragmentInteractionListener {
         // TODO: Update argument type and name
-        void onFragmentInteraction(Uri uri);
+        void onPointFragmentInteraction(String action);
     }
 }

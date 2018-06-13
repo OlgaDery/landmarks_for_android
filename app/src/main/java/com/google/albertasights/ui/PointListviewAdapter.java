@@ -92,42 +92,49 @@ public class PointListviewAdapter extends BaseAdapter {
                 Log.d(TAG, "exit onClick (View view) ");
             }
         };
-        link.setTextColor(ContextCompat.getColor(context, R.color.colorAccent));
-        link.setOnClickListener(listener);
+
+        if (point.getWebLink().length()>2) {
+            link.setTextColor(ContextCompat.getColor(context, R.color.colorAccent));
+            link.setOnClickListener(listener);
+        }
 
         TextView rating = (TextView) convertView.findViewById(R.id.rating);
-        rating.setText(titles[3] + point.getRating());
+        if (point.getRating().equals("5")) {
+            rating.setText(titles[3] + "*****");
+        } else if (point.getRating().equals("4")) {
+            rating.setText(titles[3] + "****");
+        } else if (point.getRating().equals("3")) {
+            rating.setText(titles[3] + "***");
+        } else if (point.getRating().equals("2")) {
+            rating.setText(titles[3] + "**");
+        } else {
+            rating.setText(titles[3] + "*");
+        }
 
         if (deviceType.equals(UiUtils.TABLET)) {
             descript.setTextSize(context.getResources().getDimension(R.dimen.big_textsize));
             name.setTextSize(context.getResources().getDimension(R.dimen.big_textsize));
             link.setTextSize(context.getResources().getDimension(R.dimen.big_textsize));
             rating.setTextSize(context.getResources().getDimension(R.dimen.big_textsize));
-
-
-        } else {
-
         }
-
         //setting the photo
 
         if (point.getPhotoLink()!=null && point.getPhotoLink().length()>5)
         {
             if (orientation.equals(UiUtils.PORTRAIT)) {
                 // portrait screen, set the width of the parental element
-              photo.getLayoutParams().height = screenH/3;
+              photo.getLayoutParams().height = screenH/3-50;
               photo.getLayoutParams().width = screenW-40;
 
             } else {
                 // landscape screen
-                photo.getLayoutParams().height = screenH/3+50;
+                photo.getLayoutParams().height = screenH/2-50;
                 //TODO set the width of the parental element
-                photo.getLayoutParams().width = screenW-40;
+                photo.getLayoutParams().width = screenW/100*70;
             }
             Picasso.with(context)
                     .load(UiUtils.parseUrl(point.getPhotoLink()))
                     .resize(photo.getLayoutParams().width, photo.getLayoutParams().height)
-                    //    .onlyScaleDown()
                     .centerCrop()
                     .into(photo);
 

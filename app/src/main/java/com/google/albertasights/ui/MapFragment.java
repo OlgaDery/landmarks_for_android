@@ -20,6 +20,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.Space;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
@@ -38,6 +39,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.maps.android.clustering.ClusterManager;
 import com.google.maps.android.clustering.view.DefaultClusterRenderer;
@@ -59,7 +61,7 @@ import java.util.Set;
  * create an instance of this fragment.
  */
 public class MapFragment extends Fragment implements
-        OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks,
+        OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, View.OnTouchListener,
         GoogleApiClient.OnConnectionFailedListener, GoogleMap.OnInfoWindowClickListener {
     // TODO: Add values to pointsToShow
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -92,29 +94,20 @@ public class MapFragment extends Fragment implements
     //This boolean is to indicate if we need to zoom in or zoom out the camera while using filters. Extra zoom is necessary because
     //it helps to make the cluster more stable
     private boolean zoomingOut = true;
-    private LinearLayout filter;
-    private RelativeLayout rr;
-    //  private RelativeLayout mapWrapper;
     private LinearLayout topWrapper;
-    private LinearLayout bottomWr;
 
-    private ImageButton showFilterSection;
+    private LinearLayout sideBarListener;
+    private LinearLayout pseudiMargin;
     private ImageButton clearAll;
     private ImageButton showFilters;
     private ImageButton showLoved;
     private ImageButton showAll;
-
-    private Map<String, Boolean> filters = new HashMap<String, Boolean>(1);
-
 
     private String orientation;
     private String deviceType;
     private boolean isRestarted = false;
     private boolean saveInfoWindow = false;
     private boolean animationStarted = false;
-    private boolean filterSidebarModified = false;
-    private boolean filtersModified = false;
-    private boolean showFiltersSidebar = false;
 
     int count;
     // Declare a variable for the cluster manager.
@@ -198,7 +191,6 @@ public class MapFragment extends Fragment implements
                 selectPointsToShow = savedInstanceState.getBoolean(KEY_SELECT_POINTS_TO_SHOW);
                 ArrayList<String> ids = savedInstanceState.getStringArrayList(KEY_MARKER_IDS);
                 currentZoom = savedInstanceState.getFloat(CURRENT_ZOOM);
-                Log.i(TAG, "zoom: " + currentZoom);
                 selectedMarkerID = savedInstanceState.getString("SELECTED_MARKER_ID");
                 mCameraPosition = savedInstanceState.getParcelable(KEY_CAMERA_POSITION);
                 Log.i(TAG, mCameraPosition.target.toString());
@@ -238,10 +230,20 @@ public class MapFragment extends Fragment implements
                 if (mMap!=null) {
                     Log.d(TAG, "map is not null");
                     showClusters();
-                    if (viewModel.getCurrentFilter().getValue()!=null) {
-                        UiUtils.modifyButtons(buttons, viewModel.getCurrentFilter().getValue());
+                    boolean anyFiltersSelected = true;
+                    if (viewModel.getNamesToShowInScroll().getValue()==null&&viewModel.getRatings().getValue()==null) {
+                        anyFiltersSelected=false;
                     } else {
-                        UiUtils.modifyButtons(buttons, "");
+                        if (viewModel.getNamesToShowInScroll().getValue().size()==0&&viewModel.getRatings().getValue().size()==0) {
+                            anyFiltersSelected=false;
+                        }
+                    }
+
+                    if (viewModel.getCurrentFilter().getValue()!=null) {
+                        UiUtils.modifyButtons(buttons, viewModel.getCurrentFilter().getValue(),
+                                anyFiltersSelected);
+                    } else {
+                        UiUtils.modifyButtons(buttons, "", anyFiltersSelected);
                     }
                 } else {
                     Log.d(TAG, "map is null");
@@ -303,11 +305,13 @@ public class MapFragment extends Fragment implements
 
     @Override
     public void onConnectionSuspended(int i) {
+        UiUtils.showToast(getActivity(), "Google Map is about to stop");
 
     }
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        UiUtils.showToast(getActivity(), "Error trying to connect to Google Map");
 
     }
 
@@ -345,7 +349,20 @@ public class MapFragment extends Fragment implements
         clearAll.setTag("CLEAR_MAP");
 //        showFilterSection.setOnClickListener(showMoreButtonsListener);
         clearAll.setOnClickListener(filterButtonsListener);
+        sideBarListener = (LinearLayout) v.findViewById(R.id.sideBarListener);
+        sideBarListener.setOnTouchListener(this);
+        pseudiMargin = (LinearLayout) v.findViewById(R.id.pseudoMargin);
 
+        if (viewModel.getDevice().getValue().equals(UiUtils.TABLET)) {
+            if (viewModel.getOrienr().getValue().equals(UiUtils.LANDSCAPE)) {
+                sideBarListener.getLayoutParams().width=viewModel.getWight().getValue()/30;
+                pseudiMargin.getLayoutParams().width=viewModel.getWight().getValue()/30;
+            } else {
+                sideBarListener.getLayoutParams().width=viewModel.getHight().getValue()/30;
+                pseudiMargin.getLayoutParams().width=viewModel.getHight().getValue()/30;
+            }
+
+        }
         // declare listeners for imagebuttons
         // set the listener for all the functional buttons. It has to change the filters map depending on the selected button.
         // If the "clear" button is selected, than the map should be empty. viewModel.updateFilterMap(filters) is called. Also the
@@ -383,6 +400,7 @@ public class MapFragment extends Fragment implements
                    // filters.put(FILTERS, true);
                     viewModel.updateCurrentFilter(button);
                     viewModel.upateShowSidebar(true);
+                    viewModel.updateY(0);
 
                     if (viewModel.getSelectedFiltersForCategories().getValue()!=null &&
                             viewModel.getSelectedFiltersForCategories().getValue().size()>0) {
@@ -398,33 +416,33 @@ public class MapFragment extends Fragment implements
                     }
 
                 } else if (button.equals(LOVED)) {
-                    //TODO user has to be logged in, otherwise to show tost and return;
-                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-                    if (prefs.contains(UiUtils.LOGGED_IN)) {
-                        Log.i(TAG, "user logged in: "+ prefs.getBoolean(UiUtils.LOGGED_IN, true));
-                        Log.i(TAG, "email: "+ prefs.getString(UiUtils.EMAIL, "email"));
-                        Log.i(TAG, "password: "+ prefs.getString(UiUtils.PASSWORD, "psw"));
-                        if (prefs.getBoolean(UiUtils.LOGGED_IN, true)==true) {
-                            //TODO to remove redundant pieces
-
-                            viewModel.updateCurrentFilter(button);
-                            viewModel.upateShowSidebar(true);
-                            if (viewModel.getSelectedFiltersForLoved().getValue()!=null &&
-                                    viewModel.getSelectedFiltersForLoved().getValue().size()>0) {
-                                list.addAll(viewModel.getSelectedFiltersForLoved().getValue());
-                            } else {
-                                list.addAll(viewModel.getNamesSortedByRating().getValue());
-                            }
-
-                        } else {
-                            onInfoViewExpanded(UiUtils.LOG_IN, "");
-                            return;
-                        }
+                    viewModel.updateCurrentFilter(button);
+                    viewModel.upateShowSidebar(true);
+                    viewModel.updateY(0);
+                    if (viewModel.getSelectedFiltersForLoved().getValue()!=null &&
+                            viewModel.getSelectedFiltersForLoved().getValue().size()>0) {
+                        list.addAll(viewModel.getSelectedFiltersForLoved().getValue());
                     } else {
-                        //UiUtils.showToast(getActivity(), "To use this option, please log in or create an account");
-                        onInfoViewExpanded(UiUtils.CREATE_USER, "");
-                        return;
+                        list.addAll(viewModel.getNamesSortedByRating().getValue());
                     }
+                    //TODO user has to be logged in, otherwise to show tost and return;
+//                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+//                    if (prefs.contains(UiUtils.LOGGED_IN)) {
+//                        Log.i(TAG, "user logged in: "+ prefs.getBoolean(UiUtils.LOGGED_IN, true));
+//                        Log.i(TAG, "email: "+ prefs.getString(UiUtils.EMAIL, "email"));
+//                        Log.i(TAG, "password: "+ prefs.getString(UiUtils.PASSWORD, "psw"));
+//                        if (prefs.getBoolean(UiUtils.LOGGED_IN, true)==true) {
+//                            //TODO to remove redundant pieces
+//
+//                        } else {
+//                            onInfoViewExpanded(UiUtils.LOG_IN, "");
+//                            return;
+//                        }
+//                    } else {
+//                        //UiUtils.showToast(getActivity(), "To use this option, please log in or create an account");
+//                        onInfoViewExpanded(UiUtils.CREATE_USER, "");
+//                        return;
+//                    }
 
                 } else if (button.equals(ALL)) {
                     if (viewModel.getSelectedFiltersForAll().getValue()!=null &&
@@ -435,6 +453,7 @@ public class MapFragment extends Fragment implements
                         list.addAll(viewModel.getNamesSortedByRating().getValue());
                         Log.d(TAG, "4");
                     }
+                    viewModel.updateY(0);
                     viewModel.updateCurrentFilter(button);
                     viewModel.upateShowSidebar(true);
 
@@ -453,42 +472,15 @@ public class MapFragment extends Fragment implements
         buttons.add(showFilters);
         buttons.add(showLoved);
 
-        if (viewModel.getCurrentFilter().getValue()!=null) {
-            UiUtils.modifyButtons(buttons, viewModel.getCurrentFilter().getValue());
+        if (viewModel.getNamesToShowInScroll().getValue()!=null || viewModel.getRatings().getValue()!=null) {
+            if (viewModel.getNamesToShowInScroll().getValue().size()>0 || viewModel.getRatings().getValue().size()>0)
+            UiUtils.modifyButtons(buttons, viewModel.getCurrentFilter().getValue(), true);
         }
 
         //   showFilterSection.setOnClickListener(showMoreButtonsListener);
         Log.d(TAG, "exit onCreateView");
         return v;
     }
-
-    /**
-     * Handles the result of the request for location permissions.
-     */
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           @NonNull String permissions[],
-                                           @NonNull int[] grantResults) {
-        Log.d(TAG, "enter onRequestPermissionsResult");
-        mLocationPermissionGranted = false;
-        switch (requestCode) {
-            case PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    mLocationPermissionGranted = true;
-                  //  updateLocationUI(filters);
-
-                    if (places.size()>0) {
-                        showClusters();
-                    }
-                }
-            }
-        }
-        Log.d(TAG, "exit onRequestPermissionsResult");
-    }
-
-
 
     @Override
     public void onMapReady(GoogleMap map) {
@@ -579,6 +571,11 @@ public class MapFragment extends Fragment implements
                     currentZoom));
             //   updateLocationUI(filters);
             showClusters();
+            if (viewModel.getNamesToShowInScroll().getValue()!=null||viewModel.getRatings().getValue()!=null) {
+                if (viewModel.getNamesToShowInScroll().getValue().size()>0||viewModel.getRatings().getValue().size()>0){
+                    UiUtils.modifyButtons(buttons, viewModel.getCurrentFilter().getValue(), true);
+                }
+            }
 
         } else {
             Log.i(TAG, "restarted");
@@ -594,6 +591,7 @@ public class MapFragment extends Fragment implements
             }
 
             isRestarted=false;
+
         }
 
         //TODO in the activity has been recreation or reset the ViewModel data has to be used
@@ -692,44 +690,12 @@ public class MapFragment extends Fragment implements
         Log.d(TAG, "enter stabilizeViewWithZoom ()");
         if (recreated==false) {
             if (westCoord!=0.0f) {
-                Log.i(TAG, "Lat is: "+(northCoord+southCoord)/2);
-                Log.i(TAG, "Long is: "+(westCoord +eastCoord)/2);
-                LatLng newLatLng =  new LatLng(
-                        (northCoord+southCoord)/2, (westCoord+eastCoord)/2);
-                //TODO set zoom depending on the distance between the edge points
-                double max;
-                double latDistance = southCoord-northCoord;
-                double longDistance = -(westCoord-eastCoord);
-                if (latDistance>longDistance) {
-                    max=latDistance;
-                } else {
-                    max=longDistance;
-                }
-                Log.i(TAG, "max distance: "+max);
-                if (max<0.003f) {
-                    currentZoom = 18.5f;
-                } else if (0.003<=max && max<0.008) {
-                    currentZoom = 16.5f;
-                } else if (0.008<=max && max<0.01) {
-                    currentZoom = 15.5f;
-                } else if (0.01<=max && max<0.02){
-                    currentZoom = 14.5f;
-                } else if (0.02<=max && max<0.03) {
-                    currentZoom = 13.5f;
-                } else if (0.03<=max && max<0.05) {
-                    currentZoom = 12.5f;
-                } else if (0.05<=max && max<0.07) {
-                    currentZoom = 11.5f;
-                } else if (0.07<=max && max<0.2) {
-                    currentZoom = 10.5f;
-                } else {
-                    currentZoom = 9.5f;
-                }
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(newLatLng,
-                        currentZoom));
+                LatLngBounds currentBoundaries = new LatLngBounds(
+                        new LatLng(northCoord, westCoord), new LatLng(southCoord, eastCoord));
+
+                mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(currentBoundaries, 50));
             }
         }
-
 
         if (zoomingOut==false) {
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mMap.getCameraPosition().target,
@@ -770,8 +736,18 @@ public class MapFragment extends Fragment implements
                 break;
             }
         }
+
         onInfoViewExpanded("SEE_MORE", marker.getTitle());
 
+    }
+
+    @Override
+    public boolean onTouch(View v, MotionEvent motionEvent) {
+        if (viewModel.getCurrentFilter().getValue()!=null) {
+            viewModel.upateShowSidebar(true);
+        }
+
+        return true;
     }
 
     public class MyClassRenderer extends DefaultClusterRenderer<MyClusterItem> {

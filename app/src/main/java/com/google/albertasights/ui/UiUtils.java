@@ -38,7 +38,9 @@ import com.google.albertasights.ui.MapsActivity;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -83,11 +85,15 @@ public class UiUtils {
     public static final String LANDSCAPE = "LANDSCAPE";
     public static final String TABLET = "TABLET";
     public static final String PHONE = "PHONE";
+    public static final String RESET_PASSWORD = "RESET_PASSWORD";
+    public static final String UPDATE_PASSWORD = "UPDATE_PASSWORD";
+    public static final String SEE_USER_DATA = "SEE_USER_DATA";
+    public static final String RECREATE_USER = "RECREATE_USER";
     public static final String BY_RATING = "BY_RATING";
     public static final String BY_NAME = "BY_NAME";
 
 
-    private static final String TAG = MapsActivity.class.getSimpleName();
+    private static final String TAG = UiUtils.class.getSimpleName();
   //  public static Set <String> selectedPointsIds = new HashSet<>();
 
   //  public static boolean showFilters = false;
@@ -164,10 +170,10 @@ public class UiUtils {
                 Toast.LENGTH_LONG).show();
     }
 
-    public static void modifyButtons (Set<ImageButton> buttons, String activeButtonTag) {
+    public static void modifyButtons (Set<ImageButton> buttons, String activeButtonTag, boolean anyFiltersSelected) {
         Log.d(TAG, "enter modifyButtons (Set<ImageButton> buttons, String activeButtonTag)");
         for (ImageButton b : buttons) {
-            if (b.getTag().equals(activeButtonTag)) {
+            if (b.getTag().equals(activeButtonTag) && anyFiltersSelected==true) {
                 b.setColorFilter(new PorterDuffColorFilter(Color.BLUE, PorterDuff.Mode.SRC_IN));
             } else {
                 b.setColorFilter(new PorterDuffColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN));
@@ -177,11 +183,11 @@ public class UiUtils {
 
     public static void setTextSize (Integer screenHight, TextView textView, String orientation,
                                     Boolean isHeader) {
-        textView.setTextSize(screenHight/120);
+      //  textView.setTextSize(screenHight/120);
         if (orientation.equals(UiUtils.PORTRAIT)) {
-            textView.setTextSize(screenHight/120);
+            textView.setTextSize(screenHight/110);
         } else {
-            textView.setTextSize(screenHight/80);
+            textView.setTextSize(screenHight/70);
         }
         if (isHeader==true){
             textView.setTypeface(null, Typeface.BOLD);
@@ -195,37 +201,54 @@ public class UiUtils {
         return editor;
     }
 
-    public static void manageFragments (Fragment fragmemt, FragmentManager fManager, boolean addToBackStack,
-                                        int containerID, String action, String tag) {
+    public static void manageFragments (FragmentManager fManager, boolean addToBackStack,
+                                        int containerID, Map<String, String> tagsAndActions) {
         Log.d(TAG, "enter manageFragments");
-
         FragmentTransaction transaction = fManager.beginTransaction();
-        if (action.equals("ADD")) {
-            if (tag.length()>1) {
+        Map <String, Fragment> tagsAndFragments = new HashMap<>();
+        tagsAndFragments.put("login", new NoUserFragment());
+        tagsAndFragments.put("loader", new LoadingFragment());
+        tagsAndFragments.put("sidebar", new SideBarFragment1());
+        tagsAndFragments.put("progr1", new StatusBarFragment());
+        tagsAndFragments.put("map", new MapFragment());
+        tagsAndFragments.put("socialBt", new SocialButtonsFragment());
+        tagsAndFragments.put("u1", new UserFragment());
+        tagsAndFragments.put("banner", new AdsFragment());
+        tagsAndFragments.put("point", new PointFragment());
+        tagsAndFragments.put("connect", new StayInTouchFragment());
+
+        for (String tag : tagsAndActions.keySet()) {
+            Log.i(TAG, "searching : "+tag);
+            String action = tagsAndActions.get(tag);
+            Log.i(TAG, "what to do : "+ action);
+            Fragment fragmemt = tagsAndFragments.get(tag);
+
+            if (action.equals("ADD")) {
+                Log.i(TAG, "fragment found to add");
                 transaction.add(containerID, fragmemt, tag);
-            } else {
-                transaction.add(containerID, fragmemt);
-            }
-        } else if (action.equals("REPLACE")) {
-            if (tag.length()>1) {
+
+            } else if (action.equals("REPLACE")) {
+                Log.i(TAG, "fragment found to replace");
                 transaction.replace(containerID, fragmemt, tag);
-            }
-            transaction.replace(containerID, fragmemt);
-        } else if (action.equals("REMOVE")) {
-            fragmemt = fManager.findFragmentByTag(tag);
-            if (fragmemt!=null) {
-                Log.i(TAG, "fragment found to remove");
-                transaction.remove(fragmemt);
-            }
-        } else if (action.equals("HIDE")) {
-            fragmemt = fManager.findFragmentByTag(tag);
-            if (fragmemt!=null) {
-                transaction.hide(fragmemt);
-            }
-        } else if (action.equals("SHOW")) {
-            fragmemt = fManager.findFragmentByTag(tag);
-            if (fragmemt!=null) {
-                transaction.show(fragmemt);
+
+            } else if (action.equals("REMOVE")) {
+                fragmemt = fManager.findFragmentByTag(tag);
+                if (fragmemt!=null) {
+                    Log.i(TAG, "fragment found to remove");
+                    transaction.remove(fragmemt);
+                }
+            } else if (action.equals("HIDE")) {
+                fragmemt = fManager.findFragmentByTag(tag);
+                if (fragmemt!=null) {
+                    Log.i(TAG, "fragment found to hide");
+                    transaction.hide(fragmemt);
+                }
+            } else if (action.equals("SHOW")) {
+                fragmemt = fManager.findFragmentByTag(tag);
+                if (fragmemt!=null) {
+                    Log.i(TAG, "fragment found to show");
+                    transaction.show(fragmemt);
+                }
             }
         }
         if (addToBackStack == true) {
@@ -243,13 +266,21 @@ public class UiUtils {
 
         Fragment fragment = fManager.findFragmentByTag(tag);
         if (fragment!=null) {
-            Log.d(TAG, "exit checkIfFragmentAdded (String tag, FragmentManager fManager)");
+            Log.d(TAG, "fragment found, exit checkIfFragmentAdded (String tag, FragmentManager fManager)");
             return true;
 
         } else {
-            Log.d(TAG, "exit checkIfFragmentAdded (String tag, FragmentManager fManager)");
+            Log.d(TAG, "fragment is null, exit checkIfFragmentAdded (String tag, FragmentManager fManager)");
             return false;
         }
+    }
+
+    public static void modifyIconSize (ImageButton fb, ImageButton insta,
+                                       Integer hight, Integer wight, String orient) {
+        if (orient.equals(UiUtils.PORTRAIT)) {
+
+        }
+
     }
 
 

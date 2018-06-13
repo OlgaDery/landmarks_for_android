@@ -6,78 +6,84 @@
     android:id="@+id/mapFragment"
     tools:context=".ui.MapFragment">
 
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/rr"
+        android:orientation="horizontal"
+        android:id="@+id/wrapperTop"
+        android:background="@color/colorWhite"
+        android:layout_alignParentTop="true"
         >
-
-        <LinearLayout
-            android:layout_width="match_parent"
+        <Space
+            android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:id="@+id/wrapperTop"
-            android:background="@color/colorWhite"
-            android:layout_alignParentTop="true"
-            >
-            <Space
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:layout_width="wrap_content"/>
+            android:layout_width="wrap_content"/>
 
-            <ImageButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/showFiltersOnly"
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/showFiltersOnly"
 
-                />
-            <Space
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:layout_width="wrap_content"/>
+            />
+        <Space
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"/>
 
-            <ImageButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/showLoved"
-                />
-            <Space
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:layout_width="wrap_content"/>
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/showLoved"
+            />
+        <Space
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"/>
 
-            <ImageButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/showAll"
-                />
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/showAll"
+            />
 
-            <Space
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:layout_width="wrap_content"/>
+        <Space
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"/>
 
-        </LinearLayout>
+    </LinearLayout>
 
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_below="@id/wrapperTop"
-            android:id="@+id/mapWrapper"
+    <fragment
+        android:id="@+id/map"
+        android:layout_below="@id/wrapperTop"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context="com.example.olga.naviguide.MapsActivity" />
 
-            >
+    <LinearLayout
+        android:layout_width="20dp"
+        android:layout_height="match_parent"
+        android:background="@color/colorWhite"
+        android:orientation="vertical"
+        android:layout_alignParentRight="true"
+        android:id="@+id/sideBarListener"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentBottom="true"
+        >
+    </LinearLayout>
 
-            <fragment
-                android:id="@+id/map"
-                android:name="com.google.android.gms.maps.SupportMapFragment"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                tools:context="com.example.olga.naviguide.MapsActivity" />
-
-        </RelativeLayout>
-
-
-    </RelativeLayout>
+    <LinearLayout
+        android:layout_width="20dp"
+        android:layout_height="match_parent"
+        android:background="@color/colorWhite"
+        android:id="@+id/pseudoMargin"
+        android:orientation="vertical"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentBottom="true"
+        >
+    </LinearLayout>
 
 </RelativeLayout>

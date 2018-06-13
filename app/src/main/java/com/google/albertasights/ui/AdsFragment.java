@@ -2,13 +2,17 @@ package com.google.albertasights.ui;
 
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 
 import com.google.albertasights.R;
 import com.squareup.picasso.Picasso;
@@ -31,6 +35,11 @@ public class AdsFragment extends Fragment {
     private String mParam1;
     private String mParam2;
     private MapViewModel viewModel;
+    private UserViewModel viewModel1;
+    private Integer screenH;
+    private Integer screenW;
+    private String orientation;
+    private String device;
 
     private OnFragmentInteractionListener mListener;
 
@@ -63,21 +72,83 @@ public class AdsFragment extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
-        viewModel = ViewModelProviders.of(getActivity()).get(MapViewModel.class);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
+        Log.d(AdsFragment.class.getCanonicalName(), "enter onCreateView");
         View v = inflater.inflate(R.layout.fragment_ads, container, false);
         ImageView banner = (ImageView) v.findViewById(R.id.banner);
-        Picasso.with(getActivity())
+        if (getActivity().getClass().getCanonicalName().contains("User")) {
+            viewModel1 = ViewModelProviders.of(getActivity()).get(UserViewModel.class);
+            screenW = viewModel1.getWight().getValue();
+            screenH = viewModel1.getHight().getValue();
+            device = viewModel1.getDevice().getValue();
+            orientation = viewModel1.getOrienr().getValue();
+        } else {
+            viewModel = ViewModelProviders.of(getActivity()).get(MapViewModel.class);
+            screenW = viewModel.getWight().getValue();
+            screenH = viewModel.getHight().getValue();
+            device = viewModel.getDevice().getValue();
+            orientation = viewModel.getOrienr().getValue();
+        }
+       // ViewGroup.LayoutParams lp = v.getLayoutParams();
+        ViewGroup.LayoutParams bannerParams = banner.getLayoutParams();
+        bannerParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
+        if (orientation.equals(UiUtils.TABLET)) {
+            bannerParams.width = screenW/100*20;
+        } else {
+            bannerParams.width = screenW/100*20;
+        }
+
+        if (device.equals(UiUtils.TABLET)) {
+            try {
+                Picasso.with(getActivity())
+                        .load(R.raw.mallorn2)
+                        .resize(bannerParams.width, screenH)
+                        .centerCrop()
+                      //  .fit()
+                        .into(banner);
+            } catch (Exception e) {
+                Log.e(AdsFragment.class.getCanonicalName(), e.toString());
+            }
+        } else {
+            try {
+                Picasso.with(getActivity())
                         .load(R.raw.mallorn1)
-                        .resize(250, viewModel.getHight().getValue())
-                        //    .onlyScaleDown()
+                        .resize(bannerParams.width, screenH)
                         .centerCrop()
                         .into(banner);
+            } catch (Exception e) {
+                Log.e(AdsFragment.class.getCanonicalName(), e.toString());
+            }
+        }
+
+        View.OnClickListener listener = new View.OnClickListener() {
+
+            public void onClick(View v) {
+             //   Log.d(TAG, "enter onClick (View view) ");
+                try{
+                    Intent myWebLink = new Intent(android.content.Intent.ACTION_VIEW);
+                    if(getActivity().getClass().getCanonicalName().contains("User")) {
+                        myWebLink.setData(Uri.parse("https://www.instagram.com/mallorn.ca/"));
+                    } else {
+                        myWebLink.setData(Uri.parse("http://www.mallorn.ca/"));
+                    }
+
+                    getActivity().startActivity(myWebLink);
+                } catch (Exception e) {
+                    UiUtils.showToast(getActivity(), "Error, maybe no browsers have been installed");
+                }
+
+              //  Log.d(TAG, "exit onClick (View view) ");
+            }
+        };
+        v.setOnClickListener(listener);
+
+        Log.d(AdsFragment.class.getCanonicalName(), "enter onCreateView");
         return v;
     }
 
@@ -91,12 +162,13 @@ public class AdsFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+
         if (context instanceof OnFragmentInteractionListener) {
             mListener = (OnFragmentInteractionListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
-        }
+        } //else {
+//            throw new RuntimeException(context.toString()
+//                    + " must implement OnFragmentInteractionListener");
+//        }
     }
 
     @Override

@@ -4,21 +4,13 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_gravity="bottom"
-    android:layout_marginBottom="20dp"
-    android:orientation="vertical"
+    android:paddingBottom="10dp"
+    android:paddingTop="10dp"
+    android:background="@color/colorWhite"
+    android:layout_marginTop="10dp"
+    android:orientation="horizontal"
     tools:context=".ui.SocialButtonsFragment">
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:text="Follow us to stay in touch:"
-        android:layout_marginBottom="10dp"
-        />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
     <!-- TODO: Update blank fragment layout -->
     <Space
         android:layout_weight="2"
@@ -46,7 +38,5 @@
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"/>
         >
-
-    </LinearLayout>
 
 </LinearLayout>

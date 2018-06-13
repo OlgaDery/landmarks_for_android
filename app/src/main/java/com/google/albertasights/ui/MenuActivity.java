@@ -52,17 +52,18 @@ public class MenuActivity extends AppCompatActivity {
 
                 item.setChecked(true);
                 final Intent intent5 = new Intent(this, UserActivity.class);
-                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-                if (prefs.contains(UiUtils.EMAIL)) {
-                    Log.i(TAG, "user found");
-                    User user = new User (prefs.getString(UiUtils.EMAIL, "email"),
-                            prefs.getString(UiUtils.PASSWORD, "email"));
-                    user.setFirstName(prefs.getString(UiUtils.FIRST_NAME, "Dear Friend"));
-                    user.setLastName(prefs.getString(UiUtils.LAST_NAME, "No"));
-                    user.setLoggedIn(prefs.getBoolean(UiUtils.LOGGED_IN, true));
-                    user.setRole(prefs.getString(UiUtils.ROLE, "user"));
-                    intent5.putExtra(UiUtils.USER, user);
-                }
+//                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+//                if (prefs.contains(UiUtils.EMAIL)) {
+//                    Log.i(TAG, "user found");
+//                    User user = new User (prefs.getString(UiUtils.EMAIL, "email"),
+//                            prefs.getString(UiUtils.PASSWORD, "email"));
+//                    user.setFirstName(prefs.getString(UiUtils.FIRST_NAME, "Dear Friend"));
+//                    user.setLastName(prefs.getString(UiUtils.LAST_NAME, "No"));
+//                    user.setLoggedIn(prefs.getBoolean(UiUtils.LOGGED_IN, true));
+//                    user.setRole(prefs.getString(UiUtils.ROLE, "user"));
+//                    intent5.putExtra(UiUtils.USER, user);
+//                    intent5.putExtra(UiUtils.EMAIL, prefs.getString(UiUtils.EMAIL, "email"));
+//                }
                 startActivity(intent5);
                 return true;
 

@@ -43,7 +43,7 @@ public class FilterListviewAdapter extends BaseAdapter {
         this.screenW = screenWight;
         this.deviceType = device;
        // this.selected = selectedPoints;
-        Log.d(FilterListviewAdapter.class.getCanonicalName(), "names: "+names.size());
+      //  Log.d(FilterListviewAdapter.class.getCanonicalName(), "names: "+names.size());
 
     }
 
@@ -65,9 +65,11 @@ public class FilterListviewAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        Log.d(FilterListviewAdapter.class.getCanonicalName(), "enter getView(int position, View convertView, ViewGroup parent)");
+      //  Log.d(FilterListviewAdapter.class.getCanonicalName(), "enter getView(int position, View convertView, ViewGroup parent)");
         convertView = LayoutInflater.from(context).inflate(R.layout.content_list_view, null);
+
         TextView txt = (TextView) convertView.findViewById(R.id.filterTxt);
+        txt.setPadding(0, screenH/55, 0, 0);
         txt.setText(content.get(position));
         UiUtils.setTextSize(screenH, txt, UiUtils.getOrientation(context), false);
         if (selected!=null) {
