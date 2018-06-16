@@ -1,6 +1,7 @@
 package com.google.albertasights.ui;
 import android.app.Activity;
 import android.content.Context;
+import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
@@ -11,6 +12,7 @@ import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -35,6 +37,15 @@ import android.widget.Toast;
 
 import com.google.albertasights.R;
 import com.google.albertasights.ui.MapsActivity;
+import com.google.android.gms.common.api.ResolvableApiException;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResponse;
+import com.google.android.gms.location.SettingsClient;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -91,6 +102,7 @@ public class UiUtils {
     public static final String RECREATE_USER = "RECREATE_USER";
     public static final String BY_RATING = "BY_RATING";
     public static final String BY_NAME = "BY_NAME";
+    protected static final int REQUEST_CHECK_SETTINGS = 0x1;
 
 
     private static final String TAG = UiUtils.class.getSimpleName();
@@ -280,6 +292,54 @@ public class UiUtils {
         if (orient.equals(UiUtils.PORTRAIT)) {
 
         }
+
+    }
+
+    public static void displayLocationSettingsRequest(final Activity activity) {
+        Log.d(TAG, "enter displayLocationSettingsRequest(Context context)");
+
+        LocationRequest locationRequest = LocationRequest.create();
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        locationRequest.setInterval(10000);
+        locationRequest.setFastestInterval(10000 / 2);
+
+        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder().addLocationRequest(locationRequest);
+        builder.setAlwaysShow(true);
+        SettingsClient client = LocationServices.getSettingsClient(activity);
+        Task<LocationSettingsResponse> task = client.checkLocationSettings(builder.build());
+
+        task.addOnSuccessListener(activity, new OnSuccessListener<LocationSettingsResponse>() {
+            @Override
+            public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
+                // All location settings are satisfied. The client can initialize
+                // location requests here.
+                Log.i(TAG, "All location settings are satisfied.");
+            }
+        });
+
+        task.addOnFailureListener(activity, new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                if (e instanceof ResolvableApiException) {
+                    // Location settings are not satisfied, but this can be fixed
+                    // by showing the user a dialog.
+                    Log.i(TAG, "Location settings are not satisfied. " +
+                            "Show the user a dialog to upgrade location settings ");
+                    try {
+                        // Show the dialog by calling startResolutionForResult(),
+                        // and check the result in onActivityResult().
+                        ResolvableApiException resolvable = (ResolvableApiException) e;
+                        resolvable.startResolutionForResult(activity,
+                                REQUEST_CHECK_SETTINGS);
+                    } catch (IntentSender.SendIntentException sendEx) {
+                        // Ignore the error.
+                    }
+                } else {
+                    Log.i(TAG, "Location settings are inadequate," +
+                            " and cannot be fixed here. Dialog not created.");
+                }
+            }
+        });
 
     }
 

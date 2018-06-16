@@ -10,6 +10,7 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -114,7 +115,7 @@ public class MapFragment extends Fragment implements
     private ClusterManager<MyClusterItem> mClusterManager;
 
     //has to be saved as the SavedInstance
-    private HashSet<Place> places = new HashSet<>();
+  //  private HashSet<Place> places = new HashSet<>();
     //to store markerIDs to track the photo loading, if the photo of the marker has once been loaded, it`s Id should be removed
     //TODO to store the name of current filter using for points
   //  private String current_filter = "";
@@ -138,7 +139,6 @@ public class MapFragment extends Fragment implements
     public static final String KEY_RECEIVED_FILTERS = "received_fltrs";
     public static final String KEY_SELECTED_FILTERS = "selected_fltrs";
     public static final String KEY_SELECT_POINTS_TO_SHOW = "select_points_to_show";
-    //  private static final String KEY_PLACES = "places";
     private static final String SAVE_INFO_WINDOW = "save_i_w";
     private static final String STARTED_ANIMATION = "animation";
 
@@ -252,9 +252,34 @@ public class MapFragment extends Fragment implements
             }
         };
         viewModel.getPointsNamesToShow().observe(this, pointsToShowObserver);
-
-        places.addAll(viewModel.getRecievedPoints().getValue());
+      //  places.addAll(viewModel.getRecievedPoints().getValue());
         viewModel.updateCurrentFragment(this.getClass().getSimpleName());
+
+        //TODO observer to change the permittions to access the geo data
+        final Observer<Boolean> locationPermissionsObserver = new Observer<Boolean>() {
+            @Override
+            public void onChanged(@Nullable Boolean isPermittionsGranted) {
+                Log.d(TAG, "enter onChanged(@Nullable Boolean isPermittionsGranted)");
+                if (isPermittionsGranted==true) {
+                    if (mMap!=null) {
+                        try {
+                            mMap.setMyLocationEnabled(true);
+                            mMap.getUiSettings().setMyLocationButtonEnabled(true);
+                            //TODO check if GPS is enabled
+                            LocationManager locationManager = (LocationManager)getActivity().getSystemService(Context.LOCATION_SERVICE);
+                            if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)==false){
+                                Log.i(TAG, "gps unabled");
+                                UiUtils.displayLocationSettingsRequest(getActivity());
+                            }
+                        } catch (SecurityException e) {
+
+                        }
+                    }
+                }
+            }
+
+        };
+        viewModel.getLocationAccessPermitted().observe(this, locationPermissionsObserver);
         Log.d(TAG, "exit onCreate(Bundle savedInstanceState)");
 
     }
@@ -508,7 +533,12 @@ public class MapFragment extends Fragment implements
 
             mMap.setMyLocationEnabled(true);
             mMap.getUiSettings().setMyLocationButtonEnabled(true);
-            //  Log.i(TAG, "non-clustered markers: "+mClusterManager.getMarkerCollection().getMarkers().size());
+            //TODO check if GPS is enabled
+            LocationManager locationManager = (LocationManager)getActivity().getSystemService(Context.LOCATION_SERVICE);
+            if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)==false){
+                Log.i(TAG, "gps unabled");
+                UiUtils.displayLocationSettingsRequest(getActivity());
+            }
 
         } else {
             mMap.setMyLocationEnabled(false);
@@ -517,6 +547,28 @@ public class MapFragment extends Fragment implements
             mMap.getUiSettings().setMyLocationButtonEnabled(false);
         }
 
+        //TODO observer to set the adaptor
+        final Map<String, Boolean> infoWindowSet = new HashMap<>();
+        infoWindowSet.put("SET", false);
+        final Observer<LinkedList<Place>> gettingDataFromApiObserver = new Observer<LinkedList<Place>>() {
+            @Override
+            public void onChanged(@Nullable LinkedList<Place> data) {
+                //TODO this observer is required in case if viewModel.getRecievedPoints().getValue() is null
+                //TODO when this fagment gets added
+                Log.d(TAG, "enter onChanged(@Nullable LinkedList<Place> data)");
+                if (infoWindowSet.get("SET")==false) {
+                    Set<Place> places = new HashSet<>();
+                    places.addAll(viewModel.getRecievedPoints().getValue());
+                    MyInfoWindowAdaptor adaptor = new MyInfoWindowAdaptor(getContext(), places,
+                            orientation, deviceType, viewModel.getHight().getValue(), viewModel.getWight().getValue());
+                    mMap.setInfoWindowAdapter(adaptor);
+                    infoWindowSet.put("SET", true);
+                }
+            }
+
+        };
+        viewModel.getRecievedPoints().observe(this, gettingDataFromApiObserver);
+
         if (isRestarted == false) {
             //that means that the activity is created the first time or recreated
             //    Log.d(TAG, "select points to show: "+selectPointsToShow);
@@ -524,10 +576,17 @@ public class MapFragment extends Fragment implements
             mClusterManager = new ClusterManager<MyClusterItem>(getContext(), mMap);
             mClusterManager.setRenderer(new MyClassRenderer(getContext(), mMap, mClusterManager));
             mMap.setOnCameraIdleListener(mClusterManager);
+            if (viewModel.getRecievedPoints().getValue()!=null) {
+                if (infoWindowSet.get("SET")==false) {
+                    Set<Place> places = new HashSet<>();
+                    places.addAll(viewModel.getRecievedPoints().getValue());
+                    MyInfoWindowAdaptor adaptor = new MyInfoWindowAdaptor(getContext(), places,
+                            orientation, deviceType, viewModel.getHight().getValue(), viewModel.getWight().getValue());
+                    mMap.setInfoWindowAdapter(adaptor);
+                    infoWindowSet.put("SET", true);
+                }
 
-            MyInfoWindowAdaptor adaptor = new MyInfoWindowAdaptor(getContext(), places,
-                    orientation, deviceType, viewModel.getHight().getValue(), viewModel.getWight().getValue());
-            mMap.setInfoWindowAdapter(adaptor);
+            }
 
             mMap.setOnInfoWindowClickListener(this);
 
@@ -617,7 +676,7 @@ public class MapFragment extends Fragment implements
         Log.i(TAG, "to show: "+viewModel.getPointsNamesToShow().getValue().size());
 
         count = 0;
-        for (Place p : places) {
+        for (Place p : viewModel.getRecievedPoints().getValue()) {
             if (viewModel.getPointsNamesToShow().getValue().contains(p.getName())) {
                 if (southCoord==0.0f) {
                     southCoord=p.getLat();
@@ -729,7 +788,7 @@ public class MapFragment extends Fragment implements
     @Override
     public void onInfoWindowClick(Marker marker) {
         //TODO hook the click on the marker to the listener, what should trigger the replacement of the activity
-        for (Place p : places) {
+        for (Place p : viewModel.getRecievedPoints().getValue()) {
             if (p.getName().equals(marker.getTitle())) {
                 Log.i(TAG, "point to expand: "+p.getName());
                 viewModel.updatePoint(p);

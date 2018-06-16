@@ -65,13 +65,29 @@ public class FilterListviewAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-      //  Log.d(FilterListviewAdapter.class.getCanonicalName(), "enter getView(int position, View convertView, ViewGroup parent)");
-        convertView = LayoutInflater.from(context).inflate(R.layout.content_list_view, null);
+        Log.d(TAG, "enter getView(int position, View convertView, ViewGroup parent)");
 
-        TextView txt = (TextView) convertView.findViewById(R.id.filterTxt);
-        txt.setPadding(0, screenH/55, 0, 0);
-        txt.setText(content.get(position));
-        UiUtils.setTextSize(screenH, txt, UiUtils.getOrientation(context), false);
+        //LinearLayout layout = (LinearLayout) convertView.findViewById(R.id.layout);
+        if (parent.getId()==R.id.rating_listView_id) {
+            convertView = LayoutInflater.from(context).inflate(R.layout.content_list_view1, null);
+            ImageView img = (ImageView) convertView.findViewById(R.id.img);
+            // layout.addView(img);
+            if (content.get(position).equals("3")) {
+                img.setImageDrawable(context.getResources().getDrawable(R.drawable.great));
+            } else if (content.get(position).equals("2")) {
+                img.setImageDrawable(context.getResources().getDrawable(R.drawable.good));
+            } else {
+                img.setImageDrawable(context.getResources().getDrawable(R.drawable.not_bad));
+            }
+
+        } else {
+            convertView = LayoutInflater.from(context).inflate(R.layout.content_list_view, null);
+            TextView txt = (TextView) convertView.findViewById(R.id.filterTxt);
+            txt.setPadding(0, screenH/55, 0, 0);
+            txt.setText(content.get(position));
+            UiUtils.setTextSize(screenH, txt, UiUtils.getOrientation(context), false);
+        }
+
         if (selected!=null) {
             if (selected.contains(content.get(position)))
                 convertView.setBackgroundColor(Color.LTGRAY);

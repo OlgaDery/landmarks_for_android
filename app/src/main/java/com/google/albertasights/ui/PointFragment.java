@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -111,7 +112,14 @@ public class PointFragment extends Fragment {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //    Log.d(TAG, "onclick");
+                Log.d(TAG, "onclick");
+                LocationManager locationManager =
+                        (LocationManager)getActivity().getSystemService(Context.LOCATION_SERVICE);
+                if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)==false){
+                    Log.i(TAG, "gps disabled");
+                    UiUtils.showToast(getActivity(), "Please enable your GPS!");
+                    return;
+                }
                 if (ContextCompat.checkSelfPermission(getContext(),
                         android.Manifest.permission.ACCESS_FINE_LOCATION)
                         == PackageManager.PERMISSION_GRANTED) {

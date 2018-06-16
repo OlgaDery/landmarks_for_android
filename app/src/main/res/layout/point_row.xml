@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-   android:layout_width="match_parent"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:id="@+id/listV"
     >
@@ -16,6 +16,7 @@
 
     <TextView
         android:id="@+id/name"
+        android:text="Name:"
         android:layout_below="@+id/img"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -28,6 +29,7 @@
         android:id="@+id/descript"
         android:layout_marginTop="10dp"
         android:layout_below="@+id/name"
+        android:text="Descript:"
         android:layout_alignParentLeft="true"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -36,16 +38,28 @@
 
     <TextView
         android:id="@+id/rating"
+        android:text="Rating:"
         android:layout_marginTop="10dp"
         android:layout_below="@+id/descript"
         android:layout_alignParentLeft="true"
-        android:layout_width="match_parent"
+        android:layout_marginRight="15dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="18dp"
         android:textColor="#ff7f7f7f" />
 
+    <ImageView
+        android:id="@+id/ratingImg"
+        android:layout_marginTop="10dp"
+        android:layout_below="@+id/descript"
+        android:layout_toRightOf="@+id/rating"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        />
+
     <TextView
         android:id="@+id/link"
+        android:text="Link:"
         android:layout_marginTop="10dp"
         android:layout_below="@+id/rating"
         android:layout_alignParentLeft="true"

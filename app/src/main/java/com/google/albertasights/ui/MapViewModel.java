@@ -48,6 +48,7 @@ public class MapViewModel extends ViewModel {
     public final MutableLiveData<LinkedList<String>> namesToShowInScroll = new MutableLiveData<>();
     public final MutableLiveData<Integer> scrollY = new MutableLiveData<>();
     public final MutableLiveData<Boolean> dataReceived = new MutableLiveData<>();
+    public final MutableLiveData<Boolean> locationAccessPermitted = new MutableLiveData<>();
 
     public MapViewModel() {
         Log.d(TAG, "enter MapViewModel()");
@@ -271,6 +272,15 @@ public class MapViewModel extends ViewModel {
     public void updateDataReceived(Boolean info) {
         dataReceived.setValue(info);
     }
+
+    public LiveData<Boolean> getLocationAccessPermitted() {
+        return locationAccessPermitted;
+    }
+
+    public void setLocationAccessPermitted (Boolean isPermitted) {
+        locationAccessPermitted.setValue(isPermitted);
+    }
+
 
 
     @Override

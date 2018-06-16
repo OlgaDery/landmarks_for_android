@@ -99,16 +99,13 @@ public class PointListviewAdapter extends BaseAdapter {
         }
 
         TextView rating = (TextView) convertView.findViewById(R.id.rating);
-        if (point.getRating().equals("5")) {
-            rating.setText(titles[3] + "*****");
-        } else if (point.getRating().equals("4")) {
-            rating.setText(titles[3] + "****");
-        } else if (point.getRating().equals("3")) {
-            rating.setText(titles[3] + "***");
-        } else if (point.getRating().equals("2")) {
-            rating.setText(titles[3] + "**");
+        ImageView ratingImg = (ImageView) convertView.findViewById(R.id.ratingImg);
+        if (point.getRating()==3) {
+            ratingImg.setImageDrawable(context.getResources().getDrawable(R.drawable.great));
+        } else if (point.getRating()==(2)) {
+            ratingImg.setImageDrawable(context.getResources().getDrawable(R.drawable.good));
         } else {
-            rating.setText(titles[3] + "*");
+            ratingImg.setImageDrawable(context.getResources().getDrawable(R.drawable.not_bad));
         }
 
         if (deviceType.equals(UiUtils.TABLET)) {

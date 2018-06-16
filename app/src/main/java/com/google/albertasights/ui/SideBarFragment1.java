@@ -164,16 +164,19 @@ public class SideBarFragment1 extends Fragment implements View.OnTouchListener {
         listFilter1.getViewTreeObserver().addOnScrollChangedListener(new ViewTreeObserver.OnScrollChangedListener() {
             @Override
             public void onScrollChanged() {
-                if (viewModel.getDataToFilter().getValue().size()>0) {
-                    try {
-                        View child = listFilter1.getChildAt(0);
-                        Log.i(TAG, "top view: "+ child.getTag().toString());
-                        viewModel.updateY(viewModel.getDataToFilter().getValue()
-                                .indexOf(child.getTag().toString()));
-                    } catch (Exception e) {
+                if (viewModel.getDataToFilter().getValue()!=null) {
+                    if (viewModel.getDataToFilter().getValue().size()>0) {
+                        try {
+                            View child = listFilter1.getChildAt(0);
+                            Log.i(TAG, "top view: "+ child.getTag().toString());
+                            viewModel.updateY(viewModel.getDataToFilter().getValue()
+                                    .indexOf(child.getTag().toString()));
+                        } catch (Exception e) {
 
+                        }
                     }
                 }
+
             }
         });
 
@@ -393,7 +396,7 @@ public class SideBarFragment1 extends Fragment implements View.OnTouchListener {
             //TODO second element under the toppest
             listFilter2 = new ListView(getActivity());
 
-            final String [] symbols = {"5", "4", "3"};
+            final String [] symbols = {"3", "2", "1"};
             LinkedList<String> tmp = new LinkedList<>();
             for (String s: symbols) {
                 tmp.add(s);
@@ -416,11 +419,11 @@ public class SideBarFragment1 extends Fragment implements View.OnTouchListener {
                     Log.d(TAG, "enter applyRatingListener(View view)");
                     String sortedBy = "";
                     if(position==0) {
-                        sortedBy="5";
-                    } else if(position==1) {
-                        sortedBy="4";
-                    } else {
                         sortedBy="3";
+                    } else if(position==1) {
+                        sortedBy="2";
+                    } else {
+                        sortedBy="1";
                     }
                     LinkedList<String> tmp1 = new LinkedList<>();
                     tmp1.addAll(viewModel.getRatings().getValue());
@@ -486,6 +489,8 @@ public class SideBarFragment1 extends Fragment implements View.OnTouchListener {
             if(viewModel.getOrienr().getValue().equals(UiUtils.LANDSCAPE)) {
                 lp3.addRule(RelativeLayout.RIGHT_OF, text1.getId());
                 lp3.addRule(RelativeLayout.ALIGN_LEFT, listFilter1.getId());
+                header.setPadding(15,0,
+                        0,0);
 
             } else {
                 lp3.removeRule(RelativeLayout.ALIGN_PARENT_TOP);

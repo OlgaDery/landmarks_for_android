@@ -168,9 +168,30 @@ public class RestIntentServer extends IntentService {
                     String link = mJsonObjectProperty.getString("photolink");
                     String webLink = mJsonObjectProperty.getString("weblink");
                     Integer rating = Integer.valueOf(mJsonObjectProperty.getString("rating"));
+                    int newRating = 3;
+                    switch (rating) {
+                        case 5: {
+                            newRating =3;
+                            break;
+                        }
+                        case 4: {
+                            newRating =3;
+                            break;
+                        }
+                        case 3: {
+                            newRating =2;
+                            break;
+                        }
+                        case 2: {
+                            newRating =1;
+                            break;
+                        }case 1: {
+                            newRating =1;
+                            break;
+                        }
+                    }
                     Place p = new Place(name, descr, link, Double.valueOf(lng),
-                            Double.valueOf(lat), webLink, rating);
-                    //TODO!!!
+                            Double.valueOf(lat), webLink, newRating);
                     p.setCategory(category);
                     p.setId(id);
                     //   Place.places.add(p);
