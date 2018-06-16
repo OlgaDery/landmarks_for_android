@@ -295,7 +295,7 @@ public class UiUtils {
 
     }
 
-    public static void displayLocationSettingsRequest(final Activity activity) {
+    public static void displayLocationSettingsRequest(final Activity activity, final MapViewModel viewModel) {
         Log.d(TAG, "enter displayLocationSettingsRequest(Context context)");
 
         LocationRequest locationRequest = LocationRequest.create();
@@ -313,6 +313,7 @@ public class UiUtils {
             public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
                 // All location settings are satisfied. The client can initialize
                 // location requests here.
+                viewModel.setGpsEnabled(true);
                 Log.i(TAG, "All location settings are satisfied.");
             }
         });
@@ -333,10 +334,12 @@ public class UiUtils {
                                 REQUEST_CHECK_SETTINGS);
                     } catch (IntentSender.SendIntentException sendEx) {
                         // Ignore the error.
+                        viewModel.setGpsEnabled(false);
                     }
                 } else {
                     Log.i(TAG, "Location settings are inadequate," +
                             " and cannot be fixed here. Dialog not created.");
+                    viewModel.setGpsEnabled(false);
                 }
             }
         });

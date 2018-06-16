@@ -1,6 +1,7 @@
 package com.google.albertasights.ui;
 
 import android.annotation.TargetApi;
+import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.Intent;
@@ -14,6 +15,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -115,19 +117,21 @@ public class PointFragment extends Fragment {
                 Log.d(TAG, "onclick");
                 LocationManager locationManager =
                         (LocationManager)getActivity().getSystemService(Context.LOCATION_SERVICE);
-                if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)==false){
-                    Log.i(TAG, "gps disabled");
-                    UiUtils.showToast(getActivity(), "Please enable your GPS!");
-                    return;
-                }
                 if (ContextCompat.checkSelfPermission(getContext(),
                         android.Manifest.permission.ACCESS_FINE_LOCATION)
                         == PackageManager.PERMISSION_GRANTED) {
-                    String uri = String.format(Locale.ENGLISH, "http://maps.google.com/maps?daddr=%f,%f (%s)",
-                            point.getLat(), point.getLng(), "Going there");
-                    Intent mapIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
-                    mapIntent.setPackage("com.google.android.apps.maps");
-                    startActivity(mapIntent);
+                    //TODO check if GPS enable
+                    if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)==false){
+                        Log.i(TAG, "gps disabled");
+                        UiUtils.displayLocationSettingsRequest(getActivity(), viewModel);
+                    } else {
+                        String uri = String.format(Locale.ENGLISH, "http://maps.google.com/maps?daddr=%f,%f (%s)",
+                                point.getLat(), point.getLng(), "Going there");
+                        Intent mapIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
+                        mapIntent.setPackage("com.google.android.apps.maps");
+                        startActivity(mapIntent);
+                    }
+
                 } else {
                     ActivityCompat.requestPermissions(getActivity(),
                             new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
@@ -202,6 +206,46 @@ public class PointFragment extends Fragment {
             }
 
         }
+
+        //TODO observer to change the permittions to access the geo data
+        final Observer<Boolean> locationPermissionsObserver = new Observer<Boolean>() {
+            @Override
+            public void onChanged(@Nullable Boolean isPermittionsGranted) {
+                Log.d(TAG, "enter onChanged(@Nullable Boolean isPermittionsGranted)");
+                if (isPermittionsGranted==true) {
+
+                    //TODO check if GPS is enabled
+                    LocationManager locationManager = (LocationManager)getActivity().getSystemService(Context.LOCATION_SERVICE);
+                    if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)==false){
+                        Log.i(TAG, "gps unabled");
+                        UiUtils.displayLocationSettingsRequest(getActivity(), viewModel);
+                    } else {
+                        UiUtils.showToast(getActivity(), "Now you can get the directions!");
+                    }
+
+                } else {
+                    UiUtils.showToast(getActivity(), "Sorry, you can not get directions without this permission.");
+
+                }
+            }
+        };
+        viewModel.getLocationAccessPermitted().observe(this,
+                locationPermissionsObserver);
+
+        //TODO observer to change the permittions to access the geo data
+        final Observer<Boolean> gpsAccessObserver = new Observer<Boolean>() {
+            @Override
+            public void onChanged(@Nullable Boolean isGpsEnabled) {
+                Log.d(TAG, "enter onChanged(@Nullable Boolean isPermittionsGranted)");
+                if (isGpsEnabled==false) {
+                    UiUtils.showToast(getActivity(), "Sorry, some issues in turning GPS on, check your settings.");
+                } else {
+                    UiUtils.showToast(getActivity(), "Now you can get the directions!");
+                }
+            }
+        };
+        viewModel.getGpsEnabled().observe(this,
+                gpsAccessObserver);
         Log.d(TAG, "exit  onCreateView");
         return v;
     }

@@ -49,6 +49,7 @@ public class MapViewModel extends ViewModel {
     public final MutableLiveData<Integer> scrollY = new MutableLiveData<>();
     public final MutableLiveData<Boolean> dataReceived = new MutableLiveData<>();
     public final MutableLiveData<Boolean> locationAccessPermitted = new MutableLiveData<>();
+    public final MutableLiveData<Boolean> gpsEnabled = new MutableLiveData<>();
 
     public MapViewModel() {
         Log.d(TAG, "enter MapViewModel()");
@@ -274,11 +275,20 @@ public class MapViewModel extends ViewModel {
     }
 
     public LiveData<Boolean> getLocationAccessPermitted() {
+
         return locationAccessPermitted;
     }
 
     public void setLocationAccessPermitted (Boolean isPermitted) {
         locationAccessPermitted.setValue(isPermitted);
+    }
+
+    public LiveData<Boolean> getGpsEnabled() {
+        return gpsEnabled;
+    }
+
+    public void setGpsEnabled (Boolean isEnabled) {
+        gpsEnabled.setValue(isEnabled);
     }
 
 

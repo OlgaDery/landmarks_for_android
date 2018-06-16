@@ -261,28 +261,70 @@ public class MapFragment extends Fragment implements
             public void onChanged(@Nullable Boolean isPermittionsGranted) {
                 Log.d(TAG, "enter onChanged(@Nullable Boolean isPermittionsGranted)");
                 if (isPermittionsGranted==true) {
-                    if (mMap!=null) {
+
+                    //TODO check if GPS is enabled
+                    LocationManager locationManager = (LocationManager)getActivity().getSystemService(Context.LOCATION_SERVICE);
+                    if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)==false){
+                        Log.i(TAG, "gps unabled");
+                        UiUtils.displayLocationSettingsRequest(getActivity(), viewModel);
+                    } else {
+                        if (mMap!=null) {
                         try {
                             mMap.setMyLocationEnabled(true);
                             mMap.getUiSettings().setMyLocationButtonEnabled(true);
-                            //TODO check if GPS is enabled
-                            LocationManager locationManager = (LocationManager)getActivity().getSystemService(Context.LOCATION_SERVICE);
-                            if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)==false){
-                                Log.i(TAG, "gps unabled");
-                                UiUtils.displayLocationSettingsRequest(getActivity());
-                            }
+
                         } catch (SecurityException e) {
 
                         }
                     }
+                    }
+
+                } else {
+                    try {
+                        mMap.setMyLocationEnabled(false);
+                        mMap.getUiSettings().setMyLocationButtonEnabled(false);
+                    } catch (SecurityException e) {
+
+                    }
                 }
             }
-
         };
-        viewModel.getLocationAccessPermitted().observe(this, locationPermissionsObserver);
-        Log.d(TAG, "exit onCreate(Bundle savedInstanceState)");
+        viewModel.getLocationAccessPermitted().observe(this,
+                locationPermissionsObserver);
 
+        //TODO observer to change the permittions to access the geo data
+        final Observer<Boolean> gpsAccessObserver = new Observer<Boolean>() {
+            @Override
+            public void onChanged(@Nullable Boolean isGpsEnabled) {
+                Log.d(TAG, "enter onChanged(@Nullable Boolean isPermittionsGranted)");
+                if (isGpsEnabled==false) {
+                    try {
+                        if (mMap!=null) {
+                            mMap.setMyLocationEnabled(false);
+                            mMap.getUiSettings().setMyLocationButtonEnabled(false);
+                        }
+
+                    } catch (SecurityException e) {
+                        Log.e(TAG, "looks like permissions are not granted");
+                    }
+
+                } else {
+                    try {
+                        if (mMap!=null) {
+                            mMap.setMyLocationEnabled(true);
+                            mMap.getUiSettings().setMyLocationButtonEnabled(true);
+                        }
+                    } catch (SecurityException e) {
+                        Log.e(TAG, "looks like permissions are not granted");
+                    }
+                }
+            }
+        };
+        viewModel.getGpsEnabled().observe(this,
+                gpsAccessObserver);
+        Log.d(TAG, "exit onCreate(Bundle savedInstanceState)");
     }
+
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
@@ -521,30 +563,22 @@ public class MapFragment extends Fragment implements
         if (ContextCompat.checkSelfPermission(getContext(),
                 android.Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
-
             mLocationPermissionGranted = true;
-        } else {
-            ActivityCompat.requestPermissions(getActivity(),
-                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
-                    PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
-        }
 
-        if (mLocationPermissionGranted) {
-
-            mMap.setMyLocationEnabled(true);
-            mMap.getUiSettings().setMyLocationButtonEnabled(true);
             //TODO check if GPS is enabled
             LocationManager locationManager = (LocationManager)getActivity().getSystemService(Context.LOCATION_SERVICE);
             if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)==false){
                 Log.i(TAG, "gps unabled");
-                UiUtils.displayLocationSettingsRequest(getActivity());
+                UiUtils.displayLocationSettingsRequest(getActivity(), viewModel);
+            } else {
+                mMap.setMyLocationEnabled(true);
+                mMap.getUiSettings().setMyLocationButtonEnabled(true);
             }
 
         } else {
-            mMap.setMyLocationEnabled(false);
-            //   Log.d(TAG, "smth wrong with permissions");
-            //TODO show the toast that permiss not granted
-            mMap.getUiSettings().setMyLocationButtonEnabled(false);
+            ActivityCompat.requestPermissions(getActivity(),
+                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                    PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
         }
 
         //TODO observer to set the adaptor

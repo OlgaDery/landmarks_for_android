@@ -1,5 +1,6 @@
 package com.google.albertasights.ui;
 
+import android.app.Activity;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.BroadcastReceiver;
@@ -18,6 +19,7 @@ import com.google.albertasights.DBIntentService;
 import com.google.albertasights.R;
 import com.google.albertasights.RestIntentServer;
 import com.google.albertasights.models.Place;
+import com.google.android.gms.location.LocationSettingsStates;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
@@ -503,7 +505,8 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    UiUtils.showToast(this, "Now you can calculate routes from your location!");
+                    viewModel.setLocationAccessPermitted(true);
+                 //   UiUtils.showToast(this, "Now you can calculate routes from your location!");
 
                 } else {
                     UiUtils.showToast(this, "Next time we advice you accept this request, otherwise" +
@@ -533,6 +536,39 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
             temp.put("login", "ADD");
             UiUtils.manageFragments(getSupportFragmentManager(), true,
                     R.id.map_container, temp);
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+        Log.d("onActivityResult()", Integer.toString(resultCode));
+
+        final LocationSettingsStates states = LocationSettingsStates.fromIntent(data);
+        switch (requestCode)
+        {
+            case UiUtils.REQUEST_CHECK_SETTINGS:
+                switch (resultCode)
+                {
+                    case Activity.RESULT_OK:
+                    {
+                        // All required changes were successfully made
+                        Log.i(TAG, "request confirmed");
+                        viewModel.setGpsEnabled(true);
+                        break;
+                    }
+                    case Activity.RESULT_CANCELED:
+                    {
+                        Log.i(TAG, "request cancelled");
+                        viewModel.setGpsEnabled(false);
+                        break;
+                    }
+                    default:
+                    {
+                        break;
+                    }
+                }
+                break;
         }
     }
 }
