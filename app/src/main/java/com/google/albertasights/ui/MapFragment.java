@@ -69,7 +69,7 @@ public class MapFragment extends Fragment implements
 
     private OnPointDataExtendedListener mListener;
 
-    private static final String TAG = MapFragment.class.getSimpleName();
+    private static final String TAG = "MapFragment";
     //TODO variables to store map position and zoom if the activity is restarted
     private float zoomIfRestarted = 0.0f;
     private double longIfRestarted = 0.0f;
@@ -398,16 +398,19 @@ public class MapFragment extends Fragment implements
         showFilters = (ImageButton) v.findViewById(R.id.showFiltersOnly);
         showFilters.setImageResource(R.drawable.filter_new);
         showFilters.getBackground().setAlpha(0);
+        showFilters.setColorFilter(new PorterDuffColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN));
         showFilters.setTag(FILTERS);
 
         showLoved = (ImageButton) v.findViewById(R.id.showLoved);
         showLoved.setImageResource(R.drawable.like);
         showLoved.getBackground().setAlpha(0);
+        showLoved.setColorFilter(new PorterDuffColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN));
         showLoved.setTag(LOVED);
 
         showAll = (ImageButton) v.findViewById(R.id.showAll);
         showAll.setImageResource(R.drawable.show_sorted);
         showAll.getBackground().setAlpha(0);
+        showAll.setColorFilter(new PorterDuffColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN));
         showAll.setTag(ALL);
 
         clearAll = new ImageButton(getActivity());//(ImageButton) v.findViewById(R.id.clearMap);

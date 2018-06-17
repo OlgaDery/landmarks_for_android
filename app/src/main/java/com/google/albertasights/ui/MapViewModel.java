@@ -22,7 +22,7 @@ import java.util.Set;
  */
 
 public class MapViewModel extends ViewModel {
-    private static final String TAG = MapViewModel.class.getSimpleName();
+    private static final String TAG = "MapViewModel";
 
     public final MutableLiveData<Map<String, Boolean>> filtersToApply = new MutableLiveData<Map<String, Boolean>>();
     public final MutableLiveData<LinkedList<String>> pointsToShow = new MutableLiveData<LinkedList<String>>();

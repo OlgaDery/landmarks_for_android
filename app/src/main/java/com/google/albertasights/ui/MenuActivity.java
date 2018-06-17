@@ -16,7 +16,7 @@ import com.google.albertasights.models.User;
 
 public class MenuActivity extends AppCompatActivity {
 
-    private static final String TAG = MenuActivity.class.getSimpleName();
+    private static final String TAG = "MenuActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

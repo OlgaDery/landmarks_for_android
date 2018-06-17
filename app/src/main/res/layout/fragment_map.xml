@@ -18,33 +18,85 @@
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"/>
-
-        <ImageButton
+        <RelativeLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/showFiltersOnly"
+            android:layout_marginTop="2dp"
+            >
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/txt_1"
+                android:textSize="12dp"
+                android:layout_centerInParent="true"
+                android:layout_alignParentTop="true"
+                android:textColor="@color/mediumGrey"
+                android:text="FILTER"/>
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/txt_1"
+                android:layout_marginTop="-8dp"
+                android:layout_centerInParent="true"
+                android:id="@+id/showFiltersOnly"
+                />
+        </RelativeLayout>
 
-            />
+        <Space
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"/>
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginTop="2dp"
+            >
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/txt_2"
+                android:textSize="12dp"
+                android:layout_centerInParent="true"
+                android:layout_alignParentTop="true"
+                android:textColor="@color/mediumGrey"
+                android:text="FAVOURITE"/>
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_marginTop="-8dp"
+                android:layout_centerInParent="true"
+                android:layout_height="wrap_content"
+                android:id="@+id/showLoved"
+                android:layout_below="@+id/txt_2"
+                />
+        </RelativeLayout>
+
         <Space
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"/>
 
-        <ImageButton
+        <RelativeLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/showLoved"
-            />
-        <Space
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:layout_width="wrap_content"/>
-
-        <ImageButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/showAll"
-            />
+            android:layout_height="match_parent"
+            android:layout_marginTop="2dp"
+            >
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/txt_3"
+                android:textSize="12dp"
+                android:layout_alignParentTop="true"
+                android:textColor="@color/mediumGrey"
+                android:text="ALL POINTS"/>
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_centerInParent="true"
+                android:layout_height="wrap_content"
+                android:id="@+id/showAll"
+                android:layout_marginTop="-8dp"
+                android:layout_below="@+id/txt_3"
+                />
+        </RelativeLayout>
 
         <Space
             android:layout_weight="1"
@@ -56,7 +108,7 @@
 
     <fragment
         android:id="@+id/map"
-        android:layout_below="@id/wrapperTop"
+        android:layout_below="@+id/wrapperTop"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

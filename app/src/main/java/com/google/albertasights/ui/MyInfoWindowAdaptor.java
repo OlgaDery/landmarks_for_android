@@ -38,7 +38,7 @@ public class MyInfoWindowAdaptor implements GoogleMap.InfoWindowAdapter {
     private int screenWight;
     private int screenHight;
     int count = 0;
-    private static final String TAG = MyInfoWindowAdaptor.class.getSimpleName();
+    private static final String TAG = "MyInfoWindowAdaptor";
 
     public MyInfoWindowAdaptor (Context context1, Set<Place> places1, String orient, String device, int hight, int wight) {
         Log.d(TAG, "enter MyInfoWindowAdaptor (Context context1, Set<Place> places1)");

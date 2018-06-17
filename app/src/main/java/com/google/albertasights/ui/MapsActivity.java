@@ -32,7 +32,7 @@ import java.util.Map;
 public class MapsActivity extends MenuActivity implements MapFragment.OnPointDataExtendedListener,
         PointFragment.OnPointFragmentInteractionListener, NoUserFragment.OnButtonClickedListener, LoadingFragment.OnRetryConnectionListener {
 
-    private static final String TAG = MapsActivity.class.getSimpleName();
+    private static final String TAG = "MapsActivity";
     //TODO variables to store map position and zoom if the activity is restarted
     private final LatLng mDefaultCoord = new LatLng(51.0533674, -114.072997);
 

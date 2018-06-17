@@ -29,7 +29,7 @@ public class FilterListviewAdapter extends BaseAdapter {
   private LinkedList<String> content;
   private static List<String> selected;
   private static List <String> rating;
-  private static final String TAG = FilterListviewAdapter.class.getSimpleName();
+  private static final String TAG = "FilterListviewAdapter";
   private Context context;
   private String deviceType;
   private static String currentFilter;

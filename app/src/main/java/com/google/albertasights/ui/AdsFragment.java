@@ -30,6 +30,7 @@ public class AdsFragment extends Fragment {
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
+    private static final String TAG = "AdsFragment";
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -78,7 +79,7 @@ public class AdsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        Log.d(AdsFragment.class.getCanonicalName(), "enter onCreateView");
+        Log.d(TAG, "enter onCreateView");
         View v = inflater.inflate(R.layout.fragment_ads, container, false);
         ImageView banner = (ImageView) v.findViewById(R.id.banner);
         if (getActivity().getClass().getCanonicalName().contains("User")) {
@@ -148,7 +149,7 @@ public class AdsFragment extends Fragment {
         };
         v.setOnClickListener(listener);
 
-        Log.d(AdsFragment.class.getCanonicalName(), "enter onCreateView");
+        Log.d(TAG, "enter onCreateView");
         return v;
     }
 

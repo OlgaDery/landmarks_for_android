@@ -105,7 +105,7 @@ public class UiUtils {
     protected static final int REQUEST_CHECK_SETTINGS = 0x1;
 
 
-    private static final String TAG = UiUtils.class.getSimpleName();
+    private static final String TAG = "UiUtils";
   //  public static Set <String> selectedPointsIds = new HashSet<>();
 
   //  public static boolean showFilters = false;
