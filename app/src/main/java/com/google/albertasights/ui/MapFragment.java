@@ -212,13 +212,17 @@ public class MapFragment extends Fragment implements
 
         // Build the Play services client for use by the Fused Location Provider and the Places API.
         // Use the addApi() method to request the Google Places API and the Fused Location Provider.
-        mGoogleApiClient = new GoogleApiClient.Builder(getActivity())
-                .enableAutoManage(getActivity() /* FragmentActivity */,
-                        this /* OnConnectionFailedListener */)
-                .addConnectionCallbacks(this)
-                .addApi(LocationServices.API)
-                .build();
-        mGoogleApiClient.connect();
+        try{
+            mGoogleApiClient = new GoogleApiClient.Builder(getActivity())
+                    .enableAutoManage(getActivity() /* FragmentActivity */,
+                            this /* OnConnectionFailedListener */)
+                    .addConnectionCallbacks(this)
+                    .addApi(LocationServices.API)
+                    .build();
+            mGoogleApiClient.connect();
+        } catch (IllegalStateException e) {
+
+        }
 
         viewModel = ViewModelProviders.of(getActivity()).get(MapViewModel.class);
 
@@ -393,21 +397,21 @@ public class MapFragment extends Fragment implements
         mMapFragment.getMapAsync(this);
         orientation = UiUtils.getOrientation(getActivity());
         deviceType = UiUtils.findScreenSize(getActivity());
-        topWrapper = (LinearLayout) v.findViewById(R.id.wrapperTop);
+        topWrapper = v.findViewById(R.id.wrapperTop);
 
-        showFilters = (ImageButton) v.findViewById(R.id.showFiltersOnly);
+        showFilters = v.findViewById(R.id.showFiltersOnly);
         showFilters.setImageResource(R.drawable.filter_new);
         showFilters.getBackground().setAlpha(0);
         showFilters.setColorFilter(new PorterDuffColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN));
         showFilters.setTag(FILTERS);
 
-        showLoved = (ImageButton) v.findViewById(R.id.showLoved);
+        showLoved = v.findViewById(R.id.showLoved);
         showLoved.setImageResource(R.drawable.like);
         showLoved.getBackground().setAlpha(0);
         showLoved.setColorFilter(new PorterDuffColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN));
         showLoved.setTag(LOVED);
 
-        showAll = (ImageButton) v.findViewById(R.id.showAll);
+        showAll = v.findViewById(R.id.showAll);
         showAll.setImageResource(R.drawable.show_sorted);
         showAll.getBackground().setAlpha(0);
         showAll.setColorFilter(new PorterDuffColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN));
@@ -419,9 +423,9 @@ public class MapFragment extends Fragment implements
         clearAll.setTag("CLEAR_MAP");
 //        showFilterSection.setOnClickListener(showMoreButtonsListener);
         clearAll.setOnClickListener(filterButtonsListener);
-        sideBarListener = (LinearLayout) v.findViewById(R.id.sideBarListener);
+        sideBarListener = v.findViewById(R.id.sideBarListener);
         sideBarListener.setOnTouchListener(this);
-        pseudiMargin = (LinearLayout) v.findViewById(R.id.pseudoMargin);
+        pseudiMargin = v.findViewById(R.id.pseudoMargin);
 
         if (viewModel.getDevice().getValue().equals(UiUtils.TABLET)) {
             if (viewModel.getOrienr().getValue().equals(UiUtils.LANDSCAPE)) {
@@ -610,7 +614,7 @@ public class MapFragment extends Fragment implements
             //that means that the activity is created the first time or recreated
             //    Log.d(TAG, "select points to show: "+selectPointsToShow);
 
-            mClusterManager = new ClusterManager<MyClusterItem>(getContext(), mMap);
+            mClusterManager = new ClusterManager<>(getContext(), mMap);
             mClusterManager.setRenderer(new MyClassRenderer(getContext(), mMap, mClusterManager));
             mMap.setOnCameraIdleListener(mClusterManager);
             if (viewModel.getRecievedPoints().getValue()!=null) {

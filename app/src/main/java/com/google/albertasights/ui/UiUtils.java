@@ -334,11 +334,13 @@ public class UiUtils {
                                 REQUEST_CHECK_SETTINGS);
                     } catch (IntentSender.SendIntentException sendEx) {
                         // Ignore the error.
+                        UiUtils.showToast(activity, "Sorry, some issues in turning GPS on, check your settings.");
                         viewModel.setGpsEnabled(false);
                     }
                 } else {
                     Log.i(TAG, "Location settings are inadequate," +
                             " and cannot be fixed here. Dialog not created.");
+                    UiUtils.showToast(activity, "Sorry, some issues in turning GPS on, check your settings.");
                     viewModel.setGpsEnabled(false);
                 }
             }

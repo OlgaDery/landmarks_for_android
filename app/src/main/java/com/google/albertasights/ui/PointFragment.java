@@ -40,7 +40,9 @@ import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
 import com.squareup.picasso.Picasso;
 
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -61,7 +63,6 @@ public class PointFragment extends Fragment {
     private String orientation;
     private String deviceType;
     private MapViewModel viewModel;
-    private AdView mAdView;
 
     public PointFragment() {
         // Required empty public constructor
@@ -77,8 +78,7 @@ public class PointFragment extends Fragment {
      */
     // TODO: Rename and change types and number of parameters
     public static PointFragment newInstance(String param1, String param2) {
-        PointFragment fragment = new PointFragment();
-        return fragment;
+        return new PointFragment();
     }
 
     @Override
@@ -97,6 +97,8 @@ public class PointFragment extends Fragment {
         //getting the type and the orientation of device
 
         Log.d(TAG, "enter  onCreateView");
+        final Map<String, Boolean> directionsRequested = new HashMap<>();
+        directionsRequested.put("DIRECT", false);
         point = viewModel.getPointToSee().getValue();
         Log.i(TAG, "point in point activity: "+point.getName());
         View v = inflater.inflate(R.layout.activity_point, container, false);
@@ -104,17 +106,18 @@ public class PointFragment extends Fragment {
         v.setElevation(5.0f);
 
         MobileAds.initialize(getActivity(), "ca-app-pub-9273347200561604~7518194920");
-        mAdView = v.findViewById(R.id.adView);
+        AdView mAdView = v.findViewById(R.id.adView);
         AdRequest adRequest = new AdRequest.Builder().build();
         mAdView.loadAd(adRequest);
 //
-        ImageButton fab = (ImageButton) v.findViewById(R.id.fab);
-     //   fab.getBackground().setAlpha(0);
+        ImageButton fab = v.findViewById(R.id.fab);
+        //   fab.getBackground().setAlpha(0);
         fab.setImageResource(R.drawable.directions);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Log.d(TAG, "onclick");
+                directionsRequested.put("DIRECT", true);
                 LocationManager locationManager =
                         (LocationManager)getActivity().getSystemService(Context.LOCATION_SERVICE);
                 if (ContextCompat.checkSelfPermission(getContext(),
@@ -140,8 +143,8 @@ public class PointFragment extends Fragment {
             }
         });
 
-        final ImageButton likeButton = (ImageButton) v.findViewById(R.id.like);
-       // likeButton.getBackground().setAlpha(0);
+        final ImageButton likeButton = v.findViewById(R.id.like);
+        // likeButton.getBackground().setAlpha(0);
         if (viewModel.getLoved().getValue()!=null) {
             Log.i(TAG, "loved not null");
         }
@@ -153,7 +156,7 @@ public class PointFragment extends Fragment {
             public void onClick(View view) {
                 //TODO hook this method to the listener to make it visible for the activity
                 Log.d(TAG, "onclick");
-                String id =((ImageButton) view).getTag().toString();
+                String id =(view).getTag().toString();
                 if (!viewModel.getLoved().getValue().contains(point.getName())) {
                     onButtonPressed(UiUtils.ADD_POINT_TO_LOVED);
                     likeButton.setColorFilter(new PorterDuffColorFilter(Color.RED, PorterDuff.Mode.SRC_IN));
@@ -181,7 +184,7 @@ public class PointFragment extends Fragment {
 
         likeButton.setImageResource(R.drawable.like);
         likeButton.setTag(point.getName());
-        listview = (ListView) v.findViewById(R.id.listView1);
+        listview = v.findViewById(R.id.listView1);
 
         //TODO provide dimensions, position and device type via constructor
         PointListviewAdapter adapter = new PointListviewAdapter(point, getActivity(), viewModel.getOrienr().getValue(),
@@ -199,7 +202,7 @@ public class PointFragment extends Fragment {
         if (viewModel.getDevice().getValue().equals(UiUtils.TABLET)) {
             if (viewModel.getOrienr().getValue().equals(UiUtils.LANDSCAPE)) {
                 v.setPadding(viewModel.getHight().getValue()/30, viewModel.getHight().getValue()/30
-                , viewModel.getHight().getValue()/30, viewModel.getHight().getValue()/30);
+                        , viewModel.getHight().getValue()/30, viewModel.getHight().getValue()/30);
             } else {
                 v.setPadding(viewModel.getWight().getValue()/30, viewModel.getWight().getValue()/30,
                         viewModel.getWight().getValue()/30, viewModel.getWight().getValue()/30);
@@ -220,7 +223,14 @@ public class PointFragment extends Fragment {
                         Log.i(TAG, "gps unabled");
                         UiUtils.displayLocationSettingsRequest(getActivity(), viewModel);
                     } else {
-                        UiUtils.showToast(getActivity(), "Now you can get the directions!");
+                        if (directionsRequested.get("DIRECT")==true) {
+                            String uri = String.format(Locale.ENGLISH, "http://maps.google.com/maps?daddr=%f,%f (%s)",
+                                    point.getLat(), point.getLng(), point.getName());
+                            Intent mapIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
+                            mapIntent.setPackage("com.google.android.apps.maps");
+                            startActivity(mapIntent);
+                            directionsRequested.put("DIRECT", false);
+                        }
                     }
 
                 } else {
@@ -238,9 +248,16 @@ public class PointFragment extends Fragment {
             public void onChanged(@Nullable Boolean isGpsEnabled) {
                 Log.d(TAG, "enter onChanged(@Nullable Boolean isPermittionsGranted)");
                 if (isGpsEnabled==false) {
-                    UiUtils.showToast(getActivity(), "Sorry, some issues in turning GPS on, check your settings.");
+                   //
                 } else {
-                    UiUtils.showToast(getActivity(), "Now you can get the directions!");
+                    if (directionsRequested.get("DIRECT")==true) {
+                        String uri = String.format(Locale.ENGLISH, "http://maps.google.com/maps?daddr=%f,%f (%s)",
+                                point.getLat(), point.getLng(), point.getName());
+                        Intent mapIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
+                        mapIntent.setPackage("com.google.android.apps.maps");
+                        startActivity(mapIntent);
+                        directionsRequested.put("DIRECT", false);
+                    }
                 }
             }
         };

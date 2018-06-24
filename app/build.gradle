@@ -7,9 +7,8 @@ android {
         applicationId "com.twovsodds.albertasights"
         minSdkVersion 15
         targetSdkVersion 27
-        versionCode 4
+        versionCode 8
         versionName "1.1"
-        resValue "string", "google_maps_key", (project.findProperty("GOOGLE_MAPS_API_KEY") ?: "")
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
     }
@@ -44,6 +43,7 @@ configurations.all {
 
 dependencies {
     implementation 'com.android.support:support-v4:27.0.1'
+    implementation 'com.android.support:customtabs:27.0.1'
     androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })

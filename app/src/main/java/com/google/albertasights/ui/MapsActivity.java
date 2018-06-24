@@ -75,24 +75,24 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
 
                 if (newFilter!=null) {
                     Log.i(TAG, "filter: "+newFilter);
-                    LinkedList<String> sortedLost = new LinkedList<>();
+                    LinkedList<String> sortedList = new LinkedList<>();
                     //if string = FILTER, putting categories as arguments
                     if (newFilter.equals(MapFragment.ALL)) {
-                        sortedLost.addAll(viewModel.getNamesSortedByRating().getValue());
+                        sortedList.addAll(viewModel.getNamesSortedByRating().getValue());
                     } else if (newFilter.equals(MapFragment.FILTERS)) {
                         for (Place p : viewModel.getRecievedPoints().getValue()) {
-                            if (!sortedLost.contains(p.getCategory())) {
-                                sortedLost.add(p.getCategory());
+                            if (!sortedList.contains(p.getCategory())) {
+                                sortedList.add(p.getCategory());
                             }
                         }
                       //  viewModel.updateDataToFilter(tmp);
                     } else if (newFilter.equals(MapFragment.LOVED)) {
                        // viewModel.updateDataToFilter(viewModel.getLoved().getValue());
-                        sortedLost.addAll(viewModel.getLoved().getValue());
+                        sortedList.addAll(viewModel.getLoved().getValue());
                     }
-                    Collections.sort(sortedLost);
+                    Collections.sort(sortedList);
 
-                    viewModel.updateDataToFilter(sortedLost);
+                    viewModel.updateDataToFilter(sortedList);
                 }
 
             }
@@ -137,6 +137,7 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
         }
 
         if (viewModel.getRecievedPoints().getValue()==null) {
+            Log.i(TAG, "NO POINTS AT ALL!");
             Map<String, String> tempDt = new HashMap<>();
             tempDt.put("loader", "ADD");
             UiUtils.manageFragments(getSupportFragmentManager(), false,
@@ -153,7 +154,9 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
             UiUtils.manageFragments(getSupportFragmentManager(), false,
                     R.id.map_container, tempDt);
             // start the animation for the period of data loading
-       }
+       } else {
+            Log.i(TAG, " POINTS STORED!" + viewModel.getRecievedPoints().getValue().size());
+        }
 
         // Retrieve the content view that renders the map.
 
@@ -167,6 +170,7 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
                 try {
                     if (intent.getAction().equals(UiUtils.DATA_RECEIVED)) {
                         if (intent.getSerializableExtra(UiUtils.PLACES)!=null) {
+                            @SuppressWarnings("unchecked")
                             ArrayList<Place> placesLst = (ArrayList)intent.getSerializableExtra(UiUtils.PLACES);
                             //         Log.i(TAG, "places: "+ placesLst.size());
                             LinkedList <Place> temp = new LinkedList<>();
@@ -214,6 +218,7 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
                             LinkedList<String> lst = new LinkedList<>();
                             lst.addAll(viewModel.getLoved().getValue());
                             lst.add(intent.getStringExtra(UiUtils.LOVED));
+                            //TODO SORT BEFORE ADDING
                             viewModel.updateLoved(lst);
                             if (viewModel.getCurrentFilter().getValue()!=null) {
                                 if (viewModel.getCurrentFilter().getValue().equals(MapFragment.LOVED)) {
@@ -233,6 +238,7 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
                             LinkedList<String> lst = new LinkedList<>();
                             lst.addAll(viewModel.getLoved().getValue());
                             lst.remove(intent.getStringExtra(UiUtils.LOVED));
+                            //TODO SORT BEFORE ADDING
                             viewModel.updateLoved(lst);
                             Log.i(TAG, "currrent filter: " + viewModel.getCurrentFilter().getValue());
                             if (viewModel.getCurrentFilter().getValue().equals(MapFragment.LOVED)) {
@@ -555,6 +561,7 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
                         // All required changes were successfully made
                         Log.i(TAG, "request confirmed");
                         viewModel.setGpsEnabled(true);
+                        UiUtils.showToast(this, "Thanks, GPS is on!");
                         break;
                     }
                     case Activity.RESULT_CANCELED:

@@ -44,7 +44,6 @@
         android:layout_below="@+id/descript"
         android:background="@color/colorWhite"
         android:id="@+id/more"
-        android:onClick="getDirections"
         />
 
 

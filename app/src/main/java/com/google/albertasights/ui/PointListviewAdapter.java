@@ -61,7 +61,7 @@ public class PointListviewAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        convertView = LayoutInflater.from(context).inflate(R.layout.point_row, null);
+        convertView = LayoutInflater.from(context).inflate(R.layout.point_row, parent, false);
 
         //initializing the photo
         ImageView photo = (ImageView) convertView.findViewById(R.id.img);

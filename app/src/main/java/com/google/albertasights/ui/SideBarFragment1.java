@@ -9,6 +9,8 @@ import android.content.ClipDescription;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -59,12 +61,8 @@ import java.util.Map;
 public class SideBarFragment1 extends Fragment implements View.OnTouchListener {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
 
     // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
     private MapViewModel viewModel;
    // private LinearLayout ll;
     private View.OnClickListener checkBoxListener;
@@ -102,8 +100,6 @@ public class SideBarFragment1 extends Fragment implements View.OnTouchListener {
     public static SideBarFragment1 newInstance(String param1, String param2) {
         SideBarFragment1 fragment = new SideBarFragment1();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
         fragment.setArguments(args);
         return fragment;
     }
@@ -158,8 +154,8 @@ public class SideBarFragment1 extends Fragment implements View.OnTouchListener {
 
 //        ll = (LinearLayout)v.findViewById(R.id.test_layout);
 //        scrollView = (ScrollView) v.findViewById(R.id.scrollV);
-        listFilter1 =  (ListView) v.findViewById(R.id.filter_list);
-        header = (TextView)  v.findViewById(R.id.header);
+        listFilter1 =  v.findViewById(R.id.filter_list);
+        header = v.findViewById(R.id.header);
 
         listFilter1.getViewTreeObserver().addOnScrollChangedListener(new ViewTreeObserver.OnScrollChangedListener() {
             @Override
@@ -180,13 +176,15 @@ public class SideBarFragment1 extends Fragment implements View.OnTouchListener {
             }
         });
 
-        clearAll = (ImageButton)v.findViewById(R.id.clearAll);
-        hide = (ImageButton) v.findViewById(R.id.hideSidebar);
+        clearAll = v.findViewById(R.id.clearAll);
+        hide = v.findViewById(R.id.hideSidebar);
 
         hide.setImageResource(R.drawable.forward);
         hide.getBackground().setAlpha(0);
+        hide.setColorFilter(new PorterDuffColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN));
 
         clearAll.setImageResource(R.drawable.clear);
+        clearAll.setColorFilter(new PorterDuffColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN));
         clearAll.getBackground().setAlpha(0);
         View.OnClickListener hideSidebarListener = new View.OnClickListener() {
             public void onClick(View view) {
@@ -299,8 +297,6 @@ public class SideBarFragment1 extends Fragment implements View.OnTouchListener {
         // a return value of false means the detector didn't
         // recognize the event
         Log.i(TAG, "enter onTouch(View v, MotionEvent motionEvent)");
-        ViewGroup.LayoutParams mLayoutParams  = (ViewGroup.LayoutParams) v.getLayoutParams();
-        ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
 
         switch (motionEvent.getAction()) {
             case MotionEvent.ACTION_DOWN:

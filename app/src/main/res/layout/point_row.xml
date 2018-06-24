@@ -9,7 +9,7 @@
         android:layout_marginBottom="10dp"
         android:layout_centerHorizontal="true"
         android:id="@+id/img"
-        android:background="@color/mediumGrey"
+        android:background="@color/ltGrey"
         android:layout_alignParentTop="true"
         android:layout_width="match_parent"
         android:layout_height="300dp" />

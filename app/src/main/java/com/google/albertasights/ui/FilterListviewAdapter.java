@@ -3,6 +3,8 @@ package com.google.albertasights.ui;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.net.Uri;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
@@ -69,8 +71,9 @@ public class FilterListviewAdapter extends BaseAdapter {
 
         //LinearLayout layout = (LinearLayout) convertView.findViewById(R.id.layout);
         if (parent.getId()==R.id.rating_listView_id) {
-            convertView = LayoutInflater.from(context).inflate(R.layout.content_list_view1, null);
-            ImageView img = (ImageView) convertView.findViewById(R.id.img);
+            convertView = LayoutInflater.from(context).inflate(R.layout.content_list_view1, parent, false);
+            ImageView img = convertView.findViewById(R.id.img);
+            img.setColorFilter(new PorterDuffColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN));
             // layout.addView(img);
             if (content.get(position).equals("3")) {
                 img.setImageDrawable(context.getResources().getDrawable(R.drawable.great));
@@ -81,8 +84,8 @@ public class FilterListviewAdapter extends BaseAdapter {
             }
 
         } else {
-            convertView = LayoutInflater.from(context).inflate(R.layout.content_list_view, null);
-            TextView txt = (TextView) convertView.findViewById(R.id.filterTxt);
+            convertView = LayoutInflater.from(context).inflate(R.layout.content_list_view, parent, false);
+            TextView txt = convertView.findViewById(R.id.filterTxt);
             txt.setPadding(0, screenH/55, 0, 0);
             txt.setText(content.get(position));
             UiUtils.setTextSize(screenH, txt, UiUtils.getOrientation(context), false);
