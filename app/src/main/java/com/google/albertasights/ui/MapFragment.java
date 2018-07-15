@@ -669,8 +669,11 @@ public class MapFragment extends Fragment implements
 
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLatLng,
                     currentZoom));
-            //   updateLocationUI(filters);
-            showClusters();
+
+            if (viewModel.getPointsNamesToShow().getValue()!=null) {
+                showClusters();
+            }
+
             if (viewModel.getNamesToShowInScroll().getValue()!=null||viewModel.getRatings().getValue()!=null) {
                 if (viewModel.getNamesToShowInScroll().getValue().size()>0||viewModel.getRatings().getValue().size()>0){
                     UiUtils.modifyButtons(buttons, viewModel.getCurrentFilter().getValue(), true);
@@ -713,8 +716,6 @@ public class MapFragment extends Fragment implements
         northCoord=0.0f;
         eastCoord=0.0f;
         westCoord=0.0f;
-
-        Log.i(TAG, "to show: "+viewModel.getPointsNamesToShow().getValue().size());
 
         count = 0;
         for (Place p : viewModel.getRecievedPoints().getValue()) {

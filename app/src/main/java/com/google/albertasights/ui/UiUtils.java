@@ -94,6 +94,8 @@ public class UiUtils {
     public static final String SORTED_BY = "SORTED_BY";
     public static final String PORTRAIT = "PORTRAIT";
     public static final String LANDSCAPE = "LANDSCAPE";
+    public static final String DEVICE = "DEVICE";
+    public static final String ORIENT = "ORIENT";
     public static final String TABLET = "TABLET";
     public static final String PHONE = "PHONE";
     public static final String RESET_PASSWORD = "RESET_PASSWORD";
@@ -102,7 +104,14 @@ public class UiUtils {
     public static final String RECREATE_USER = "RECREATE_USER";
     public static final String BY_RATING = "BY_RATING";
     public static final String BY_NAME = "BY_NAME";
+    public static final String NAMES = "NAMES";
+    public static final String RECONFIGURED = "RECONFIGURED";
+    public static final String EMERG = "EMERG";
+    public static final String WIGHT = "WIGHT";
+    public static final String HIGHT = "HIGHT";
+    public static final String EMERGENT_TERMINATION = "EMERGENT_TERMINATION";
     protected static final int REQUEST_CHECK_SETTINGS = 0x1;
+
 
 
     private static final String TAG = "UiUtils";

@@ -295,6 +295,9 @@ public class MapViewModel extends ViewModel {
 
     @Override
     protected void onCleared() {
+        Log.d(TAG, "enter onCleared() ");
         super.onCleared();
+
+        Log.d(TAG, "exit onCleared() ");
     }
 }

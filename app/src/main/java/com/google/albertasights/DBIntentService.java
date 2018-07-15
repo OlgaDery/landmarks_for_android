@@ -47,8 +47,9 @@ public class DBIntentService extends IntentService {
             final String action = intent.getAction();
             Log.i(TAG, "action: "+ action);
             if (UiUtils.ADD_POINT_TO_LOVED.equals(action)) {
-                final String param1 = intent.getStringExtra(UiUtils.POINT_ID);
-                saveSelectedPoint(param1);
+                final String id = intent.getStringExtra(UiUtils.POINT_ID);
+                final String name = intent.getStringExtra(UiUtils.POINT);
+                saveSelectedPoint(id, name);
             } else if (UiUtils.CREATE_USER.equals(action)) {
                 final String email = intent.getStringExtra(UiUtils.EMAIL);
                 String password = "";
@@ -70,8 +71,9 @@ public class DBIntentService extends IntentService {
             } else if (UiUtils.CHECK_CONFIG.equals(action)) {
                 checkDB();
             } else if (UiUtils.REMOVE_POINT.equals(action)) {
-                final String param1 = intent.getStringExtra(UiUtils.POINT_ID);
-                removeFromSelectedPoint(param1);
+                final String id = intent.getStringExtra(UiUtils.POINT_ID);
+                final String name = intent.getStringExtra(UiUtils.POINT);
+                removeFromSelectedPoint(id, name);
             } else if (UiUtils.LOG_IN.equals(action)) {
                 logIn(intent.getStringExtra(UiUtils.EMAIL), intent.getStringExtra(UiUtils.PASSWORD));
             } else if (UiUtils.UPDATE_USER.equals(action)) {
@@ -91,7 +93,7 @@ public class DBIntentService extends IntentService {
      * Handle action Foo in the provided background thread with the provided
      * parameters.
      */
-    private void saveSelectedPoint(String param1) {
+    private void saveSelectedPoint(String id, String name) {
 
         Log.d(TAG, "exit saveSelectedPoint(String param1)");
         //TODO add point ID to the document "selected_points", if does not exist, create the new one
@@ -99,9 +101,9 @@ public class DBIntentService extends IntentService {
         Set<String> selectedPoints = new HashSet<>();
         if (prefs.contains(UiUtils.SELECTED_POINTS)) {
             selectedPoints.addAll(prefs.getStringSet(UiUtils.SELECTED_POINTS, new HashSet<String>()));
-            selectedPoints.add(param1);
+            selectedPoints.add(id);
         } else {
-            selectedPoints.add(param1);
+            selectedPoints.add(id);
         }
 
         SharedPreferences.Editor editor = UiUtils.getEditor(this).putStringSet
@@ -111,12 +113,12 @@ public class DBIntentService extends IntentService {
      //   Log.i(TAG, "selected size: "+size);
         Intent i = new Intent();
         i.setAction(UiUtils.POINT_ADDED);
-        i.putExtra(UiUtils.LOVED, param1);
+        i.putExtra(UiUtils.LOVED, name);
         getApplicationContext().sendBroadcast(i);
 
     }
 
-    private void removeFromSelectedPoint(String id) {
+    private void removeFromSelectedPoint(String id, String name) {
 
         Log.d(TAG, "enter removeFromSelectedPoint(String param1)");
         //TODO add point ID to the document "selected_points", if does not exist, create the new one
@@ -130,7 +132,7 @@ public class DBIntentService extends IntentService {
         editor.commit();
         Intent i = new Intent();
         i.setAction(UiUtils.POINT_REMOVED);
-        i.putExtra(UiUtils.LOVED, id);
+        i.putExtra(UiUtils.LOVED, name);
         getApplicationContext().sendBroadcast(i);
 
     }

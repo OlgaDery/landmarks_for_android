@@ -17,7 +17,7 @@ import android.util.Log;
 
 import com.google.albertasights.DBIntentService;
 import com.google.albertasights.R;
-import com.google.albertasights.RestIntentServer;
+import com.google.albertasights.RestIntentService;
 import com.google.albertasights.models.Place;
 import com.google.android.gms.location.LocationSettingsStates;
 import com.google.android.gms.maps.model.LatLng;
@@ -28,12 +28,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Set;
 
 public class MapsActivity extends MenuActivity implements MapFragment.OnPointDataExtendedListener,
         PointFragment.OnPointFragmentInteractionListener, NoUserFragment.OnButtonClickedListener, LoadingFragment.OnRetryConnectionListener {
 
     private static final String TAG = "MapsActivity";
-    //TODO variables to store map position and zoom if the activity is restarted
+    // variables to store map position and zoom if the activity is restarted
     private final LatLng mDefaultCoord = new LatLng(51.0533674, -114.072997);
 
     //has to be saved as the SavedInstance
@@ -45,17 +46,19 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        //TODO if the app was unexpectedly terminated, get data from SharedFreferences and add here the PointFragment, data
+       // TODO should be also extracted from sharedpreferences
 
         //there may be two options: the activity created the first time whan the app just started, or it is recreated. The behaviour
         //will be different.
         Log.d(TAG, "enter onCreate");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
-
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+
         viewModel = ViewModelProviders.of(this).get(MapViewModel.class);
 
-        //TODO saving the dimentions, orientation and device type
+        //saving the dimentions, orientation and device type
         viewModel.updateHights(UiUtils.getHightInches(getApplicationContext()));
         viewModel.updateWight(UiUtils.getWidthInches(getApplicationContext()));
         viewModel.updateDeviceType(UiUtils.findScreenSize(getApplicationContext()));
@@ -120,21 +123,9 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
                                 R.id.map_container, tmp);
                     }
                 }
-                //TODO declare the listener in sidebar to change the content
             }
         };
         viewModel.isSidebarReguested().observe(this, sideBarObserver);
-
-        if (viewModel.getLoved().getValue()==null) {
-            if (prefs.getStringSet(UiUtils.SELECTED_POINTS, new HashSet<String>())!=null) {
-                LinkedList <String> lst = new LinkedList<>();
-                lst.addAll(prefs.getStringSet(UiUtils.SELECTED_POINTS, new HashSet<String>()));
-                viewModel.updateLoved(lst);
-                //  Log.i(TAG, "selected points added: "+ viewModel.getLoved().getValue().size());
-            } else {
-                viewModel.updateLoved(new LinkedList<String>());
-            }
-        }
 
         if (viewModel.getRecievedPoints().getValue()==null) {
             Log.i(TAG, "NO POINTS AT ALL!");
@@ -142,7 +133,7 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
             tempDt.put("loader", "ADD");
             UiUtils.manageFragments(getSupportFragmentManager(), false,
                     R.id.map_container, tempDt);
-            Intent intent = new Intent(this, RestIntentServer.class);
+            Intent intent = new Intent(this, RestIntentService.class);
             intent.setAction(UiUtils.SUBMIT);
             intent.putExtra(UiUtils.URL, "https://albertasights.herokuapp.com/api/v1/points_by_district?district=Calgary");
             intent.putExtra(UiUtils.LNG, String.valueOf(mDefaultCoord.longitude));
@@ -174,29 +165,37 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
                             ArrayList<Place> placesLst = (ArrayList)intent.getSerializableExtra(UiUtils.PLACES);
                             //         Log.i(TAG, "places: "+ placesLst.size());
                             LinkedList <Place> temp = new LinkedList<>();
-
-                            LinkedList <String> rating1 = new LinkedList<>();
-                            LinkedList <String> rating2 = new LinkedList<>();
-                            LinkedList <String> rating3 = new LinkedList<>();
-                            LinkedList <String> all = new LinkedList<>();
                             temp.addAll(placesLst);
                             viewModel.updatePoints(temp);
-                            LinkedList <String> lst1 = new LinkedList<>();
-                            for (Place p : placesLst) {
-                                lst1.add(p.getName());
-                                if (p.getRating()==1||p.getRating()==2) {
-                                    rating1.add(p.getName());
-                                } else if (p.getRating()==3) {
-                                    rating2.add(p.getName());
-                                } else {
-                                    rating3.add(p.getName());
-                                }
+                            if (intent.getStringArrayListExtra(UiUtils.NAMES)!=null) {
+                                Log.i(TAG, " NAMES RECEIVED!");
+                                ArrayList<String> names = intent.getStringArrayListExtra(UiUtils.NAMES);
+                                LinkedList <String> lst1 = new LinkedList<>();
+                                lst1.addAll(names);
+                                viewModel.updatePointsToShow(lst1);
+                                viewModel.updateNamesSortedByRating(lst1);
+                            } else {
+                                Log.i(TAG, "NO NAMES!");
                             }
-                            all.addAll(rating3);
-                            all.addAll(rating2);
-                            all.addAll(rating1);
-                            viewModel.updatePointsToShow(lst1);
-                            viewModel.updateNamesSortedByRating(all);
+
+                            //TODO RECIEVING LOVED LOST FROM THE SERVICE
+                            if (intent.getStringArrayListExtra(UiUtils.LOVED)!=null) {
+                                Log.i(TAG, " LOVED RECEIVED!");
+                                ArrayList<String> names = intent.getStringArrayListExtra(UiUtils.LOVED);
+                                LinkedList <String> lst1 = new LinkedList<>();
+                                lst1.addAll(names);
+                                viewModel.updateLoved(lst1);
+                            } else {
+                                Log.i(TAG, "NO NAMES!");
+                            }
+
+//                            Set<String> toRemove = new HashSet<>();
+//                            for (String name: viewModel.getLoved().getValue()) {
+//                                if (!viewModel.getNamesSortedByRating().getValue().contains(name)) {
+//                                    viewModel.getLoved().getValue().remove(name);
+//                                    toRemove.add(name);
+//                                }
+//                            }
                             //TODO fragments
                             tempData.put("map", "REPLACE");
                             UiUtils.manageFragments(getSupportFragmentManager(), false,
@@ -219,6 +218,7 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
                             lst.addAll(viewModel.getLoved().getValue());
                             lst.add(intent.getStringExtra(UiUtils.LOVED));
                             //TODO SORT BEFORE ADDING
+                            Collections.sort(lst);
                             viewModel.updateLoved(lst);
                             if (viewModel.getCurrentFilter().getValue()!=null) {
                                 if (viewModel.getCurrentFilter().getValue().equals(MapFragment.LOVED)) {
@@ -239,6 +239,7 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
                             lst.addAll(viewModel.getLoved().getValue());
                             lst.remove(intent.getStringExtra(UiUtils.LOVED));
                             //TODO SORT BEFORE ADDING
+                            Collections.sort(lst);
                             viewModel.updateLoved(lst);
                             Log.i(TAG, "currrent filter: " + viewModel.getCurrentFilter().getValue());
                             if (viewModel.getCurrentFilter().getValue().equals(MapFragment.LOVED)) {
@@ -298,6 +299,8 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
                         tempData.put("login", "ADD");
                         UiUtils.manageFragments(getSupportFragmentManager(), false,
                                 R.id.map_container, tempData);
+                    } else if (intent.getAction().equals(UiUtils.EMERG)) {
+
                     }
                 } catch (Exception e) {
 
@@ -377,6 +380,7 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
         IntentFilter intentFilter =
                 new IntentFilter();
         intentFilter.addAction(UiUtils.DATA_RECEIVED);
+        intentFilter.addAction(UiUtils.EMERG);
         intentFilter.addAction(UiUtils.DB_CHECKED);
         intentFilter.addAction(UiUtils.POINT_ADDED);
         intentFilter.addAction(UiUtils.POINT_REMOVED);
@@ -414,6 +418,14 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
     protected void onStop() {
         Log.d(TAG, "enter onStop()");
         super.onStop();
+
+        //TODO save as a json string, restore if necessary
+        if (viewModel.getPointToSee().getValue()!=null) {
+            SharedPreferences.Editor editor = UiUtils.getEditor(this);
+            editor.putString("ENERG_POINT_NAME", viewModel.getPointToSee().getValue().getName());
+            editor.putString("ENERG_POINT_PHOTO", viewModel.getPointToSee().getValue().getPhotoLink());
+            editor.commit();
+        }
         Log.d(TAG, "exit onStop()");
     }
 
@@ -479,7 +491,7 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
     @Override
     public void onRetryConnection(String action) {
 
-        Intent intent = new Intent(this, RestIntentServer.class);
+        Intent intent = new Intent(this, RestIntentService.class);
         intent.setAction(UiUtils.SUBMIT);
         intent.putExtra(UiUtils.URL, "https://albertasights.herokuapp.com/api/v1/points_by_district?district=Calgary");
         intent.putExtra(UiUtils.LNG, String.valueOf(mDefaultCoord.longitude));
@@ -528,13 +540,15 @@ public class MapsActivity extends MenuActivity implements MapFragment.OnPointDat
         if (action.equals(UiUtils.ADD_POINT_TO_LOVED)) {
             Intent writeToFile = new Intent(getApplicationContext(), DBIntentService.class);
             writeToFile.setAction(UiUtils.ADD_POINT_TO_LOVED);
-            writeToFile.putExtra(UiUtils.POINT_ID, viewModel.getPointToSee().getValue().getName());
+            writeToFile.putExtra(UiUtils.POINT_ID, viewModel.getPointToSee().getValue().getId());
+            writeToFile.putExtra(UiUtils.POINT, viewModel.getPointToSee().getValue().getName());
             startService(writeToFile);
 
         } else if (action.equals(UiUtils.REMOVE_POINT)) {
             Intent remove = new Intent(getApplicationContext(), DBIntentService.class);
             remove.setAction(UiUtils.REMOVE_POINT);
-            remove.putExtra(UiUtils.POINT_ID, viewModel.getPointToSee().getValue().getName());
+            remove.putExtra(UiUtils.POINT_ID, viewModel.getPointToSee().getValue().getId());
+            remove.putExtra(UiUtils.POINT, viewModel.getPointToSee().getValue().getName());
             startService(remove);
 
         } else {
