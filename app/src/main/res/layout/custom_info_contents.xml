@@ -10,7 +10,7 @@
         android:layout_marginBottom="10dp"
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
-        android:id="@+id/img"
+        android:id="@+id/img_picture"
         android:layout_width="match_parent"
         android:layout_height="200dp" />
 
@@ -20,7 +20,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dp"
-        android:layout_below="@+id/img"
+        android:layout_below="@+id/img_picture"
         android:textColor="#ff000000"
         android:text="Point name:"
         android:layout_alignParentLeft="true"

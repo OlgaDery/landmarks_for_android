@@ -1,140 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ui.MapFragment">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:id="@+id/wrapperTop"
-        android:background="@color/colorWhite"
-        android:layout_alignParentTop="true"
-        >
-        <Space
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:layout_width="wrap_content"/>
-        <RelativeLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            >
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/txt_1"
-                android:textSize="12dp"
-                android:layout_centerInParent="true"
-                android:layout_alignParentTop="true"
-                android:textColor="@color/mediumGrey"
-                android:text="FILTER"/>
-            <ImageButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/txt_1"
-                android:layout_marginTop="-8dp"
-                android:layout_centerInParent="true"
-                android:id="@+id/showFiltersOnly"
-                />
-        </RelativeLayout>
-
-        <Space
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:layout_width="wrap_content"/>
-        <RelativeLayout
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_marginTop="2dp"
-            >
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/txt_2"
-                android:textSize="12dp"
-                android:layout_centerInParent="true"
-                android:layout_alignParentTop="true"
-                android:textColor="@color/mediumGrey"
-                android:text="FAVOURITE"/>
-            <ImageButton
-                android:layout_width="wrap_content"
-                android:layout_marginTop="-8dp"
-                android:layout_centerInParent="true"
-                android:layout_height="wrap_content"
-                android:id="@+id/showLoved"
-                android:layout_below="@+id/txt_2"
-                />
-        </RelativeLayout>
-
-        <Space
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:layout_width="wrap_content"/>
-
-        <RelativeLayout
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_marginTop="2dp"
-            >
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/txt_3"
-                android:textSize="12dp"
-                android:layout_alignParentTop="true"
-                android:textColor="@color/mediumGrey"
-                android:text="ALL POINTS"/>
-            <ImageButton
-                android:layout_width="wrap_content"
-                android:layout_centerInParent="true"
-                android:layout_height="wrap_content"
-                android:id="@+id/showAll"
-                android:layout_marginTop="-8dp"
-                android:layout_below="@+id/txt_3"
-                />
-        </RelativeLayout>
-
-        <Space
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:layout_width="wrap_content"/>
-
-    </LinearLayout>
-
-
     <fragment
         android:id="@+id/map"
-        android:layout_below="@+id/wrapperTop"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context="com.example.olga.naviguide.MapsActivity" />
 
-    <LinearLayout
-        android:layout_width="20dp"
-        android:layout_height="match_parent"
-        android:background="@color/colorWhite"
-        android:orientation="vertical"
-        android:layout_alignParentRight="true"
-        android:id="@+id/sideBarListener"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentBottom="true"
-        >
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="20dp"
-        android:layout_height="match_parent"
-        android:background="@color/colorWhite"
-        android:id="@+id/pseudoMargin"
-        android:orientation="vertical"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentBottom="true"
-        >
-    </LinearLayout>
-
-</RelativeLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

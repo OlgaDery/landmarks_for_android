@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/loader_fr">
+
+    <fragment
+        android:id="@+id/loader_fr"
+        android:name="com.google.albertasights.ui.LoadingFragment"
+        android:label="fragment_loader"
+        tools:layout="@layout/fragment_loading" >
+        <action
+            android:id="@+id/loader_fr_to_map_fr"
+            app:destination="@+id/map_fr"/>
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/map_fr"
+        android:name="com.google.albertasights.ui.MapFragment"
+        android:label="fragment_map"
+        tools:layout="@layout/fragment_map" >
+        <action
+            android:id="@+id/action_map_fr_to_point"
+            app:destination="@+id/point_fr" />
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/point_fr"
+        android:name="com.google.albertasights.ui.PointFragment"
+        android:label="fragment_point"
+        tools:layout="@layout/fragment_point" >
+
+    </fragment>
+
+</navigation>
