@@ -22,6 +22,7 @@ import com.google.albertasights.MapViewModel
 
 import com.google.albertasights.R
 import com.google.albertasights.models.Place
+import com.google.albertasights.returnDrawable
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.fragment_point.*
 
@@ -29,12 +30,14 @@ import java.util.Locale
 
 class PointFragment : Fragment() {
 
-    private var point: Place? = null
-    private val orientation: String? = null
-    private val deviceType: String? = null
-    private var viewModel: MapViewModel? = null
-    var directionsRequested = false
+    companion object {
+        private const val GOOGLE_MAPS_PACKAGE = "com.google.android.apps.maps"
+        private const val GOOGLE_MAPS_URL = "http://maps.google.com/maps?daddr=%f,%f (%s)"
+    }
 
+    private var point: Place? = null
+    private var viewModel: MapViewModel? = null
+    private var directionsRequested = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,17 +54,13 @@ class PointFragment : Fragment() {
                     UiUtils.displayLocationSettingsRequest(activity!!, viewModel!!)
                 } else {
                     if (directionsRequested) {
-                        val uri = String.format(Locale.ENGLISH, "http://maps.google.com/maps?daddr=%f,%f (%s)",
-                                point!!.lat, point!!.lng, point!!.name)
-                        val mapIntent = Intent(Intent.ACTION_VIEW, Uri.parse(uri))
-                        mapIntent.setPackage("com.google.android.apps.maps")
-                        startActivity(mapIntent)
+                        showNavigation()
                         directionsRequested = false
                     }
                 }
 
             } else {
-                UiUtils.showToast(activity!!, "Sorry, you can not get directions without this permission.")
+                UiUtils.showToast(activity!!, getString(R.string.can_not_show_directions))
             }
         }
         viewModel!!.locationAccessPermitted.observe(this,
@@ -73,12 +72,8 @@ class PointFragment : Fragment() {
                 //
             } else {
                 if (directionsRequested) {
-                    val uri = String.format(Locale.ENGLISH, "http://maps.google.com/maps?daddr=%f,%f (%s)",
-                            point!!.lat, point!!.lng, point!!.name)
-                    val mapIntent = Intent(Intent.ACTION_VIEW, Uri.parse(uri))
-                    mapIntent.setPackage("com.google.android.apps.maps")
-                    startActivity(mapIntent)
                     directionsRequested = false
+                    showNavigation()
                 }
             }
         }
@@ -95,22 +90,19 @@ class PointFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        fab.setImageResource(R.drawable.directions)
+        button_all.setImageResource(R.drawable.directions)
+        button_like.setImageResource(R.drawable.like)
 
-        fab.setOnClickListener {
+        button_all.setOnClickListener {
             directionsRequested = true
             val locationManager = activity!!.getSystemService(Context.LOCATION_SERVICE) as LocationManager
             if (ContextCompat.checkSelfPermission(context!!,
                             android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                 // check if GPS enable
-                if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) == false) {
+                if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
                     UiUtils.displayLocationSettingsRequest(activity!!, viewModel!!)
                 } else {
-                    val uri = String.format(Locale.ENGLISH, "http://maps.google.com/maps?daddr=%f,%f (%s)",
-                            point!!.lat, point!!.lng, "Going there")
-                    val mapIntent = Intent(Intent.ACTION_VIEW, Uri.parse(uri))
-                    mapIntent.setPackage("com.google.android.apps.maps")
-                    startActivity(mapIntent)
+                    showNavigation()
                 }
 
             } else {
@@ -120,75 +112,67 @@ class PointFragment : Fragment() {
             }
         }
 
-
         if (viewModel!!.loved.contains(point)) {
-            like.colorFilter = PorterDuffColorFilter(Color.RED, PorterDuff.Mode.SRC_IN)
+            button_like.drawable.colorFilter = PorterDuffColorFilter(Color.RED, PorterDuff.Mode.SRC_IN)
         }
 
-        like.setOnClickListener { view ->
+        button_like.setOnClickListener {
             // hook this method to the listener to make it visible for the activity
-            val id = view.tag.toString()
             if (!viewModel!!.loved.contains(point)) {
                 if (viewModel!!.updateLoved(point!!, false)) {
-                    like.colorFilter = PorterDuffColorFilter(Color.RED, PorterDuff.Mode.SRC_IN)
-                    UiUtils.showToast(context!!, "Added to loved")
+                    button_like.drawable.colorFilter = PorterDuffColorFilter(Color.RED, PorterDuff.Mode.SRC_IN)
+                    UiUtils.showToast(context!!, getString(R.string.added))
                 } else {
-                    UiUtils.showToast(context!!, "Error occured")
+                    UiUtils.showToast(context!!, getString(R.string.error))
                 }
 
             } else {
                 //call the method to remove from selected
                 if (viewModel!!.updateLoved(point!!, true)) {
-                    like.colorFilter = PorterDuffColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN)
-                    UiUtils.showToast(context!!, "Removed!")
+                    button_like.colorFilter = PorterDuffColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN)
+                    UiUtils.showToast(context!!, getString(R.string.removed))
                 } else {
-                    UiUtils.showToast(context!!, "Error occured!")
+                    UiUtils.showToast(context!!, getString(R.string.error))
                 }
             }
         }
 
-        like.setImageResource(R.drawable.like)
-        like.tag = point!!.name
-        name.text = point!!.name
-        descript.text = point!!.description ?: ""
-        link.text = point!!.weblink
+        name.text = getString(R.string.name).plus(" ").plus(point!!.name)
+        descript.text = getString(R.string.descr).plus(" ").plus(point!!.description ?: getString(R.string.no))
+        link_text_view.text = getString(R.string.link).plus(" ").plus(point!!.weblink)
 
         val listener = View.OnClickListener {
             try {
-                val myWebLink = Intent(Intent.ACTION_VIEW)
-                myWebLink.data = Uri.parse(point!!.weblink)
-                context!!.startActivity(myWebLink)
+                showWebPage()
             } catch (e: Exception) {
-                UiUtils.showToast(context!!, "Error, maybe no browsers have been installed")
+                UiUtils.showToast(context!!, getString(R.string.browser_not_found))
             }
         }
         if (point!!.weblink.length > 2) {
-            link.setTextColor(ContextCompat.getColor(context!!, R.color.colorAccent));
-            link.setOnClickListener(listener);
+            link_text_view.setTextColor(ContextCompat.getColor(context!!, R.color.colorAccent))
+            link_text_view.setOnClickListener(listener)
         }
 
         when {
-            point!!.rating in 4..5 -> ratingImg.setImageDrawable(context!!.resources.getDrawable(R.drawable.great))
-            point!!.rating == 3 -> ratingImg.setImageDrawable(context!!.resources.getDrawable(R.drawable.good))
-            else -> ratingImg.setImageDrawable(context!!.resources.getDrawable(R.drawable.not_bad))
+            point!!.rating in 4..5 -> ratingImg.setImageDrawable(context!!.resources.returnDrawable(R.drawable.great, activity!!.theme))
+            point!!.rating == 3 -> ratingImg.setImageDrawable(context!!.resources.returnDrawable(R.drawable.good, activity!!.theme))
+            else -> ratingImg.setImageDrawable(context!!.resources.returnDrawable(R.drawable.not_bad, activity!!.theme))
         }
 
         if (point!!.photolink.length > 5) {
-            if (orientation == UiUtils.PORTRAIT) {
-                // portrait screen, set the width of the parental element
+            if (viewModel!!.orientation == UiUtils.LANDSCAPE) {
+               //  portrait screen, set the width of the parental element
+                img_picture.layoutParams.height = viewModel!!.hight / 2 + 60
+                img_picture.layoutParams.width = viewModel!!.wight - 60
 
-            } else {
-                // landscape screen
             }
             Picasso.get()
                     .load(UiUtils.parseUrl(point!!.photolink))
-//                    .resize(img_picture.layoutParams.width, img_picture.layoutParams.height)
- //                   .centerCrop()
                     .into(img_picture)
 
         } else {
-          //  img_picture.layoutParams.height = screenH / 3 - 60
-          //  img_picture.layoutParams.width = screenW / 2 - 60
+            img_picture.layoutParams.height = viewModel!!.hight / 3 - 60
+            img_picture.layoutParams.width = viewModel!!.wight / 2 - 60
             Picasso.get()
                     .load(R.drawable.no_ph)
                     .into(img_picture)
@@ -196,13 +180,21 @@ class PointFragment : Fragment() {
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-
         super.onSaveInstanceState(outState)
         outState.putSerializable(UiUtils.POINT, point)
 
     }
 
-    companion object {
-        private val TAG = PointFragment::class.java.simpleName
+    private fun showNavigation () {
+        val uri = String.format(Locale.ENGLISH, GOOGLE_MAPS_URL, point!!.lat, point!!.lng, "Going there")
+        val mapIntent = Intent(Intent.ACTION_VIEW, Uri.parse(uri))
+        mapIntent.setPackage(GOOGLE_MAPS_PACKAGE)
+        startActivity(mapIntent)
+    }
+
+    private fun showWebPage() {
+        val myWebLink = Intent(Intent.ACTION_VIEW)
+        myWebLink.data = Uri.parse(point!!.weblink)
+        context!!.startActivity(myWebLink)
     }
 }

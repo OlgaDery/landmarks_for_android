@@ -6,11 +6,8 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.location.LocationManager
 import android.os.Bundle
-import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.core.content.ContextCompat
-
-import android.util.Log
 import android.view.*
 import com.google.albertasights.MapViewModel
 
@@ -49,8 +46,8 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleApiClient.ConnectionCa
     private val mDefaultCoord = LatLng(51.0533674, -114.072997)
     private val defaultZoom = 9.0f
     private var currentZoom = 0.0f
-    private var orientation: String? = null
-    private var deviceType: String? = null
+   // private var orientation: String? = null
+   // private var deviceType: String? = null
     private var count: Int = 0
     private var mClusterManager: ClusterManager<MyClusterItem>? = null
     private var adaptor: MyInfoWindowAdaptor? = null
@@ -89,47 +86,26 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleApiClient.ConnectionCa
                             mMap!!.isMyLocationEnabled = true
                             mMap!!.uiSettings.isMyLocationButtonEnabled = true
 
-                        } catch (e: SecurityException) {
-                            //TODO
-                        }
+                        } catch (e: SecurityException) { }
                     }
                 }
 
-            } else {
-                try {
-                    mMap!!.isMyLocationEnabled = false
-                    mMap!!.uiSettings.isMyLocationButtonEnabled = false
-                } catch (e: SecurityException) {
-
-                }
             }
         }
+
         viewModel!!.locationAccessPermitted.observe(this,
                 locationPermissionsObserver)
 
         // observer to change the permittions to access the geo data
         val gpsAccessObserver = Observer<Boolean> { isGpsEnabled ->
-            if (isGpsEnabled == false) {
-                try {
-                    if (mMap != null) {
-                        mMap!!.isMyLocationEnabled = false
-                        mMap!!.uiSettings.isMyLocationButtonEnabled = false
-                    }
-
-                } catch (e: SecurityException) {
-                    //TODO
-                    Log.e(TAG, getString(R.string.permissions_not_granted))
-                }
-
-            } else {
+            if (isGpsEnabled == true) {
                 try {
                     if (mMap != null) {
                         mMap!!.isMyLocationEnabled = true
                         mMap!!.uiSettings.isMyLocationButtonEnabled = true
                     }
                 } catch (e: SecurityException) {
-                    //TODO
-                    Log.e(TAG, getString(R.string.permissions_not_granted))
+                    UiUtils.showToast(activity!!, getString(R.string.permissions_not_granted))
                 }
             }
         }
@@ -169,23 +145,24 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleApiClient.ConnectionCa
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setHasOptionsMenu(true)
-        orientation = UiUtils.getOrientation(activity!!)
-        deviceType = UiUtils.findScreenSize(activity!!)
-
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
-        val itemForSelected = menu.add(0, 0, 0, "Liked")
-        val itemForAll = menu.add(0, 0, 0, "All")
+        val itemForSelected = menu.add(0, 0, 0, getString(R.string.selected))
+        val itemForAll = menu.add(0, 0, 0, getString(R.string.all))
         itemForSelected.icon = context!!.getDrawable(R.drawable.like)
+        itemForAll.icon = context!!.getDrawable(R.drawable.filter_new)
         itemForSelected.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
         itemForSelected.setOnMenuItemClickListener {
             viewModel!!.showLoved = true
+            if (viewModel!!.loved.isEmpty()) {
+                UiUtils.showToast(this.context!!, getString(R.string.empty_list))
+            }
             showClusters()
             true
         }
-        itemForAll.icon = context!!.getDrawable(R.drawable.show_sorted)
+
         itemForAll.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
         itemForAll.setOnMenuItemClickListener {
             if (viewModel!!.showLoved) {
@@ -207,12 +184,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleApiClient.ConnectionCa
             } else {
                 mMap!!.isMyLocationEnabled = true
                 mMap!!.uiSettings.isMyLocationButtonEnabled = true
-            }
-        } else {
-            if (viewModel!!.receivedPoints.value != null) {
-                //TODO check if activity gets recreated
-                ActivityCompat.requestPermissions(activity!!, arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION),
-                        PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION)
             }
         }
 
@@ -286,7 +257,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleApiClient.ConnectionCa
         if (viewModel!!.showLoved) {
             pointsToShow.addAll(viewModel!!.loved)
         } else {
-            pointsToShow.addAll(viewModel!!.receivedPoints.value!!.second)
+            pointsToShow.addAll(viewModel!!.receivedPoints.value!!.second!!)
         }
         for (p in pointsToShow) {
             if (southCoord == 0.0) {
@@ -347,7 +318,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleApiClient.ConnectionCa
 
     override fun onInfoWindowClick(marker: Marker) {
         //method to call when user clicks on InfoWindow of the marker
-        for (p in viewModel!!.receivedPoints.value!!.second) {
+        for (p in viewModel!!.receivedPoints.value!!.second!!) {
             if (p.name == marker.title) {
                 viewModel!!.setPoint(p)
                 break
@@ -391,9 +362,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleApiClient.ConnectionCa
     }
 
     companion object {
-
-        private val TAG = "MapFragment"
-        private val PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1
-        val KEY_CAMERA_POSITION = "camera_position"
+        const val KEY_CAMERA_POSITION = "camera_position"
     }
 }

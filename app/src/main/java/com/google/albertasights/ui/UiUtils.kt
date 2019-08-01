@@ -32,7 +32,7 @@ object UiUtils {
         }
     }
 
-    fun getWidthInches(context: Context): Int? {
+    fun getWidthInches(context: Context): Int {
         val wm = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
         val display = wm.defaultDisplay
         val metrics = DisplayMetrics()
@@ -40,7 +40,7 @@ object UiUtils {
         return metrics.widthPixels
     }
 
-    fun getHightInches(context: Context): Int? {
+    fun getHightInches(context: Context): Int {
         val wm = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
         val display = wm.defaultDisplay
         val metrics = DisplayMetrics()

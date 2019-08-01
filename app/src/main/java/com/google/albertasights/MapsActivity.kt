@@ -1,4 +1,4 @@
-package com.google.albertasights.ui
+package com.google.albertasights
 
 import android.app.Activity
 import androidx.lifecycle.Observer
@@ -10,10 +10,17 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.NavController
 import androidx.navigation.NavOptions
-import com.google.albertasights.MapViewModel
-import com.google.albertasights.R
+import android.os.Build
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import com.google.albertasights.ui.UiUtils
+
 
 class MapsActivity : AppCompatActivity() {
+
+    companion object {
+        const val PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1
+    }
 
     private var viewModel: MapViewModel? = null
     lateinit var navController: NavController
@@ -31,14 +38,13 @@ class MapsActivity : AppCompatActivity() {
         }
 
         viewModel = ViewModelProviders.of(this).get(MapViewModel::class.java)
-        viewModel!!.updateHights(UiUtils.getHightInches(applicationContext))
-        viewModel!!.updateWight(UiUtils.getWidthInches(applicationContext))
-        viewModel!!.updateDeviceType(UiUtils.findScreenSize(applicationContext))
-        viewModel!!.updateOrientation(UiUtils.getOrientation(applicationContext))
+        viewModel!!.hight = UiUtils.getHightInches(applicationContext)
+        viewModel!!.wight = UiUtils.getWidthInches(applicationContext)
+        viewModel!!.deviceType = UiUtils.findScreenSize(applicationContext)
+        viewModel!!.orientation = UiUtils.getOrientation(applicationContext)
 
         viewModel!!.receivedPoints.observe(this, Observer {
-            if (viewModel!!.observableID != it.first) {
-
+            if (viewModel!!.observableID != it.first && it.second != null) {
                 //Going to the map fragment. Preventing Loader fragment from being included to backstack
                 navController.navigate(R.id.loader_fr_to_map_fr, null, NavOptions.Builder()
                         .setPopUpTo(R.id.loader_fr, true).build())
@@ -54,22 +60,24 @@ class MapsActivity : AppCompatActivity() {
         })
 
         if (viewModel!!.receivedPoints.value == null) {
-            System.out.println("should make api call!!!!!!!!!!!!!!!!")
+            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION),
+                        PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION)
+
+            }
             viewModel!!.requestPoints()
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        android.os.Process.killProcess(android.os.Process.myPid())
-        //System.out.println("$$$$$$$$$$$$$$$$$$$$$44")
+    override fun finish() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            super.finishAndRemoveTask()
+        } else {
+            super.finish()
+        }
     }
-    /**
-     * Handles the result of the request for location permissions.
-     */
-    override fun onRequestPermissionsResult(requestCode: Int,
-                                            permissions: Array<String>,
-                                            grantResults: IntArray) {
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         when (requestCode) {
             1 -> {
                 // If request is cancelled, the result arrays are empty.

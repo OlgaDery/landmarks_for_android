@@ -6,26 +6,27 @@
     android:background="@color/colorWhite"
     tools:context=".ui.LoadingFragment">
 
-    <!-- TODO: Update blank fragment layout -->
     <Button
+        android:id="@+id/retry"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/retry"
         android:background="@color/colorPrimary"
         android:layout_marginTop="20dp"
         android:layout_gravity="center_horizontal"
-        android:text="retry connection"
+        android:text="@string/retry"
         android:textColor="@color/colorWhite"
-        android:padding="10dp"
-        />
+        android:padding="10dp" />
+
     <ImageView
+        android:id="@+id/img_picture"
         android:layout_width="300dp"
         android:layout_height="400dp"
-        android:id="@+id/img_picture"
         android:background="@color/colorWhite"
-        android:layout_gravity="center" />
+        android:layout_gravity="center"
+        tools:ignore="ContentDescription" />
 
     <ProgressBar
+        android:id="@+id/progress_bar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center" />

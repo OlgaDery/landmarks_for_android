@@ -31,14 +31,17 @@ class RetrofitCalls: GetDataServices {
         retrofitFactory().create(GetPointsApi::class.java)
     }
 
-    override fun getAllTerritoryPoints(district: String, callback: (List<Place>) -> Unit)  {
-       val call: Call<List<Place>> = retrofitService.getPointOfDistrict("Calgary")
+    override fun getAllTerritoryPoints(district: String, callback: (List<Place>?) -> Unit)  {
+       val call: Call<List<Place>?> = retrofitService.getPointOfDistrict("Calgary")
 
-        call.enqueue(object : Callback<List<Place>> {
-            override fun onFailure(call: Call<List<Place>>, t: Throwable) {
+        call.enqueue(object : Callback<List<Place>?> {
+            override fun onFailure(call: Call<List<Place>?>, t: Throwable) {
+                System.out.println("api call failes!!!!!")
+                callback(null)
             }
 
-            override fun onResponse(call: Call<List<Place>>, response: Response<List<Place>>) {
+            override fun onResponse(call: Call<List<Place>?>, response: Response<List<Place>?>) {
+                System.out.println("should make api call!!!!!!!!!!!!!!!!")
                 callback(response.body()!!)
             }
 
@@ -48,6 +51,6 @@ class RetrofitCalls: GetDataServices {
     interface GetPointsApi {
         @GET("points_by_district")
         @Headers("X-Api-Key: 3.14")
-        fun getPointOfDistrict(@Query("district") district: String): Call<List<Place>>
+        fun getPointOfDistrict(@Query("district") district: String): Call<List<Place>?>
     }
 }

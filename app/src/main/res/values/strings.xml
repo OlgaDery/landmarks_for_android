@@ -1,19 +1,32 @@
 <resources>
     <string name="app_name">AlbertaSights</string>
     <string name="title_activity_maps">Calgary sights</string>
-
     <string name="title_activity_menu">MenuActivity</string>
 
-    <!-- Strings related to login -->
     <string name="gps_on">Thanks, GPS is on!</string>
     <string name="no">no</string>
+    <string name="selected">Selected</string>
+    <string name="all">All</string>
     <string name="request_acceptance_recommended">Next time we advice you accept this request, otherwise the app would be unable to calculate routes from your location</string>
     <string name="prompt_last_name">Last name</string>
     <string name="title_activity_main">Calgary sights</string>
     <string name="error_turning_gps_on">Sorry, some issues in turning GPS on, check your settings.</string>
     <string name="google_maps_stopping">Google Map is about to stop.</string>
     <string name="error_connecting_google_maps">Error trying to connect to Google Map.</string>
-    <string name="permissions_not_granted">Looks like permissions are not granted.</string>
+    <string name="permissions_not_granted">Looks like location permissions are not granted to this app. You can change it in settings</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
+    <string name="can_not_show_directions">Sorry, you can not get directions without this permission.</string>
+    <string name="added">The poins successfully added to the list.</string>
+    <string name="removed">The poins successfully removed from the list.</string>
+    <string name="error">Error occurred!</string>
+    <string name="browser_not_found">Error, maybe no browsers have been installed</string>
+    <string name="retry">Retry connection</string>
+    <string name="photo">Photo of the place</string>
+    <string name="see_more">Click to see more data about the place</string>
+    <string name="empty_list">The list of selected points is empty.</string>
+
+    <string name="name">Name: </string>
+    <string name="descr">Description: </string>
+    <string name="link">Link: </string>
+
 </resources>

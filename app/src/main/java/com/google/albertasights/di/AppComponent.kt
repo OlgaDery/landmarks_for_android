@@ -1,7 +1,7 @@
 package com.google.albertasights.di
 
 import com.google.albertasights.MapViewModel
-import com.google.albertasights.ui.MapsActivity
+import com.google.albertasights.MapsActivity
 import dagger.Component
 import javax.inject.Singleton
 
