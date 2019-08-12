@@ -4,13 +4,12 @@ import com.google.albertasights.R
 import com.google.android.gms.maps.GoogleMap
 import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.ImageView
-import android.widget.LinearLayout
-import android.widget.RelativeLayout
 import android.widget.TextView
 import com.google.albertasights.MapViewModel
+import com.google.albertasights.utils.parseUrl
+import com.google.albertasights.utils.UiUtils
 
 import com.google.android.gms.maps.model.Marker
 import com.squareup.picasso.Callback
@@ -34,6 +33,7 @@ class MyInfoWindowAdaptor(private val viewModel: MapViewModel) : GoogleMap.InfoW
 
     @SuppressLint("InflateParams")
     override fun getInfoContents(marker: Marker): View? {
+
         val view: View
         val name: TextView?
         val descr: TextView?
@@ -51,38 +51,6 @@ class MyInfoWindowAdaptor(private val viewModel: MapViewModel) : GoogleMap.InfoW
 
             val button = view.findViewById<ImageButton>(R.id.more)
             button.setImageResource(R.drawable.more_horizontal)
-            if (viewModel.orientation == UiUtils.PORTRAIT) {
-
-                if (viewModel.deviceType == UiUtils.TABLET) {
-                    // big vertical
-                    val params = LinearLayout.LayoutParams(viewModel.hight/2, ViewGroup.LayoutParams.WRAP_CONTENT)
-                    view.layoutParams = params
-                    val photoParams = RelativeLayout.LayoutParams(viewModel.wight/2 - 20, viewModel.hight/3 - 50)
-                    photo!!.layoutParams = photoParams
-                } else {
-                    // small vertical
-                    val params = LinearLayout.LayoutParams(viewModel.wight/100 * 70, ViewGroup.LayoutParams.WRAP_CONTENT)
-                    view.layoutParams = params
-                    val photoParams = RelativeLayout.LayoutParams(viewModel.wight/ 100 * 70 - 20, viewModel.hight/3)
-                    photo!!.layoutParams = photoParams
-
-                }
-            } else {
-                if (viewModel.deviceType == UiUtils.TABLET) {
-                    // big horizontal
-                    val params = LinearLayout.LayoutParams(viewModel.wight/2, ViewGroup.LayoutParams.WRAP_CONTENT)
-                    view.layoutParams = params
-                    val photoParams = RelativeLayout.LayoutParams(viewModel.wight/4, viewModel.wight/4)
-                    photo!!.layoutParams = photoParams
-
-                } else {
-                    // small horizontal
-                    val params = LinearLayout.LayoutParams(viewModel.wight/100 * 60, ViewGroup.LayoutParams.WRAP_CONTENT)//screenHight/100*70
-                    view.layoutParams = params
-                    val photoParams = RelativeLayout.LayoutParams(viewModel.wight/4, viewModel.hight/2 - 20)
-                    photo!!.layoutParams = photoParams
-                }
-            }
 
             // setting up the content
             for (p in viewModel.receivedPoints.value!!.second!!) {
@@ -96,8 +64,8 @@ class MyInfoWindowAdaptor(private val viewModel: MapViewModel) : GoogleMap.InfoW
                     if (!viewModel.markerIds.contains(marker.title)) {
                         if (p.photolink.length > 5) {
                             Picasso.get()
-                                    .load(UiUtils.parseUrl(p.photolink))
-                                    .resize(photo.layoutParams.width, photo.layoutParams.height)
+                                    .load(p.photolink.parseUrl())
+                                    .resize(200, 200)
                                     .centerCrop()
                                     .into(photo)
 
@@ -112,14 +80,14 @@ class MyInfoWindowAdaptor(private val viewModel: MapViewModel) : GoogleMap.InfoW
                     } else {
                         count++
                         if (toLoad == null) {
-                            if (UiUtils.parseUrl(p.photolink) != NO_PHOTO) {
+                            if (p.photolink.parseUrl() != NO_PHOTO) {
                                 toLoad = URL
 
                             } else {
                                 toLoad = PHOTO
                             }
                         }
-                        loadPicasso(UiUtils.parseUrl(p.photolink), marker, photo)
+                        loadPicasso(p.photolink.parseUrl(), marker, photo)
                         break
                     }
                 }
@@ -136,7 +104,7 @@ class MyInfoWindowAdaptor(private val viewModel: MapViewModel) : GoogleMap.InfoW
         if (this.toLoad == URL) {
             Picasso.get()
                     .load(url)
-                    .resize(photo.layoutParams.width, photo.layoutParams.height)
+                    .resize(200, 200)
                     .centerCrop()
                     .into(photo, InfoWindowRefresher(marker))
 

@@ -13,6 +13,8 @@ import com.google.albertasights.MapViewModel
 
 import com.google.albertasights.R
 import com.google.albertasights.models.Place
+import com.google.albertasights.utils.showToast
+import com.google.albertasights.utils.UiUtils.displayLocationSettingsRequest
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.location.LocationServices
@@ -30,6 +32,10 @@ import com.google.maps.android.clustering.view.DefaultClusterRenderer
 class MapFragment : Fragment(), OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, GoogleMap.OnInfoWindowClickListener {
 
+    companion object {
+        const val KEY_CAMERA_POSITION = "camera_position"
+    }
+
     private var zoomIfRestarted = 0.0f
     private var longIfRestarted = 0.0
     private var latIfRestarted = 0.0
@@ -46,8 +52,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleApiClient.ConnectionCa
     private val mDefaultCoord = LatLng(51.0533674, -114.072997)
     private val defaultZoom = 9.0f
     private var currentZoom = 0.0f
-   // private var orientation: String? = null
-   // private var deviceType: String? = null
     private var count: Int = 0
     private var mClusterManager: ClusterManager<MyClusterItem>? = null
     private var adaptor: MyInfoWindowAdaptor? = null
@@ -79,7 +83,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleApiClient.ConnectionCa
                 // check if GPS is enabled
                 val locationManager = activity!!.getSystemService(Context.LOCATION_SERVICE) as LocationManager
                 if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-                    UiUtils.displayLocationSettingsRequest(activity!!, viewModel!!)
+                    displayLocationSettingsRequest(activity!!, viewModel!!)
                 } else {
                     if (mMap != null) {
                         try {
@@ -105,7 +109,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleApiClient.ConnectionCa
                         mMap!!.uiSettings.isMyLocationButtonEnabled = true
                     }
                 } catch (e: SecurityException) {
-                    UiUtils.showToast(activity!!, getString(R.string.permissions_not_granted))
+                    context!!.showToast(getString(R.string.permissions_not_granted))
                 }
             }
         }
@@ -127,11 +131,11 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleApiClient.ConnectionCa
     }
 
     override fun onConnectionSuspended(i: Int) {
-        UiUtils.showToast(activity!!, getString(R.string.google_maps_stopping))
+        context!!.showToast(getString(R.string.google_maps_stopping))
     }
 
     override fun onConnectionFailed(connectionResult: ConnectionResult) {
-        UiUtils.showToast(activity!!, getString(R.string.error_connecting_google_maps))
+        context!!.showToast(getString(R.string.error_connecting_google_maps))
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
@@ -157,7 +161,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleApiClient.ConnectionCa
         itemForSelected.setOnMenuItemClickListener {
             viewModel!!.showLoved = true
             if (viewModel!!.loved.isEmpty()) {
-                UiUtils.showToast(this.context!!, getString(R.string.empty_list))
+                context!!.showToast(getString(R.string.empty_list))
             }
             showClusters()
             true
@@ -180,7 +184,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleApiClient.ConnectionCa
             // check if GPS is enabled
             val locationManager = activity!!.getSystemService(Context.LOCATION_SERVICE) as LocationManager
             if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-                UiUtils.displayLocationSettingsRequest(activity!!, viewModel!!)
+                displayLocationSettingsRequest(activity!!, viewModel!!)
             } else {
                 mMap!!.isMyLocationEnabled = true
                 mMap!!.uiSettings.isMyLocationButtonEnabled = true
@@ -241,8 +245,38 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleApiClient.ConnectionCa
         }
     }
 
-    private fun showClusters() {
+    override fun onInfoWindowClick(marker: Marker) {
+        //method to call when user clicks on InfoWindow of the marker
+        for (p in viewModel!!.receivedPoints.value!!.second!!) {
+            if (p.name == marker.title) {
+                viewModel!!.setPoint(p)
+                break
+            }
+        }
+    }
 
+    override fun onStop() {
+        super.onStop()
+        created = false
+        latIfRestarted = mMap!!.cameraPosition.target.latitude
+        longIfRestarted = mMap!!.cameraPosition.target.longitude
+        zoomIfRestarted = mMap!!.cameraPosition.zoom
+
+        for (m in mClusterManager!!.markerCollection.markers) {
+            if (m.isInfoWindowShown) {
+                viewModel!!.selectedMarkerID = m.title
+                viewModel!!.saveInfoWindow = true
+                break
+            }
+        }
+        if (mGoogleApiClient != null && mGoogleApiClient!!.isConnected) {
+            mGoogleApiClient!!.stopAutoManage(activity!!)
+            mGoogleApiClient!!.disconnect()
+        }
+    }
+
+    //private helper methods
+    private fun showClusters() {
         val pointsToShow = mutableListOf<Place>()
         mClusterManager!!.clearItems()
         mClusterManager!!.clusterMarkerCollection.clear()
@@ -316,19 +350,11 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleApiClient.ConnectionCa
         created = false
     }
 
-    override fun onInfoWindowClick(marker: Marker) {
-        //method to call when user clicks on InfoWindow of the marker
-        for (p in viewModel!!.receivedPoints.value!!.second!!) {
-            if (p.name == marker.title) {
-                viewModel!!.setPoint(p)
-                break
-            }
-        }
-    }
-
     inner class MyClassRenderer(context: Context, map: GoogleMap, clusterManager: ClusterManager<MyClusterItem>) : DefaultClusterRenderer<MyClusterItem>(context, map, clusterManager) {
 
         override fun onClusterItemRendered(item: MyClusterItem?, marker: Marker?) {
+            //This method is required if we need to restore the open info window after configuration changed.
+            //marker.showInfoWindow() has to be called once the cluster with the marker got rendered.
             super.onClusterItemRendered(item, marker)
             if (viewModel!!.saveInfoWindow) {
 
@@ -339,29 +365,5 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleApiClient.ConnectionCa
                 }
             }
         }
-    }
-
-    override fun onStop() {
-        super.onStop()
-        created = false
-        latIfRestarted = mMap!!.cameraPosition.target.latitude
-        longIfRestarted = mMap!!.cameraPosition.target.longitude
-        zoomIfRestarted = mMap!!.cameraPosition.zoom
-
-        for (m in mClusterManager!!.markerCollection.markers) {
-            if (m.isInfoWindowShown) {
-                viewModel!!.selectedMarkerID = m.title
-                viewModel!!.saveInfoWindow = true
-                break
-            }
-        }
-        if (mGoogleApiClient != null && mGoogleApiClient!!.isConnected) {
-            mGoogleApiClient!!.stopAutoManage(activity!!)
-            mGoogleApiClient!!.disconnect()
-        }
-    }
-
-    companion object {
-        const val KEY_CAMERA_POSITION = "camera_position"
     }
 }

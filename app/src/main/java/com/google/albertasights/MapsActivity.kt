@@ -13,7 +13,7 @@ import androidx.navigation.NavOptions
 import android.os.Build
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.google.albertasights.ui.UiUtils
+import com.google.albertasights.utils.*
 
 
 class MapsActivity : AppCompatActivity() {
@@ -38,10 +38,10 @@ class MapsActivity : AppCompatActivity() {
         }
 
         viewModel = ViewModelProviders.of(this).get(MapViewModel::class.java)
-        viewModel!!.hight = UiUtils.getHightInches(applicationContext)
-        viewModel!!.wight = UiUtils.getWidthInches(applicationContext)
-        viewModel!!.deviceType = UiUtils.findScreenSize(applicationContext)
-        viewModel!!.orientation = UiUtils.getOrientation(applicationContext)
+        viewModel!!.hight = this.getHightInches()
+        viewModel!!.wight = this.getWidthInches()
+        viewModel!!.deviceType = this.findScreenSize()
+        viewModel!!.orientation = this.getOrientation()
 
         viewModel!!.receivedPoints.observe(this, Observer {
             if (viewModel!!.observableID != it.first && it.second != null) {
@@ -85,7 +85,7 @@ class MapsActivity : AppCompatActivity() {
                     viewModel!!.setLocationAccessPermitted(true)
 
                 } else {
-                    UiUtils.showToast(this, getString(R.string.request_acceptance_recommended))
+                    this.showToast(getString(R.string.request_acceptance_recommended))
                 }
             }
         }
@@ -98,7 +98,7 @@ class MapsActivity : AppCompatActivity() {
                 Activity.RESULT_OK -> {
                     // All required changes were successfully made
                     viewModel!!.setGpsEnabled(true)
-                    UiUtils.showToast(this, getString(R.string.gps_on))
+                    this.showToast(getString(R.string.gps_on))
                 }
                 Activity.RESULT_CANCELED -> {
                     viewModel!!.setGpsEnabled(false)

@@ -1,7 +1,5 @@
 package com.google.albertasights
 
-
-import android.annotation.TargetApi
 import android.app.Application
 import android.os.Build
 import androidx.lifecycle.*
@@ -11,13 +9,48 @@ import com.google.albertasights.di.DaggerAppComponent
 import com.google.albertasights.models.Place
 import com.google.albertasights.services.Preferences
 import com.google.albertasights.services.RetrofitCalls
-import com.google.albertasights.ui.UiUtils
+import com.google.albertasights.utils.UiUtils
 import javax.inject.Inject
 
 
 class MapViewModel(application: Application) : AndroidViewModel(application) {
+
     companion object {
         private const val SELECTED = "selected"
+
+        //testable static methods
+        fun generateID (place: Place): String {
+            return place.id.plus("_").plus(place.name)
+        }
+
+        fun updateLovedLost(place: Place, remove: Boolean, lovedList: MutableList<Place>, selectedIds: MutableSet<String>): Boolean {
+            if (remove) {
+                if (Build.VERSION.SDK_INT >= 24) {
+                    lovedList.removeIf{ it == place }
+                    selectedIds.removeIf{it == (generateID(place))}
+                } else {
+                    val iteratorForPoints = lovedList.iterator()
+                    while (iteratorForPoints.hasNext()) {
+                        if (place ==(iteratorForPoints.next())) {
+                            iteratorForPoints.remove()
+                        }
+                    }
+                    val iteratorForKeys = selectedIds.iterator()
+                    while (iteratorForKeys.hasNext()) {
+                        if (generateID(place) ==(iteratorForKeys.next())) {
+                            iteratorForKeys.remove()
+                        }
+                    }
+                }
+                 return true//pointRemoved
+            } else {
+                lovedList.add(place)
+                selectedIds.add(generateID(place))
+                return false
+            }
+        }
+
+
     }
 
     private var component: AppComponent = DaggerAppComponent.builder()
@@ -52,10 +85,6 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     val locationAccessPermitted = MutableLiveData<Boolean>()
     val gpsEnabled = MutableLiveData<Boolean>()
 
-    fun generateID (place: Place): String {
-        return place.id.plus("_").plus(place.name)
-    }
-
     fun setLoved() {
         val ids: MutableSet<String>? = preferences.getSelectedPlaces(SELECTED)
         if (!ids.isNullOrEmpty()) {
@@ -65,34 +94,9 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         }.toMutableList())
     }
 
-    @TargetApi(24)
     fun updateLoved(place: Place, remove: Boolean): Boolean {
-        if (remove) {
-            if (Build.VERSION.SDK_INT >= 24) {
-                loved.removeIf{ it == place }
-                selected.removeIf{it == (generateID(place))}
-            } else {
-                val iteratorForPoints = loved.iterator()
-                while (iteratorForPoints.hasNext()) {
-                    if (place ==(iteratorForPoints.next())) {
-                        iteratorForPoints.remove()
-                    }
-                }
-                val iteratorForKeys = selected.iterator()
-                while (iteratorForKeys.hasNext()) {
-                    if (generateID(place) ==(iteratorForKeys.next())) {
-                        iteratorForKeys.remove()
-                    }
-                }
-            }
-
-            pointRemoved = true
-        } else {
-            loved.add(place)
-            selected.add(generateID(place))
-        }
+        pointRemoved = updateLovedLost(place, remove, loved, selected)
         return preferences.setSelectedPoints(SELECTED, selected)
-
     }
 
     fun setPoint(newPoint: Place) {
@@ -105,14 +109,13 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun requestPoints() {
-        retrofitService.getAllTerritoryPoints("Calgary") {
+        retrofitService.getAllTerritoryPoints {
             if (it != null) {
                 val pair = Pair(observableID+1, it.toMutableList())
                 receivedPoints.value = pair
                 setLoved()
             } else {
                 receivedPoints.value = Pair(observableID+1, null)
-
             }
 
         }

@@ -1,6 +1,8 @@
 package com.google.albertasights.services
 
+import com.google.albertasights.ConfigValues
 import com.google.albertasights.models.Place
+import com.google.albertasights.utils.parseJsonArray
 import com.google.gson.GsonBuilder
 import okhttp3.OkHttpClient
 import retrofit2.Call
@@ -8,14 +10,14 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.GET
-import retrofit2.http.Header
-import retrofit2.http.Headers
-import retrofit2.http.Query
+import retrofit2.http.*
+import org.json.JSONArray
+import org.json.JSONObject
 
-class RetrofitCalls: GetDataServices {
 
-    protected fun retrofitFactory(url: String = "https://albertasights.herokuapp.com/api/v1/"): Retrofit {
+class RetrofitCalls: GetDataFromServer {
+
+    private fun retrofitFactory(url: String = ConfigValues.BASE_URL): Retrofit {
         val gson = GsonBuilder()
         gson.setLenient()
 
@@ -31,26 +33,49 @@ class RetrofitCalls: GetDataServices {
         retrofitFactory().create(GetPointsApi::class.java)
     }
 
-    override fun getAllTerritoryPoints(district: String, callback: (List<Place>?) -> Unit)  {
-       val call: Call<List<Place>?> = retrofitService.getPointOfDistrict("Calgary")
+    override fun getAllTerritoryPoints(callback: (List<Place>?) -> Unit)  {
+        if (!ConfigValues.isJsonObject) {
+            val call: Call<List<Any>?> = retrofitService.getPointOfDistrict(ConfigValues.setHeaders(), ConfigValues.setParams())
 
-        call.enqueue(object : Callback<List<Place>?> {
-            override fun onFailure(call: Call<List<Place>?>, t: Throwable) {
-                System.out.println("api call failes!!!!!")
-                callback(null)
-            }
+            call.enqueue(object : Callback<List<Any>?> {
+                override fun onFailure(call: Call<List<Any>?>, t: Throwable) {
+                    callback(null)
+                }
 
-            override fun onResponse(call: Call<List<Place>?>, response: Response<List<Place>?>) {
-                System.out.println("should make api call!!!!!!!!!!!!!!!!")
-                callback(response.body()!!)
-            }
+                override fun onResponse(call: Call<List<Any>?>, response: Response<List<Any>?>) {
+                    val mJsonArray = JSONArray(response.body())
+                    val listToReturn = mJsonArray.parseJsonArray()
+                    callback(listToReturn)
+                }
 
-        })
+            })
+        } else {
+            //Call the method returning
+            val call: Call<String?> = retrofitService.getPointOfDistrictFromJsonObject(ConfigValues.setHeaders(), ConfigValues.setParams())
+
+            call.enqueue(object : Callback<String?> {
+                override fun onFailure(call: Call<String?>, t: Throwable) {
+                    callback(null)
+                }
+
+                override fun onResponse(call: Call<String?>, response: Response<String?>) {
+                    val mJsonObject = JSONObject(response.body())
+                    val mJsonArray = mJsonObject.getJSONArray(ConfigValues.parameterNameOfJsonObject)
+                    val listToReturn = mJsonArray.parseJsonArray()
+                    callback(listToReturn)
+                }
+
+            })
+        }
     }
 
     interface GetPointsApi {
-        @GET("points_by_district")
-        @Headers("X-Api-Key: 3.14")
-        fun getPointOfDistrict(@Query("district") district: String): Call<List<Place>?>
+        @GET(ConfigValues.PATH)
+        fun getPointOfDistrict(@HeaderMap headers: MutableMap<String, String>,
+                               @QueryMap params: MutableMap<String, String>): Call<List<Any>?>
+
+        @GET(ConfigValues.PATH)
+        fun getPointOfDistrictFromJsonObject(@HeaderMap headers: MutableMap<String, String>,
+                               @QueryMap params: MutableMap<String, String>): Call<String?>
     }
 }
