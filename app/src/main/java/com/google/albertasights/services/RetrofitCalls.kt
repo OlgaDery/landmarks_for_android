@@ -70,11 +70,11 @@ class RetrofitCalls: GetDataFromServer {
     }
 
     interface GetPointsApi {
-        @GET(ConfigValues.PATH)
+        @GET(ConfigValues.RELATIVE_URL)
         fun getPointOfDistrict(@HeaderMap headers: MutableMap<String, String>,
                                @QueryMap params: MutableMap<String, String>): Call<List<Any>?>
 
-        @GET(ConfigValues.PATH)
+        @GET(ConfigValues.RELATIVE_URL)
         fun getPointOfDistrictFromJsonObject(@HeaderMap headers: MutableMap<String, String>,
                                @QueryMap params: MutableMap<String, String>): Call<String?>
     }

@@ -91,50 +91,50 @@ fun JSONArray.parseJsonArray (): MutableList<Place> {
 
         //If the fields above are empty or do not exist, we are skipping to instantiate the Place object, as it can
         //not be properly visualize on the map
-        if (!ConfigValues.fields_to_remane.containsKey(ConfigValues.NAME) || ConfigValues.fields_to_remane[ConfigValues.NAME].isNullOrBlank()) {
+        if (!ConfigValues.fieldsToRename.containsKey(ConfigValues.NAME) || ConfigValues.fieldsToRename[ConfigValues.NAME].isNullOrBlank()) {
             continue
         } else {
-            name = mJsonObject.getString(ConfigValues.fields_to_remane[ConfigValues.NAME])
+            name = mJsonObject.getString(ConfigValues.fieldsToRename[ConfigValues.NAME])
         }
 
-        if (!ConfigValues.fields_to_remane.containsKey(ConfigValues.LAT) || ConfigValues.fields_to_remane[ConfigValues.LAT].isNullOrBlank()) {
+        if (!ConfigValues.fieldsToRename.containsKey(ConfigValues.LAT) || ConfigValues.fieldsToRename[ConfigValues.LAT].isNullOrBlank()) {
             continue
         } else {
-            lat = mJsonObject.getString(ConfigValues.fields_to_remane[ConfigValues.LAT]).toDouble()
+            lat = mJsonObject.getString(ConfigValues.fieldsToRename[ConfigValues.LAT]).toDouble()
         }
 
-        if (!ConfigValues.fields_to_remane.containsKey(ConfigValues.LNG) || ConfigValues.fields_to_remane[ConfigValues.LNG].isNullOrBlank()) {
+        if (!ConfigValues.fieldsToRename.containsKey(ConfigValues.LNG) || ConfigValues.fieldsToRename[ConfigValues.LNG].isNullOrBlank()) {
             continue
         } else {
-            lng = mJsonObject.getString(ConfigValues.fields_to_remane[ConfigValues.LNG]).toDouble()
+            lng = mJsonObject.getString(ConfigValues.fieldsToRename[ConfigValues.LNG]).toDouble()
         }
 
-        if (!ConfigValues.fields_to_remane.containsKey(ConfigValues.ID) || ConfigValues.fields_to_remane[ConfigValues.ID].isNullOrBlank()) {
+        if (!ConfigValues.fieldsToRename.containsKey(ConfigValues.ID) || ConfigValues.fieldsToRename[ConfigValues.ID].isNullOrBlank()) {
             id = lat.toString().plus(lng.toString())
         } else {
-            id = mJsonObject.getString(ConfigValues.fields_to_remane[ConfigValues.LNG])
+            id = mJsonObject.getString(ConfigValues.fieldsToRename[ConfigValues.LNG])
         }
 
-        if (ConfigValues.fields_to_remane.containsKey(ConfigValues.DESCRIPT) && !ConfigValues.fields_to_remane[ConfigValues.DESCRIPT].isNullOrBlank()) {
-            descr = mJsonObject.getString(ConfigValues.fields_to_remane[ConfigValues.DESCRIPT])
+        if (ConfigValues.fieldsToRename.containsKey(ConfigValues.DESCRIPT) && !ConfigValues.fieldsToRename[ConfigValues.DESCRIPT].isNullOrBlank()) {
+            descr = mJsonObject.getString(ConfigValues.fieldsToRename[ConfigValues.DESCRIPT])
         }
 
-        category = if (!ConfigValues.fields_to_remane.containsKey(ConfigValues.CATEGORY) || ConfigValues.fields_to_remane[ConfigValues.CATEGORY].isNullOrBlank()) {
+        category = if (!ConfigValues.fieldsToRename.containsKey(ConfigValues.CATEGORY) || ConfigValues.fieldsToRename[ConfigValues.CATEGORY].isNullOrBlank()) {
             ""
         } else {
-            mJsonObject.getString(ConfigValues.fields_to_remane[ConfigValues.CATEGORY])
+            mJsonObject.getString(ConfigValues.fieldsToRename[ConfigValues.CATEGORY])
         }
 
-        link = if (!ConfigValues.fields_to_remane.containsKey(ConfigValues.PHOTOLINK) || ConfigValues.fields_to_remane[ConfigValues.PHOTOLINK].isNullOrBlank()) {
+        link = if (!ConfigValues.fieldsToRename.containsKey(ConfigValues.PHOTOLINK) || ConfigValues.fieldsToRename[ConfigValues.PHOTOLINK].isNullOrBlank()) {
             ""
         } else {
-            mJsonObject.getString(ConfigValues.fields_to_remane[ConfigValues.PHOTOLINK])
+            mJsonObject.getString(ConfigValues.fieldsToRename[ConfigValues.PHOTOLINK])
         }
 
-        webLink = if (!ConfigValues.fields_to_remane.containsKey(ConfigValues.WEBLINK) || ConfigValues.fields_to_remane[ConfigValues.WEBLINK].isNullOrBlank()) {
+        webLink = if (!ConfigValues.fieldsToRename.containsKey(ConfigValues.WEBLINK) || ConfigValues.fieldsToRename[ConfigValues.WEBLINK].isNullOrBlank()) {
             ""
         } else {
-            mJsonObject.getString(ConfigValues.fields_to_remane[ConfigValues.WEBLINK])
+            mJsonObject.getString(ConfigValues.fieldsToRename[ConfigValues.WEBLINK])
         }
 
         listToReturn.add(Place(id, name, descr, link, lng, lat, webLink, category))

@@ -2,14 +2,13 @@ package com.google.albertasights
 
 object ConfigValues {
 
-    //https://albertasights.herokuapp.com/api/v1/points_by_district?district=Calgary
-
-    const val DISTRICT = "Calgary"
+    //parameters for the API call
     const val BASE_URL = "https://albertasights.herokuapp.com/api/v1/"
-    const val PATH = "points_by_district"
+    const val RELATIVE_URL = "points_by_district"
     val headers = mutableMapOf<String, String>()
     val apiCallParams = mutableMapOf<String, String>()
-    //val placeObjectFieldsNames = arrayOf("id", "name", "lat", "lng", "description", "category", "photolink", "weblink")
+
+    //parameters to parse JSON
     const val ID = "id"
     const val NAME = "name"
     const val LAT = "lat"
@@ -21,12 +20,12 @@ object ConfigValues {
 
     //please specify if you are passing JSON array or object
     var isJsonObject = false
-    var parameterNameOfJsonObject = "businesses"
+    var parameterNameOfJsonObject = ""
 
     //This map is to map the fields of the objects is being received from the server to the fields of the "Place" class of the app.
     //Keys are the names of the app fields, values are the names of the object coming from the server. So, replace hardcoded string values
     //with your own, leave it as empty string if there is no correspondent field
-    val fields_to_remane = mutableMapOf<String, String>()
+    val fieldsToRename = mutableMapOf<String, String>()
     get() {
         field[ID] = "id"
         field[NAME] = "name"
@@ -45,7 +44,7 @@ object ConfigValues {
     }
 
     fun setParams(): MutableMap<String, String> {
-        apiCallParams["district"] = DISTRICT
+        apiCallParams["district"] = "Calgary"
         return apiCallParams
     }
 
