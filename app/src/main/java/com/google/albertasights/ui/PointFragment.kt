@@ -5,9 +5,7 @@ import androidx.lifecycle.ViewModelProviders
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Color
 import android.graphics.PorterDuff
-import android.graphics.PorterDuffColorFilter
 import android.location.LocationManager
 import android.net.Uri
 import android.os.Bundle
@@ -115,14 +113,14 @@ class PointFragment : Fragment() {
         }
 
         if (viewModel!!.loved.contains(point)) {
-            button_like.drawable.colorFilter = PorterDuffColorFilter(Color.RED, PorterDuff.Mode.SRC_IN)
+            button_like.setColorFilter(ContextCompat.getColor(context!!, R.color.red), PorterDuff.Mode.SRC_IN)
         }
 
         button_like.setOnClickListener {
             // hook this method to the listener to make it visible for the activity
             if (!viewModel!!.loved.contains(point)) {
                 if (viewModel!!.updateLoved(point!!, false)) {
-                    button_like.drawable.colorFilter = PorterDuffColorFilter(Color.RED, PorterDuff.Mode.SRC_IN)
+                    button_like.setColorFilter(ContextCompat.getColor(context!!, R.color.red), PorterDuff.Mode.SRC_IN)
                     context!!.showToast(getString(R.string.added))
                 } else {
                     context!!.showToast(getString(R.string.error))
@@ -131,7 +129,7 @@ class PointFragment : Fragment() {
             } else {
                 //call the method to remove from selected
                 if (viewModel!!.updateLoved(point!!, true)) {
-                    button_like.colorFilter = PorterDuffColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN)
+                    button_like.setColorFilter(null)
                     context!!.showToast(getString(R.string.removed))
                 } else {
                     context!!.showToast(getString(R.string.error))
