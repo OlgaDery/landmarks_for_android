@@ -7,7 +7,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class Preferences @Inject constructor (val context: Context): PreferencesProvider {
+class PreferenceActions @Inject constructor (val context: Context): PreferencesProvider {
 
     private val preferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 

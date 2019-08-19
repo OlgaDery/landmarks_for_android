@@ -19,26 +19,14 @@ data class Place(var id: String?, var name: String, var description: String?, va
     }
 
     override fun hashCode(): Int {
-        var result: Int
-        var temp: Long
-        result = name.hashCode()
+        var result: Int = name.hashCode()
+        var temp: Long = java.lang.Double.doubleToLongBits(lng)
         result = 31 * result + if (description != null) description!!.hashCode() else 0
-        temp = java.lang.Double.doubleToLongBits(lng)
         result = 31 * result + (temp xor temp.ushr(32)).toInt()
         temp = java.lang.Double.doubleToLongBits(lat)
         result = 31 * result + (temp xor temp.ushr(32)).toInt()
         result = 31 * result + photolink.hashCode()
         return result
-    }
-
-    override fun toString(): String {
-        return "Place{" +
-                "id='" + id + '\''.toString() +
-                ", name='" + name + '\''.toString() +
-                ", descript='" + description + '\''.toString() +
-                ", category='" + category + '\''.toString() +
-                ", photoLink='" + photolink + '\''.toString() +
-                '}'.toString()
     }
 
 }

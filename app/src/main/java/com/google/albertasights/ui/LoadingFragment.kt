@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.google.albertasights.ConfigValues
 import com.google.albertasights.MapViewModel
 import com.google.albertasights.R
 import com.squareup.picasso.Picasso
@@ -40,7 +41,7 @@ class LoadingFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        Picasso.get().load("https://dl.dropboxusercontent.com/s/rjci9l5r6vajv49/20170806_173947.jpg").into(img_picture)
+        Picasso.get().load(ConfigValues.IMAGE_FOR_LOADING_FRAGMENT).into(img_picture)
         retry.visibility = View.GONE
     }
 

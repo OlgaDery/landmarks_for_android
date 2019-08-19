@@ -40,10 +40,10 @@ class MyInfoWindowAdaptor(private val viewModel: MapViewModel) : GoogleMap.InfoW
         val photo: ImageView?
         try {
             view = if (viewModel.orientation == UiUtils.PORTRAIT) {
-                LayoutInflater.from(viewModel.getApplication()).inflate(R.layout.info_window_layout, null)
+                LayoutInflater.from(viewModel.context).inflate(R.layout.info_window_layout, null)
 
             } else {
-                LayoutInflater.from(viewModel.getApplication()).inflate(R.layout.info_window_layout1, null)
+                LayoutInflater.from(viewModel.context).inflate(R.layout.info_window_layout1, null)
             }
             photo = view.findViewById(R.id.img_picture)
             descr = view.findViewById(R.id.descript)
@@ -80,11 +80,11 @@ class MyInfoWindowAdaptor(private val viewModel: MapViewModel) : GoogleMap.InfoW
                     } else {
                         count++
                         if (toLoad == null) {
-                            if (p.photolink.parseUrl() != NO_PHOTO) {
-                                toLoad = URL
+                            toLoad = if (p.photolink.parseUrl() != NO_PHOTO) {
+                                URL
 
                             } else {
-                                toLoad = PHOTO
+                                PHOTO
                             }
                         }
                         loadPicasso(p.photolink.parseUrl(), marker, photo)

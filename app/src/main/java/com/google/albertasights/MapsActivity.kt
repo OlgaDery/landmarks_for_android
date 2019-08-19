@@ -26,6 +26,8 @@ class MapsActivity : AppCompatActivity() {
     private var viewModel: MapViewModel? = null
     lateinit var navController: NavController
     lateinit var navHostFragment: NavHostFragment
+
+    //initializing component and subcomponent for Dagger DI
     private var component: AppComponent = DaggerAppComponent.builder()
             .appModule(AppModule(this))
             .build()

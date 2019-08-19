@@ -129,7 +129,7 @@ class PointFragment : Fragment() {
             } else {
                 //call the method to remove from selected
                 if (viewModel!!.updateLoved(point!!, true)) {
-                    button_like.setColorFilter(null)
+                    button_like.colorFilter = null
                     context!!.showToast(getString(R.string.removed))
                 } else {
                     context!!.showToast(getString(R.string.error))

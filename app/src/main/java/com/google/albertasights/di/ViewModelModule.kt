@@ -1,7 +1,7 @@
 package com.google.albertasights.di
 
 import android.content.Context
-import com.google.albertasights.services.Preferences
+import com.google.albertasights.services.PreferenceActions
 import com.google.albertasights.services.PreferencesProvider
 import dagger.Module
 import dagger.Provides
@@ -12,7 +12,7 @@ class ViewModelModule {
 
     @Provides
     @Singleton
-    fun providePreferences(context: Context): PreferencesProvider {
-        return Preferences(context)
+    fun accessPreferences(context: Context): PreferencesProvider {
+        return PreferenceActions(context)
     }
 }

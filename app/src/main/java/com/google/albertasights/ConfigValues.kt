@@ -5,6 +5,7 @@ object ConfigValues {
     //parameters for the API call
     const val BASE_URL = "https://albertasights.herokuapp.com/api/v1/"
     const val RELATIVE_URL = "points_by_district"
+    const val IMAGE_FOR_LOADING_FRAGMENT = "https://dl.dropboxusercontent.com/s/rjci9l5r6vajv49/20170806_173947.jpg"
     val headers = mutableMapOf<String, String>()
     val apiCallParams = mutableMapOf<String, String>()
 

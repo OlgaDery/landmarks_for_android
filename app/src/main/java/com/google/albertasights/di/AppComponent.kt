@@ -8,7 +8,6 @@ import javax.inject.Singleton
 @Singleton
 @Component(modules = [AppModule::class])
 interface AppComponent {
-    //val context Context
 
     fun inject(activity: MapsActivity)
     fun addComponent(viewModelModule: ViewModelModule): ViewModelComponent

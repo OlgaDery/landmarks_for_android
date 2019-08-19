@@ -1,61 +1,26 @@
 package com.google.albertasights
 
-import android.app.Application
+import android.content.Context
 import android.os.Build
 import androidx.lifecycle.*
 import com.google.albertasights.models.Place
-import com.google.albertasights.services.Preferences
+import com.google.albertasights.services.PreferenceActions
 import com.google.albertasights.services.RetrofitCalls
 import com.google.albertasights.utils.UiUtils
 import javax.inject.Inject
 
 
-class MapViewModel(application: Application) : AndroidViewModel(application) {
+class MapViewModel : ViewModel() {
 
     companion object {
         private const val SELECTED = "selected"
-
-        //testable static methods
-        fun generateID (place: Place): String {
-            return place.id.plus("_").plus(place.name)
-        }
-
-        fun updateLovedLost(place: Place, remove: Boolean, lovedList: MutableList<Place>, selectedIds: MutableSet<String>): Boolean {
-            if (remove) {
-                if (Build.VERSION.SDK_INT >= 24) {
-                    lovedList.removeIf{ it == place }
-                    selectedIds.removeIf{it == (generateID(place))}
-                } else {
-                    val iteratorForPoints = lovedList.iterator()
-                    while (iteratorForPoints.hasNext()) {
-                        if (place ==(iteratorForPoints.next())) {
-                            iteratorForPoints.remove()
-                        }
-                    }
-                    val iteratorForKeys = selectedIds.iterator()
-                    while (iteratorForKeys.hasNext()) {
-                        if (generateID(place) ==(iteratorForKeys.next())) {
-                            iteratorForKeys.remove()
-                        }
-                    }
-                }
-                 return true//pointRemoved
-            } else {
-                lovedList.add(place)
-                selectedIds.add(generateID(place))
-                return false
-            }
-        }
-
-
     }
 
-//    private lateinit var component: ViewModelComponent// = DaggerAppComponent.builder()
-//            .appModule(ViewModelModule())
-//            .build()
+    @Inject
+    lateinit var preferences: PreferenceActions
 
     @Inject
-    lateinit var preferences: Preferences
+    lateinit var context: Context
 
     private val retrofitService = RetrofitCalls()
 
@@ -79,7 +44,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     val locationAccessPermitted = MutableLiveData<Boolean>()
     val gpsEnabled = MutableLiveData<Boolean>()
 
-    fun setLoved() {
+    private fun setLoved() {
         val ids: MutableSet<String>? = preferences.getSelectedPlaces(SELECTED)
         if (!ids.isNullOrEmpty()) {
             selected.addAll(ids)
@@ -89,7 +54,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun updateLoved(place: Place, remove: Boolean): Boolean {
-        pointRemoved = updateLovedLost(place, remove, loved, selected)
+        pointRemoved = updateLovedList(place, remove, loved, selected)
         return preferences.setSelectedPoints(SELECTED, selected)
     }
 
@@ -117,6 +82,38 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
 
     fun setGpsEnabled(isEnabled: Boolean?) {
         gpsEnabled.value = isEnabled
+    }
+
+    //testable methods
+    fun generateID (place: Place): String {
+        return place.id.plus("_").plus(place.name)
+    }
+
+    fun updateLovedList(place: Place, remove: Boolean, lovedList: MutableList<Place>, selectedIds: MutableSet<String>): Boolean {
+        if (remove) {
+            if (Build.VERSION.SDK_INT >= 24) {
+                lovedList.removeIf{ it == place }
+                selectedIds.removeIf{it == (generateID(place))}
+            } else {
+                val iteratorForPoints = lovedList.iterator()
+                while (iteratorForPoints.hasNext()) {
+                    if (place ==(iteratorForPoints.next())) {
+                        iteratorForPoints.remove()
+                    }
+                }
+                val iteratorForKeys = selectedIds.iterator()
+                while (iteratorForKeys.hasNext()) {
+                    if (generateID(place) ==(iteratorForKeys.next())) {
+                        iteratorForKeys.remove()
+                    }
+                }
+            }
+            return true
+        } else {
+            lovedList.add(place)
+            selectedIds.add(generateID(place))
+            return false
+        }
     }
 
 }
