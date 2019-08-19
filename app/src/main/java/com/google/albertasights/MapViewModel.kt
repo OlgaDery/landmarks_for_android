@@ -3,9 +3,6 @@ package com.google.albertasights
 import android.app.Application
 import android.os.Build
 import androidx.lifecycle.*
-import com.google.albertasights.di.AppComponent
-import com.google.albertasights.di.AppModule
-import com.google.albertasights.di.DaggerAppComponent
 import com.google.albertasights.models.Place
 import com.google.albertasights.services.Preferences
 import com.google.albertasights.services.RetrofitCalls
@@ -53,15 +50,12 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
 
     }
 
-    private var component: AppComponent = DaggerAppComponent.builder()
-            .appModule(AppModule(application.baseContext))
-            .build()
+//    private lateinit var component: ViewModelComponent// = DaggerAppComponent.builder()
+//            .appModule(ViewModelModule())
+//            .build()
+
     @Inject
     lateinit var preferences: Preferences
-
-    init {
-        component.inject(this)
-    }
 
     private val retrofitService = RetrofitCalls()
 

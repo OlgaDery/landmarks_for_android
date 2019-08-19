@@ -13,6 +13,7 @@ import androidx.navigation.NavOptions
 import android.os.Build
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.google.albertasights.di.*
 import com.google.albertasights.utils.*
 
 
@@ -25,10 +26,18 @@ class MapsActivity : AppCompatActivity() {
     private var viewModel: MapViewModel? = null
     lateinit var navController: NavController
     lateinit var navHostFragment: NavHostFragment
+    private var component: AppComponent = DaggerAppComponent.builder()
+            .appModule(AppModule(this))
+            .build()
+
+    private var subComponent: ViewModelComponent = component.addComponent(ViewModelModule())
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
+        viewModel = ViewModelProviders.of(this).get(MapViewModel::class.java)
+        component.inject(this)
+        subComponent.inject(viewModel!!)
         try {
             setContentView(R.layout.activity_maps)
             navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
@@ -37,7 +46,6 @@ class MapsActivity : AppCompatActivity() {
             System.out.println(e.printStackTrace())
         }
 
-        viewModel = ViewModelProviders.of(this).get(MapViewModel::class.java)
         viewModel!!.hight = this.getHightInches()
         viewModel!!.wight = this.getWidthInches()
         viewModel!!.deviceType = this.findScreenSize()
