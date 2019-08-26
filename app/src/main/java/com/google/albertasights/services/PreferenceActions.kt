@@ -12,11 +12,11 @@ class PreferenceActions @Inject constructor (val context: Context): PreferencesP
     private val preferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 
     @Suppress("UNCHECKED_CAST")
-    override fun getSelectedPlaces(key: String): MutableSet<String>? {
+    override fun getCollection(key: String): MutableSet<String>? {
         return preferences.getStringSet(key, mutableSetOf())
     }
 
-    override fun setSelectedPoints(key: String, places: MutableSet<String>): Boolean {
+    override fun saveCollection(key: String, places: MutableSet<String>): Boolean {
         val editor = preferences.edit()
         editor.putStringSet(key, places)
         return editor.commit()

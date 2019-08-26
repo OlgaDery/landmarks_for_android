@@ -10,7 +10,10 @@ import android.view.WindowManager
 import android.widget.Toast
 import com.google.albertasights.ConfigValues
 import com.google.albertasights.models.Place
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import org.json.JSONArray
+import java.lang.reflect.Type
 
 
 fun View.resetLayoutParameters(height: Int, width: Int) {
@@ -140,6 +143,11 @@ fun JSONArray.parseJsonArray (): MutableList<Place> {
         listToReturn.add(Place(id, name, descr, link, lng, lat, webLink, category))
     }
     return listToReturn
+}
+
+fun <T> String.deserializeJsonToList(type: Type, gson: Gson): List<T>? {
+    val newToken = TypeToken.getParameterized(List::class.java, type).type
+    return gson.fromJson<ArrayList<T>>(this, newToken)
 }
 
 

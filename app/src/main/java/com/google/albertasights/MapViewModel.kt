@@ -1,12 +1,14 @@
 package com.google.albertasights
-
 import android.content.Context
 import android.os.Build
 import androidx.lifecycle.*
 import com.google.albertasights.models.Place
+import com.google.albertasights.services.DatabaseActions
 import com.google.albertasights.services.PreferenceActions
-import com.google.albertasights.services.RetrofitCalls
+import com.google.albertasights.services.GetGeoData
 import com.google.albertasights.utils.UiUtils
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 
@@ -22,7 +24,11 @@ class MapViewModel : ViewModel() {
     @Inject
     lateinit var context: Context
 
-    private val retrofitService = RetrofitCalls()
+    @Inject
+    lateinit var database: DatabaseActions
+
+    @Inject
+    lateinit var retrofitService: GetGeoData
 
     val loved = mutableListOf<Place>()
     val receivedPoints = MutableLiveData<Pair<Int, MutableList<Place>?>>()
@@ -44,18 +50,18 @@ class MapViewModel : ViewModel() {
     val locationAccessPermitted = MutableLiveData<Boolean>()
     val gpsEnabled = MutableLiveData<Boolean>()
 
-    private fun setLoved() {
-        val ids: MutableSet<String>? = preferences.getSelectedPlaces(SELECTED)
+    private fun setLoved(places: List<Place>) {
+        val ids: MutableSet<String>? = preferences.getCollection(generateSelectedPointsCollectionID(ConfigValues.BASE_URL))
         if (!ids.isNullOrEmpty()) {
             selected.addAll(ids)
         }
-        loved.addAll(receivedPoints.value!!.second!!.filter { selected.contains(generateID(it))
+        loved.addAll(places.filter { selected.contains(generatePlaceID(it))
         }.toMutableList())
     }
 
     fun updateLoved(place: Place, remove: Boolean): Boolean {
         pointRemoved = updateLovedList(place, remove, loved, selected)
-        return preferences.setSelectedPoints(SELECTED, selected)
+        return preferences.saveCollection(generateSelectedPointsCollectionID(ConfigValues.BASE_URL), selected)
     }
 
     fun setPoint(newPoint: Place) {
@@ -67,16 +73,35 @@ class MapViewModel : ViewModel() {
         locationAccessPermitted.value = isPermitted
     }
 
-    fun requestPoints() {
-        retrofitService.getAllTerritoryPoints {
-            if (it != null) {
-                val pair = Pair(observableID+1, it.toMutableList())
-                receivedPoints.value = pair
-                setLoved()
-            } else {
-                receivedPoints.value = Pair(observableID+1, null)
+    fun getPointsFromDB() {
+        viewModelScope.launch(Dispatchers.IO){
+            val list = database.getDataFromDatabase(ConfigValues.BASE_URL)
+            if (list != null) {
+                val pair = Pair(observableID + 1, list.toMutableList())
+                receivedPoints.postValue(pair)
+                setLoved(list)
             }
+        }
+        requestPoints()
+    }
 
+     fun requestPoints() {
+         retrofitService.getAllTerritoryPoints {
+             if (it != null) {
+                 val pair = Pair(observableID + 1, it.toMutableList())
+                 receivedPoints.value = pair
+                 updateDatabase(pair.second)
+
+             } else {
+                 val pair = Pair(observableID + 1, null)
+                 receivedPoints.value = pair
+             }
+         }
+     }
+
+    fun updateDatabase(mutableList: MutableList<Place>) {
+        viewModelScope.launch(Dispatchers.IO) {
+            database.submitDataToDatabase(Place::class.java, mutableList, List::class.java, ConfigValues.BASE_URL)
         }
     }
 
@@ -85,15 +110,20 @@ class MapViewModel : ViewModel() {
     }
 
     //testable methods
-    fun generateID (place: Place): String {
+    fun generatePlaceID (place: Place): String {
         return place.id.plus("_").plus(place.name)
+    }
+
+
+    fun generateSelectedPointsCollectionID (url: String): String {
+        return url.plus("_").plus(SELECTED)
     }
 
     fun updateLovedList(place: Place, remove: Boolean, lovedList: MutableList<Place>, selectedIds: MutableSet<String>): Boolean {
         if (remove) {
             if (Build.VERSION.SDK_INT >= 24) {
                 lovedList.removeIf{ it == place }
-                selectedIds.removeIf{it == (generateID(place))}
+                selectedIds.removeIf{it == (generatePlaceID(place))}
             } else {
                 val iteratorForPoints = lovedList.iterator()
                 while (iteratorForPoints.hasNext()) {
@@ -103,7 +133,7 @@ class MapViewModel : ViewModel() {
                 }
                 val iteratorForKeys = selectedIds.iterator()
                 while (iteratorForKeys.hasNext()) {
-                    if (generateID(place) ==(iteratorForKeys.next())) {
+                    if (generatePlaceID(place) ==(iteratorForKeys.next())) {
                         iteratorForKeys.remove()
                     }
                 }
@@ -111,7 +141,7 @@ class MapViewModel : ViewModel() {
             return true
         } else {
             lovedList.add(place)
-            selectedIds.add(generateID(place))
+            selectedIds.add(generatePlaceID(place))
             return false
         }
     }

@@ -14,6 +14,7 @@ import android.os.Build
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.albertasights.di.*
+import com.google.albertasights.services.DefaultDatabase
 import com.google.albertasights.utils.*
 
 
@@ -28,8 +29,7 @@ class MapsActivity : AppCompatActivity() {
     lateinit var navHostFragment: NavHostFragment
 
     //initializing component and subcomponent for Dagger DI
-    private var component: AppComponent = DaggerAppComponent.builder()
-            .appModule(AppModule(this))
+    private var component: AppComponent = DaggerAppComponent.builder().appModule(AppModule(this))
             .build()
 
     private var subComponent: ViewModelComponent = component.addComponent(ViewModelModule())
@@ -40,6 +40,7 @@ class MapsActivity : AppCompatActivity() {
         viewModel = ViewModelProviders.of(this).get(MapViewModel::class.java)
         component.inject(this)
         subComponent.inject(viewModel!!)
+        component.inject(viewModel!!.retrofitService)
         try {
             setContentView(R.layout.activity_maps)
             navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
@@ -75,7 +76,7 @@ class MapsActivity : AppCompatActivity() {
                         PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION)
 
             }
-            viewModel!!.requestPoints()
+            viewModel!!.getPointsFromDB()
         }
     }
 
@@ -85,6 +86,7 @@ class MapsActivity : AppCompatActivity() {
         } else {
             super.finish()
         }
+        DefaultDatabase.destroyInstance()
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
