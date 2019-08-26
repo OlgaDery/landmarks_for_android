@@ -115,6 +115,10 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleApiClient.ConnectionCa
         }
         viewModel!!.gpsEnabled.observe(this,
                 gpsAccessObserver)
+
+        viewModel!!.error.observe(this, Observer {
+            context!!.showToast(getString(R.string.error))
+        })
     }
 
 

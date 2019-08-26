@@ -21,15 +21,13 @@ class LoadingFragment : Fragment() {
 
         viewModel = ViewModelProviders.of(activity!!).get(MapViewModel::class.java)
 
-        viewModel!!.receivedPoints.observe(this, Observer {
-            if (it.second == null) {
-                showButton()
-                progress_bar.visibility = View.GONE
-                retry.setOnClickListener {
-                    viewModel!!.requestPoints()
-                    progress_bar.visibility = View.VISIBLE
-                    retry.visibility = View.GONE
-                }
+        viewModel!!.error.observe(this, Observer {
+            showButton()
+            progress_bar.visibility = View.GONE
+            retry.setOnClickListener {
+                viewModel!!.requestPoints()
+                progress_bar.visibility = View.VISIBLE
+                retry.visibility = View.GONE
             }
         })
     }

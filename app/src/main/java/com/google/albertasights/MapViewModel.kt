@@ -7,6 +7,7 @@ import com.google.albertasights.services.DatabaseActions
 import com.google.albertasights.services.PreferenceActions
 import com.google.albertasights.services.GetGeoData
 import com.google.albertasights.utils.UiUtils
+import com.google.albertasights.utils.checkNetwork
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -16,6 +17,8 @@ class MapViewModel : ViewModel() {
 
     companion object {
         private const val SELECTED = "selected"
+        private const val NO_CONNECTION_MESSAGE = 1
+        private const val SERVER_ERROR_MESSAGE = 2
     }
 
     @Inject
@@ -49,6 +52,7 @@ class MapViewModel : ViewModel() {
 
     val locationAccessPermitted = MutableLiveData<Boolean>()
     val gpsEnabled = MutableLiveData<Boolean>()
+    val error = MutableLiveData<Int>()
 
     private fun setLoved(places: List<Place>) {
         val ids: MutableSet<String>? = preferences.getCollection(generateSelectedPointsCollectionID(ConfigValues.BASE_URL))
@@ -75,14 +79,22 @@ class MapViewModel : ViewModel() {
 
     fun getPointsFromDB() {
         viewModelScope.launch(Dispatchers.IO){
-            val list = database.getDataFromDatabase(ConfigValues.BASE_URL)
+            val list: List<Place>? = database.getDataFromDatabase(ConfigValues.BASE_URL, Place::class.java)
             if (list != null) {
                 val pair = Pair(observableID + 1, list.toMutableList())
                 receivedPoints.postValue(pair)
                 setLoved(list)
+            } else {
+                if (context.checkNetwork() == 0) {
+                    error.postValue(NO_CONNECTION_MESSAGE)
+                }
             }
         }
-        requestPoints()
+        if (context.checkNetwork() != 0) {
+            requestPoints()
+        } else {
+            error.postValue(NO_CONNECTION_MESSAGE)
+        }
     }
 
      fun requestPoints() {
@@ -93,8 +105,7 @@ class MapViewModel : ViewModel() {
                  updateDatabase(pair.second)
 
              } else {
-                 val pair = Pair(observableID + 1, null)
-                 receivedPoints.value = pair
+                 error.postValue(SERVER_ERROR_MESSAGE)
              }
          }
      }

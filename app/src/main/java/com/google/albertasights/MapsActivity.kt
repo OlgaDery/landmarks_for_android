@@ -11,11 +11,13 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.NavController
 import androidx.navigation.NavOptions
 import android.os.Build
+import android.view.View
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.albertasights.di.*
 import com.google.albertasights.services.DefaultDatabase
 import com.google.albertasights.utils.*
+import kotlinx.android.synthetic.main.fragment_loading.*
 
 
 class MapsActivity : AppCompatActivity() {
@@ -31,7 +33,6 @@ class MapsActivity : AppCompatActivity() {
     //initializing component and subcomponent for Dagger DI
     private var component: AppComponent = DaggerAppComponent.builder().appModule(AppModule(this))
             .build()
-
     private var subComponent: ViewModelComponent = component.addComponent(ViewModelModule())
 
     override fun onCreate(savedInstanceState: Bundle?) {

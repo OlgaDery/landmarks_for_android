@@ -4,6 +4,8 @@ package com.google.albertasights.utils
 
 import android.content.Context
 import android.content.res.Configuration
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.util.DisplayMetrics
 import android.view.View
 import android.view.WindowManager
@@ -19,6 +21,31 @@ import java.lang.reflect.Type
 fun View.resetLayoutParameters(height: Int, width: Int) {
     this.layoutParams.height = height
     this.layoutParams.width = width
+}
+
+fun Context.checkNetwork(): Int {
+    val connectivityManager = this.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+        val network = connectivityManager.activeNetwork
+        val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return 0 //No
+        if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
+            return 1// WIFI
+        }
+        if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
+            return 2 //Cell
+        }
+    } else {
+        if (connectivityManager.activeNetworkInfo == null) {
+            return 0
+        }
+        if (connectivityManager.activeNetworkInfo.type == ConnectivityManager.TYPE_WIFI) {
+            return 1
+        }
+        if (connectivityManager.activeNetworkInfo.type == ConnectivityManager.TYPE_MOBILE) {
+            return 2
+        }
+    }
+    return 0
 }
 
 

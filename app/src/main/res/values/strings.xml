@@ -18,7 +18,7 @@
     <string name="can_not_show_directions">Sorry, you can not get directions without this permission.</string>
     <string name="added">The poins successfully added to the list.</string>
     <string name="removed">The poins successfully removed from the list.</string>
-    <string name="error">Error occurred!</string>
+    <string name="error">Error occurred! Can not connected to the server</string>
     <string name="browser_not_found">Error, maybe no browsers have been installed</string>
     <string name="retry">Retry connection</string>
     <string name="photo">Photo of the place</string>
